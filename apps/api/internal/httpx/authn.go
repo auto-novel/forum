@@ -1,0 +1,122 @@
+package httpx
+
+import (
+	"context"
+	"net/http"
+	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+const (
+	roleAdmin      string = "admin"
+	roleTrusted    string = "trusted"
+	roleMember     string = "member"
+	roleRestricted string = "restricted"
+	roleBanned     string = "banned"
+)
+
+var AccessTokenSecret string
+
+type accessClaim struct {
+	jwt.RegisteredClaims
+	UserID    int64            `json:"uid"`
+	Role      string           `json:"role"`
+	CreatedAt *jwt.NumericDate `json:"crat"`
+}
+
+type Principal struct {
+	UserID   int64
+	Username string
+	Role     string
+}
+
+func (p Principal) IsAdmin() bool {
+	return p.Role == roleAdmin
+}
+
+type principalContextKey struct{}
+
+func parseAccessClaim(tokenString string) (*accessClaim, error) {
+	claims := &accessClaim{}
+	token, err := jwt.ParseWithClaims(tokenString, claims,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(AccessTokenSecret), nil
+		},
+	)
+	if err != nil || !token.Valid {
+		return nil, err
+	}
+
+	validClaims, ok := token.Claims.(*accessClaim)
+	if !ok {
+		return nil, jwt.ErrTokenInvalidClaims
+	}
+	return validClaims, nil
+}
+
+func verifyAccessToken(r *http.Request) (Principal, error) {
+	tokenString := r.Header.Get("Authorization")
+
+	if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
+		return Principal{}, Unauthorized("缺少访问令牌")
+	}
+
+	claims, err := parseAccessClaim(tokenString[len("Bearer "):])
+	if err != nil {
+		return Principal{}, Unauthorized("无效的访问令牌")
+	}
+	if claims.Subject == "" {
+		return Principal{}, Unauthorized("无效的访问令牌")
+	}
+
+	return Principal{UserID: claims.UserID, Username: claims.Subject, Role: claims.Role}, nil
+}
+
+func RequireAccessToken(next http.Handler) http.Handler {
+	return EH(func(w http.ResponseWriter, r *http.Request) error {
+		principal, err := verifyAccessToken(r)
+		if err != nil {
+			return err
+		}
+		ctx := context.WithValue(r.Context(), principalContextKey{}, principal)
+		next.ServeHTTP(w, r.WithContext(ctx))
+		return nil
+	})
+}
+
+func requireRole(role string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return RequireAccessToken(EH(func(w http.ResponseWriter, r *http.Request) error {
+			principal, err := AuthenticatedPrincipal(r)
+			if err != nil {
+				return err
+			}
+			if principal.Role != role {
+				return Forbidden("权限不足")
+			}
+			next.ServeHTTP(w, r)
+			return nil
+		}))
+	}
+}
+
+func RequireAdmin(next http.Handler) http.Handler {
+	return requireRole(roleAdmin)(next)
+}
+
+func RequireTrusted(next http.Handler) http.Handler {
+	return requireRole(roleTrusted)(next)
+}
+
+func RequireMember(next http.Handler) http.Handler {
+	return requireRole(roleMember)(next)
+}
+
+func AuthenticatedPrincipal(r *http.Request) (Principal, error) {
+	principal, ok := r.Context().Value(principalContextKey{}).(Principal)
+	if !ok || principal.Username == "" {
+		return Principal{}, Unauthorized("缺少认证上下文")
+	}
+	return principal, nil
+}

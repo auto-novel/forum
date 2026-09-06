@@ -1,0 +1,4 @@
+services:
+  postgresql:
+    ports:
+      - 4001:5432

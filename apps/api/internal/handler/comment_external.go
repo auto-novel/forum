@@ -1,0 +1,221 @@
+package handler
+
+import (
+	"net/http"
+	"time"
+
+	"auth/internal/httpx"
+	"auth/internal/repository"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
+)
+
+type externalCommentHandler struct{ repo repository.CommentRepository }
+
+func NewExternalCommentHandler(repo repository.CommentRepository) *externalCommentHandler {
+	return &externalCommentHandler{repo: repo}
+}
+
+func (h *externalCommentHandler) RegisterRoutes(router chi.Router) {
+	router.Get("/{type}/{commentId}", httpx.EH(h.list))
+	router.With(httpx.RequireAccessToken).Post("/{type}/{commentId}", httpx.EH(h.create))
+	router.With(httpx.RequireAccessToken).Patch("/{type}/{commentId}", httpx.EH(h.update))
+	router.With(httpx.RequireAccessToken).Delete("/{type}/{commentId}", httpx.EH(h.delete))
+	router.With(httpx.RequireAdmin).Put("/{type}/{commentId}/status", httpx.EH(h.setStatus))
+}
+
+type externalCommentResponse struct {
+	ID             int64     `json:"id"`
+	SubjectID      int64     `json:"subjectId"`
+	RootID         *int64    `json:"rootId"`
+	Content        string    `json:"content"`
+	AuthorID       int64     `json:"authorId"`
+	AuthorUsername string    `json:"authorUsername"`
+	Status         int16     `json:"status"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+}
+
+func newExternalCommentResponse(value repository.Comment) externalCommentResponse {
+	return externalCommentResponse{
+		ID:             value.ID,
+		SubjectID:      value.SubjectID,
+		RootID:         value.RootID,
+		Content:        value.Content,
+		AuthorID:       value.AuthorID,
+		AuthorUsername: value.AuthorUsername,
+		Status:         value.Status,
+		CreatedAt:      value.CreatedAt,
+		UpdatedAt:      value.UpdatedAt,
+	}
+}
+
+func externalCommentSubjectType(r *http.Request) (int16, error) {
+	switch chi.URLParam(r, "type") {
+	case "novel":
+		return repository.CommentSubjectNovel, nil
+	default:
+		return 0, httpx.BadRequest("不支持的外部资源类型")
+	}
+}
+
+func externalCommentID(r *http.Request) (int64, error) {
+	return httpx.ParseParamPositiveInt(r, "commentId")
+}
+
+func (h *externalCommentHandler) list(w http.ResponseWriter, r *http.Request) error {
+	subjectType, err := externalCommentSubjectType(r)
+	if err != nil {
+		return err
+	}
+	subjectID, err := externalCommentID(r)
+	if err != nil {
+		return err
+	}
+	pagination, err := parsePagination(r.URL.Query(), 20, 100)
+	if err != nil {
+		return err
+	}
+	total, items, err := h.repo.List(subjectType, subjectID, pagination.Limit, pagination.Offset)
+	if err != nil {
+		return httpx.InternalError(err, "查询附属资源评论失败")
+	}
+	response := make([]externalCommentResponse, len(items))
+	for i, item := range items {
+		response[i] = newExternalCommentResponse(item)
+	}
+	render.JSON(w, r, page[externalCommentResponse]{Total: total, Items: response})
+	return nil
+}
+
+func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) error {
+	subjectType, err := externalCommentSubjectType(r)
+	if err != nil {
+		return err
+	}
+	subjectID, err := externalCommentID(r)
+	if err != nil {
+		return err
+	}
+	input, err := httpx.Body[commentInput](r)
+	if err != nil {
+		return err
+	}
+	principal, _ := httpx.AuthenticatedPrincipal(r)
+	comment, err := h.repo.Create(repository.CreateCommentInput{
+		SubjectType:    subjectType,
+		SubjectID:      subjectID,
+		RootID:         input.RootID,
+		Content:        input.Content,
+		AuthorID:       principal.UserID,
+		AuthorUsername: principal.Username,
+		Attr:           "{}",
+	})
+	if repository.IsNotFound(err) {
+		return httpx.NotFound("根评论不存在")
+	}
+	if err != nil {
+		return httpx.InternalError(err, "创建附属资源评论失败")
+	}
+	render.Status(r, http.StatusCreated)
+	render.JSON(w, r, newExternalCommentResponse(*comment))
+	return nil
+}
+
+func (h *externalCommentHandler) modifiableID(r *http.Request) (int16, int64, error) {
+	subjectType, err := externalCommentSubjectType(r)
+	if err != nil {
+		return 0, 0, err
+	}
+	id, err := externalCommentID(r)
+	if err != nil {
+		return 0, 0, err
+	}
+	comment, err := h.repo.Find(subjectType, id)
+	if repository.IsNotFound(err) {
+		return 0, 0, httpx.NotFound("评论不存在")
+	}
+	if err != nil {
+		return 0, 0, httpx.InternalError(err, "查询评论失败")
+	}
+	principal, _ := httpx.AuthenticatedPrincipal(r)
+	if comment.AuthorID != principal.UserID && !principal.IsAdmin() {
+		return 0, 0, httpx.Forbidden("只能修改自己的评论")
+	}
+
+	const modificationWindow = 20 * time.Minute
+	if time.Now().After(comment.CreatedAt.Add(modificationWindow)) {
+		return 0, 0, httpx.Forbidden("评论只能在发布后 20 分钟内编辑或删除")
+	}
+	return subjectType, comment.ID, nil
+}
+
+func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) error {
+	subjectType, id, err := h.modifiableID(r)
+	if err != nil {
+		return err
+	}
+	input, err := httpx.Body[commentInput](r)
+	if err != nil {
+		return err
+	}
+	comment, err := h.repo.Update(subjectType, id, input.Content)
+	if repository.IsNotFound(err) {
+		return httpx.NotFound("评论不存在")
+	}
+	if err != nil {
+		return httpx.InternalError(err, "更新评论失败")
+	}
+	render.JSON(w, r, newExternalCommentResponse(*comment))
+	return nil
+}
+
+func (h *externalCommentHandler) delete(w http.ResponseWriter, r *http.Request) error {
+	subjectType, id, err := h.modifiableID(r)
+	if err != nil {
+		return err
+	}
+	if err := h.repo.SetStatus(subjectType, id, repository.StatusDeleted); err != nil {
+		if repository.IsNotFound(err) {
+			return httpx.NotFound("评论不存在")
+		}
+		return httpx.InternalError(err, "删除评论失败")
+	}
+	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (h *externalCommentHandler) setStatus(w http.ResponseWriter, r *http.Request) error {
+	subjectType, err := externalCommentSubjectType(r)
+	if err != nil {
+		return err
+	}
+	id, err := externalCommentID(r)
+	if err != nil {
+		return err
+	}
+	input, err := httpx.Body[commentStatusInput](r)
+	if err != nil {
+		return err
+	}
+	var status int16
+	switch input.Status {
+	case "published":
+		status = repository.StatusPublished
+	case "hidden":
+		status = repository.StatusHidden
+	case "deleted":
+		status = repository.StatusDeleted
+	default:
+		return httpx.BadRequest("status 必须为 published、hidden 或 deleted")
+	}
+	if err := h.repo.SetStatus(subjectType, id, status); err != nil {
+		if repository.IsNotFound(err) {
+			return httpx.NotFound("评论不存在")
+		}
+		return httpx.InternalError(err, "设置评论状态失败")
+	}
+	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
