@@ -1,0 +1,26 @@
+{
+  "name": "forum-admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && vue-tsc -b",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@novelia/admin-kit": "github:auto-novel/auth#a8f903a502be1431ded885355d892eafb96e821c&path:packages/admin-kit",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vicons/material": "^0.13.0",
+    "@vue/tsconfig": "^0.9.1",
+    "naive-ui": "^2.45.1",
+    "typescript": "^6.0.0",
+    "vite": "^8.2.2",
+    "vue": "^3.5.41",
+    "vue-router": "^5.2.0",
+    "vue-tsc": "^3.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.5"
+  }
+}

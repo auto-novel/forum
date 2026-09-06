@@ -1,0 +1,13 @@
+{
+  "name": "forum",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev:admin": "pnpm --filter forum-admin dev",
+    "build": "pnpm --filter forum-admin build"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6"
+  }
+}

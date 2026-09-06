@@ -1,0 +1,10 @@
+packages:
+  - apps/admin
+
+allowBuilds:
+  esbuild: true
+blockExoticSubdeps: false
+minimumReleaseAgeExclude:
+  - vite@8.2.2
+overrides:
+  '@novelia/auth-api': github:auto-novel/auth#a8f903a502be1431ded885355d892eafb96e821c&path:packages/auth-api

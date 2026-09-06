@@ -1,5 +1,16 @@
 .vscode/
 
 # Deploy
-data/
+/data/
 .env
+
+# Api
+/apps/api/auth
+
+# Admin
+dist/
+node_modules/
+auto-imports.d.ts
+components.d.ts
+vite.config.ts.timestamp*
+sonda-report.html
