@@ -1,8 +1,20 @@
 services:
+  web:
+    image: ghcr.io/auto-novel/forum-web:latest
+    ports:
+      - 4000:80
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --spider --tries=1 --no-verbose http://localhost || exit 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   api:
     image: ghcr.io/auto-novel/forum-api:latest
-    ports:
-      - 4000:8080
     depends_on:
       postgresql:
         condition: service_healthy
