@@ -85,6 +85,10 @@ export default defineConfig(({ command, mode }) => {
       __COMMIT_SHA__: JSON.stringify(commitSha),
     },
     plugins: [vue()],
+    optimizeDeps: {
+      exclude: ['@novelia/admin-kit'],
+      include: ['@vicons/material', 'naive-ui'],
+    },
     server: {
       port: 5174,
       proxy: {
@@ -99,6 +103,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     resolve: {
+      dedupe: ['vue', 'vue-router'],
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
