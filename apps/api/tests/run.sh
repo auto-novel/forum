@@ -4,7 +4,7 @@ set -euo pipefail
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd -- "$script_dir/../../.." && pwd)"
 container_name="forum-test-postgresql-$$"
-test_db_port="${TEST_DB_PORT:-4002}"
+test_db_port="${TEST_DB_PORT:-5003}"
 container_started=false
 
 cleanup() {

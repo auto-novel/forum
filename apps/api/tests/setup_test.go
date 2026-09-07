@@ -26,7 +26,7 @@ var (
 func TestMain(m *testing.M) {
 	testDB = infra.NewSQLDB(
 		env("TEST_DB_HOST", "localhost"),
-		envInt("TEST_DB_PORT", 4002),
+		envInt("TEST_DB_PORT", 5003),
 		env("TEST_DB_USER", "forum"),
 		env("TEST_DB_PASSWORD", "forum-test-password"),
 		env("TEST_DB_NAME", "forum_test"),

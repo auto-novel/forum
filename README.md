@@ -30,4 +30,4 @@ EOF
 docker compose up -d
 ```
 
-启动后，访问 http://localhost:4000/admin/ 即可。
+启动后，访问 http://localhost:5000/admin/ 即可。

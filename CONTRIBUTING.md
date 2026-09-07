@@ -16,10 +16,10 @@ docker compose up -d
 
 服务启动后，可通过以下地址访问：
 
-- Web: localhost:4000
-- Api: localhost:4000/api
-- External Api: localhost:4002/api/v1/external（仅限服务器本机访问）
-- Postgresql: localhost:4001
+- Web: localhost:5000
+- Api: localhost:5000/api
+- External Api: localhost:5002/api/v1/external（仅限服务器本机访问）
+- Postgresql: localhost:5001
 
 ## 前端开发
 

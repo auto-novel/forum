@@ -74,7 +74,7 @@ export default defineConfig(({ command, mode }) => {
     apiMode === 'native'
       ? 'http://localhost:8080'
       : apiMode === 'local'
-        ? 'http://localhost:4000'
+        ? 'http://localhost:5000'
         : 'https://forum.novelia.cc';
 
   const config: UserConfig = {

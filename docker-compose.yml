@@ -2,8 +2,8 @@ services:
   web:
     image: ghcr.io/auto-novel/forum-web:latest
     ports:
-      - 4000:80
-      - 127.0.0.1:4002:8081
+      - 5000:80
+      - 127.0.0.1:5002:8081
     healthcheck:
       test:
         [

@@ -40,7 +40,7 @@ func main() {
 	// infra
 	db := infra.NewSQLDB(
 		env("DB_HOST", "localhost"),
-		envInt("DB_PORT", 4001),
+		envInt("DB_PORT", 5001),
 		env("DB_USER", "forum"),
 		env("DB_PASSWORD", ""),
 		env("DB_NAME", "forum"),
