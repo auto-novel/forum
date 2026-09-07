@@ -6,6 +6,12 @@ create table if not exists category
     attr               jsonb        not null default '{}'::jsonb
 );
 
+insert into category (slug)
+values ('novel'),
+       ('guide'),
+       ('feedback')
+on conflict (slug) do nothing;
+
 create table if not exists tag
 (
     id           bigint generated always as identity primary key,
