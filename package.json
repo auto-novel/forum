@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev:admin": "pnpm --filter forum-admin dev",
-    "build": "pnpm --filter forum-admin build"
+    "dev:web": "pnpm --filter forum-web dev",
+    "build": "pnpm --filter forum-web build && pnpm --filter forum-admin build"
   },
   "devDependencies": {
     "prettier": "^3.9.6"

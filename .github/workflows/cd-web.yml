@@ -8,6 +8,7 @@ on:
       - .github/workflows/cd-web.yml
       - deploy/web/**
       - apps/admin/**
+      - apps/web/**
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml

@@ -28,6 +28,7 @@ docker compose up -d
 ```bash
 pnpm install
 
+pnpm dev:web # 启动用户端开发服务器
 pnpm dev:admin # 启动管理端开发服务器
 pnpm build     # 编译项目
 ```
