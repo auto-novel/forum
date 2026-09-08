@@ -33,7 +33,7 @@ func TestJetRepositories(t *testing.T) {
 	const otherSubjectType int16 = 1
 	otherSubjectComment, err := commentRepo.Create(repository.CreateCommentInput{
 		SubjectType:    otherSubjectType,
-		SubjectID:      post.ID,
+		SubjectKey:     "novel:chapter-1",
 		Content:        "其他主体评论",
 		AuthorID:       8,
 		AuthorUsername: "bob",
@@ -41,6 +41,13 @@ func TestJetRepositories(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+	otherTotal, otherComments, err := commentRepo.List(otherSubjectType, "novel:chapter-1", 20, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if otherTotal != 1 || len(otherComments) != 1 || otherComments[0].SubjectKey != "novel:chapter-1" {
+		t.Fatalf("unexpected external comments: total=%d items=%#v", otherTotal, otherComments)
 	}
 	var commentsCount int32
 	if err := testDB.QueryRow("SELECT comments_count FROM post WHERE id = $1", post.ID).Scan(&commentsCount); err != nil {
@@ -77,7 +84,7 @@ func TestJetRepositories(t *testing.T) {
 
 	root, err := commentRepo.Create(repository.CreateCommentInput{
 		SubjectType:    repository.CommentSubjectPost,
-		SubjectID:      post.ID,
+		SubjectKey:     repository.PostSubjectKey(post.ID),
 		Content:        "评论",
 		AuthorID:       8,
 		AuthorUsername: "bob",
@@ -86,12 +93,12 @@ func TestJetRepositories(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if root.SubjectType != repository.CommentSubjectPost || root.SubjectID != post.ID {
-		t.Fatalf("unexpected comment subject: type=%d id=%d", root.SubjectType, root.SubjectID)
+	if root.SubjectType != repository.CommentSubjectPost || root.SubjectKey != repository.PostSubjectKey(post.ID) {
+		t.Fatalf("unexpected comment subject: type=%d key=%s", root.SubjectType, root.SubjectKey)
 	}
-	reply, err := commentRepo.Create(repository.CreateCommentInput{
+	_, err = commentRepo.Create(repository.CreateCommentInput{
 		SubjectType:    repository.CommentSubjectPost,
-		SubjectID:      post.ID,
+		SubjectKey:     repository.PostSubjectKey(post.ID),
 		RootID:         &root.ID,
 		Content:        "回复",
 		AuthorID:       7,
@@ -101,21 +108,7 @@ func TestJetRepositories(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	hasChildren, err := commentRepo.HasChildren(root.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !hasChildren {
-		t.Fatal("root comment should have children")
-	}
-	hasChildren, err = commentRepo.HasChildren(reply.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if hasChildren {
-		t.Fatal("reply should not have children")
-	}
-	commentTotal, comments, err := commentRepo.List(repository.CommentSubjectPost, post.ID, 20, 0)
+	commentTotal, comments, err := commentRepo.List(repository.CommentSubjectPost, repository.PostSubjectKey(post.ID), 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +132,7 @@ func TestJetRepositories(t *testing.T) {
 	}
 	_, err = commentRepo.Create(repository.CreateCommentInput{
 		SubjectType:    repository.CommentSubjectPost,
-		SubjectID:      post.ID,
+		SubjectKey:     repository.PostSubjectKey(post.ID),
 		Content:        "blocked",
 		AuthorID:       9,
 		AuthorUsername: "carol",

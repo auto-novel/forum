@@ -5,6 +5,7 @@ import (
 	"auth/.gen/main/public/table"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"time"
 
 	. "github.com/go-jet/jet/v2/postgres"
@@ -19,7 +20,7 @@ const (
 
 type CreateCommentInput struct {
 	SubjectType    int16
-	SubjectID      int64
+	SubjectKey     string
 	RootID         *int64
 	Content        string
 	AuthorID       int64
@@ -28,7 +29,7 @@ type CreateCommentInput struct {
 }
 
 type CommentRepository interface {
-	List(subjectType int16, subjectID int64, limit, offset int64) (int64, []Comment, error)
+	List(subjectType int16, subjectKey string, limit, offset int64) (int64, []Comment, error)
 	Find(subjectType int16, id int64) (*Comment, error)
 	Create(input CreateCommentInput) (*Comment, error)
 	Update(subjectType int16, id int64, content string) (*Comment, error)
@@ -39,9 +40,9 @@ type commentRepository struct{ db *sql.DB }
 
 func NewCommentRepository(db *sql.DB) CommentRepository { return &commentRepository{db: db} }
 
-func (r *commentRepository) List(subjectType int16, subjectID int64, limit, offset int64) (int64, []Comment, error) {
+func (r *commentRepository) List(subjectType int16, subjectKey string, limit, offset int64) (int64, []Comment, error) {
 	condition := table.Comment.SubjectType.EQ(Int16(subjectType)).
-		AND(table.Comment.SubjectID.EQ(Int64(subjectID))).
+		AND(table.Comment.SubjectKey.EQ(String(subjectKey))).
 		AND(table.Comment.Status.EQ(Int16(StatusPublished)))
 	countStmt := SELECT(COUNT(STAR)).FROM(table.Comment).WHERE(condition)
 	var count struct{ Count int64 }
@@ -83,10 +84,15 @@ func (r *commentRepository) Create(input CreateCommentInput) (*Comment, error) {
 		return nil, err
 	}
 	defer tx.Rollback()
+	var postID int64
 	if input.SubjectType == CommentSubjectPost {
+		postID, err = PostIDFromSubjectKey(input.SubjectKey)
+		if err != nil {
+			return nil, err
+		}
 		lockPost := SELECT(table.Post.AllColumns).
 			FROM(table.Post).
-			WHERE(table.Post.ID.EQ(Int64(input.SubjectID)).AND(table.Post.Status.EQ(Int16(StatusPublished)))).
+			WHERE(table.Post.ID.EQ(Int64(postID)).AND(table.Post.Status.EQ(Int16(StatusPublished)))).
 			FOR(UPDATE())
 		var post Post
 		if err := lockPost.Query(tx, &post); err != nil {
@@ -106,13 +112,13 @@ func (r *commentRepository) Create(input CreateCommentInput) (*Comment, error) {
 		if err := rootStmt.Query(tx, &root); err != nil {
 			return nil, err
 		}
-		if root.SubjectID != input.SubjectID || root.RootID != nil {
-			return nil, fmt.Errorf("comment %d is not a root comment of subject %d", *input.RootID, input.SubjectID)
+		if root.SubjectKey != input.SubjectKey || root.RootID != nil {
+			return nil, fmt.Errorf("comment %d is not a root comment of subject %q", *input.RootID, input.SubjectKey)
 		}
 	}
 	record := Comment{
 		SubjectType:    input.SubjectType,
-		SubjectID:      input.SubjectID,
+		SubjectKey:     input.SubjectKey,
 		RootID:         input.RootID,
 		Content:        input.Content,
 		AuthorID:       input.AuthorID,
@@ -121,7 +127,7 @@ func (r *commentRepository) Create(input CreateCommentInput) (*Comment, error) {
 	}
 	insert := table.Comment.INSERT(
 		table.Comment.SubjectType,
-		table.Comment.SubjectID,
+		table.Comment.SubjectKey,
 		table.Comment.RootID,
 		table.Comment.Content,
 		table.Comment.AuthorID,
@@ -136,7 +142,7 @@ func (r *commentRepository) Create(input CreateCommentInput) (*Comment, error) {
 	if input.SubjectType == CommentSubjectPost {
 		touchPost := table.Post.UPDATE(table.Post.CommentsCount, table.Post.ActiveAt).
 			SET(table.Post.CommentsCount.ADD(Int32(1)), TimestampzT(time.Now())).
-			WHERE(table.Post.ID.EQ(Int64(input.SubjectID)))
+			WHERE(table.Post.ID.EQ(Int64(postID)))
 		if _, err := touchPost.Exec(tx); err != nil {
 			return nil, err
 		}
@@ -183,20 +189,41 @@ func (r *commentRepository) SetStatus(subjectType int16, id int64, status int16)
 	if _, err := updateComment.Exec(tx); err != nil {
 		return err
 	}
-	if record.SubjectType == CommentSubjectPost && record.Status == StatusPublished && status != StatusPublished {
+	if record.SubjectType != CommentSubjectPost ||
+		record.Status == status ||
+		(record.Status != StatusPublished && status != StatusPublished) {
+		return tx.Commit()
+	}
+	postID, err := PostIDFromSubjectKey(record.SubjectKey)
+	if err != nil {
+		return err
+	}
+	if record.Status == StatusPublished {
 		updatePost := table.Post.UPDATE(table.Post.CommentsCount).
 			SET(IntExp(GREATEST(table.Post.CommentsCount.SUB(Int32(1)), Int32(0)))).
-			WHERE(table.Post.ID.EQ(Int64(record.SubjectID)))
+			WHERE(table.Post.ID.EQ(Int64(postID)))
 		if _, err := updatePost.Exec(tx); err != nil {
 			return err
 		}
-	} else if record.SubjectType == CommentSubjectPost && record.Status != StatusPublished && status == StatusPublished {
+	} else if status == StatusPublished {
 		updatePost := table.Post.UPDATE(table.Post.CommentsCount, table.Post.ActiveAt).
 			SET(table.Post.CommentsCount.ADD(Int32(1)), TimestampzT(time.Now())).
-			WHERE(table.Post.ID.EQ(Int64(record.SubjectID)))
+			WHERE(table.Post.ID.EQ(Int64(postID)))
 		if _, err := updatePost.Exec(tx); err != nil {
 			return err
 		}
 	}
 	return tx.Commit()
+}
+
+func PostSubjectKey(postID int64) string {
+	return strconv.FormatInt(postID, 10)
+}
+
+func PostIDFromSubjectKey(subjectKey string) (int64, error) {
+	postID, err := strconv.ParseInt(subjectKey, 10, 64)
+	if err != nil || postID <= 0 {
+		return 0, fmt.Errorf("invalid post subject key %q", subjectKey)
+	}
+	return postID, nil
 }

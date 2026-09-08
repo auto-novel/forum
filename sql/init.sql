@@ -82,7 +82,7 @@ create table if not exists comment
 (
     id                 bigint generated always as identity primary key,
     subject_type       smallint     not null,
-    subject_id         bigint       not null,
+    subject_key        varchar(255) not null,
     root_id            bigint,
     content            text         not null,
     author_id          bigint       not null,
@@ -97,7 +97,7 @@ comment on column comment.status is '评论状态: 0=published, 1=hidden, 2=dele
 comment on column comment.root_id is 'NULL=一级评论；非 NULL=子回复所属的一级根评论 ID';
 
 create index if not exists idx_comment_subject_thread_created
-    on comment (subject_type, subject_id, (coalesce(root_id, id)), created_at, id)
+    on comment (subject_type, subject_key, (coalesce(root_id, id)), created_at, id)
     where status = 0;
 
 create index if not exists idx_comment_author_created

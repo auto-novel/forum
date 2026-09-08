@@ -14,7 +14,7 @@ import (
 type Comment struct {
 	ID             int64 `sql:"primary_key"`
 	SubjectType    int16
-	SubjectID      int64
+	SubjectKey     string
 	RootID         *int64 // NULL=一级评论；非 NULL=子回复所属的一级根评论 ID
 	Content        string
 	AuthorID       int64

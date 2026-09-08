@@ -18,8 +18,8 @@ func NewExternalCommentHandler(repo repository.CommentRepository) *externalComme
 }
 
 func (h *externalCommentHandler) RegisterRoutes(router chi.Router) {
-	router.Get("/{type}/{commentId}", httpx.EH(h.list))
-	router.With(httpx.RequireAccessToken).Post("/{type}/{commentId}", httpx.EH(h.create))
+	router.Get("/{type}/{subjectKey}", httpx.EH(h.list))
+	router.With(httpx.RequireAccessToken).Post("/{type}/{subjectKey}", httpx.EH(h.create))
 	router.With(httpx.RequireAccessToken).Patch("/{type}/{commentId}", httpx.EH(h.update))
 	router.With(httpx.RequireAccessToken).Delete("/{type}/{commentId}", httpx.EH(h.delete))
 	router.With(httpx.RequireAdmin).Put("/{type}/{commentId}/status", httpx.EH(h.setStatus))
@@ -27,7 +27,7 @@ func (h *externalCommentHandler) RegisterRoutes(router chi.Router) {
 
 type externalCommentResponse struct {
 	ID             int64     `json:"id"`
-	SubjectID      int64     `json:"subjectId"`
+	SubjectKey     string    `json:"subjectKey"`
 	RootID         *int64    `json:"rootId"`
 	Content        string    `json:"content"`
 	AuthorID       int64     `json:"authorId"`
@@ -40,7 +40,7 @@ type externalCommentResponse struct {
 func newExternalCommentResponse(value repository.Comment) externalCommentResponse {
 	return externalCommentResponse{
 		ID:             value.ID,
-		SubjectID:      value.SubjectID,
+		SubjectKey:     value.SubjectKey,
 		RootID:         value.RootID,
 		Content:        value.Content,
 		AuthorID:       value.AuthorID,
@@ -64,12 +64,20 @@ func externalCommentID(r *http.Request) (int64, error) {
 	return httpx.ParseParamPositiveInt(r, "commentId")
 }
 
+func externalCommentSubjectKey(r *http.Request) (string, error) {
+	subjectKey := chi.URLParam(r, "subjectKey")
+	if !validText(subjectKey, 1, 255) {
+		return "", httpx.BadRequest("subjectKey 长度必须为 1 到 255")
+	}
+	return subjectKey, nil
+}
+
 func (h *externalCommentHandler) list(w http.ResponseWriter, r *http.Request) error {
 	subjectType, err := externalCommentSubjectType(r)
 	if err != nil {
 		return err
 	}
-	subjectID, err := externalCommentID(r)
+	subjectKey, err := externalCommentSubjectKey(r)
 	if err != nil {
 		return err
 	}
@@ -77,7 +85,7 @@ func (h *externalCommentHandler) list(w http.ResponseWriter, r *http.Request) er
 	if err != nil {
 		return err
 	}
-	total, items, err := h.repo.List(subjectType, subjectID, pagination.Limit, pagination.Offset)
+	total, items, err := h.repo.List(subjectType, subjectKey, pagination.Limit, pagination.Offset)
 	if err != nil {
 		return httpx.InternalError(err, "查询附属资源评论失败")
 	}
@@ -94,7 +102,7 @@ func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return err
 	}
-	subjectID, err := externalCommentID(r)
+	subjectKey, err := externalCommentSubjectKey(r)
 	if err != nil {
 		return err
 	}
@@ -105,7 +113,7 @@ func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) 
 	principal, _ := httpx.AuthenticatedPrincipal(r)
 	comment, err := h.repo.Create(repository.CreateCommentInput{
 		SubjectType:    subjectType,
-		SubjectID:      subjectID,
+		SubjectKey:     subjectKey,
 		RootID:         input.RootID,
 		Content:        input.Content,
 		AuthorID:       principal.UserID,

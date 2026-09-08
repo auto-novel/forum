@@ -291,13 +291,21 @@ func (h *postHandler) listComments(w http.ResponseWriter, r *http.Request) error
 	if err != nil {
 		return err
 	}
-	total, items, err := h.commentRepo.List(repository.CommentSubjectPost, postID, pagination.Limit, pagination.Offset)
+	total, items, err := h.commentRepo.List(
+		repository.CommentSubjectPost,
+		repository.PostSubjectKey(postID),
+		pagination.Limit,
+		pagination.Offset,
+	)
 	if err != nil {
 		return httpx.InternalError(err, "查询评论失败")
 	}
 	response := make([]commentResponse, len(items))
 	for i, item := range items {
-		response[i] = newCommentResponse(item)
+		response[i], err = newCommentResponse(item)
+		if err != nil {
+			return httpx.InternalError(err, "转换评论数据失败")
+		}
 	}
 	render.JSON(w, r, page[commentResponse]{Total: total, Items: response})
 	return nil
@@ -320,7 +328,7 @@ func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) erro
 	principal, _ := httpx.AuthenticatedPrincipal(r)
 	comment, err := h.commentRepo.Create(repository.CreateCommentInput{
 		SubjectType:    repository.CommentSubjectPost,
-		SubjectID:      postID,
+		SubjectKey:     repository.PostSubjectKey(postID),
 		RootID:         input.RootID,
 		Content:        input.Content,
 		AuthorID:       principal.UserID,
@@ -336,7 +344,11 @@ func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return httpx.InternalError(err, "创建评论失败")
 	}
+	response, err := newCommentResponse(*comment)
+	if err != nil {
+		return httpx.InternalError(err, "转换评论数据失败")
+	}
 	render.Status(r, http.StatusCreated)
-	render.JSON(w, r, newCommentResponse(*comment))
+	render.JSON(w, r, response)
 	return nil
 }

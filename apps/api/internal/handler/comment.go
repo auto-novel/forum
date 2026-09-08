@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -35,10 +36,14 @@ type commentResponse struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
-func newCommentResponse(value repository.Comment) commentResponse {
+func newCommentResponse(value repository.Comment) (commentResponse, error) {
+	postID, err := repository.PostIDFromSubjectKey(value.SubjectKey)
+	if err != nil {
+		return commentResponse{}, fmt.Errorf("comment %d: %w", value.ID, err)
+	}
 	return commentResponse{
 		ID:             value.ID,
-		PostID:         value.SubjectID,
+		PostID:         postID,
 		RootID:         value.RootID,
 		Content:        value.Content,
 		AuthorID:       value.AuthorID,
@@ -46,7 +51,7 @@ func newCommentResponse(value repository.Comment) commentResponse {
 		Status:         value.Status,
 		CreatedAt:      value.CreatedAt,
 		UpdatedAt:      value.UpdatedAt,
-	}
+	}, nil
 }
 
 func (h *commentHandler) modifiableID(r *http.Request) (int64, error) {
@@ -89,7 +94,11 @@ func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return httpx.InternalError(err, "更新评论失败")
 	}
-	render.JSON(w, r, newCommentResponse(*comment))
+	response, err := newCommentResponse(*comment)
+	if err != nil {
+		return httpx.InternalError(err, "转换评论数据失败")
+	}
+	render.JSON(w, r, response)
 	return nil
 }
 

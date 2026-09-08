@@ -19,7 +19,7 @@ type commentTable struct {
 	// Columns
 	ID             postgres.ColumnInteger
 	SubjectType    postgres.ColumnInteger
-	SubjectID      postgres.ColumnInteger
+	SubjectKey     postgres.ColumnString
 	RootID         postgres.ColumnInteger // NULL=一级评论；非 NULL=子回复所属的一级根评论 ID
 	Content        postgres.ColumnString
 	AuthorID       postgres.ColumnInteger
@@ -71,7 +71,7 @@ func newCommentTableImpl(schemaName, tableName, alias string) commentTable {
 	var (
 		IDColumn             = postgres.IntegerColumn("id")
 		SubjectTypeColumn    = postgres.IntegerColumn("subject_type")
-		SubjectIDColumn      = postgres.IntegerColumn("subject_id")
+		SubjectKeyColumn     = postgres.StringColumn("subject_key")
 		RootIDColumn         = postgres.IntegerColumn("root_id")
 		ContentColumn        = postgres.StringColumn("content")
 		AuthorIDColumn       = postgres.IntegerColumn("author_id")
@@ -80,8 +80,8 @@ func newCommentTableImpl(schemaName, tableName, alias string) commentTable {
 		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
 		AttrColumn           = postgres.StringColumn("attr")
-		allColumns           = postgres.ColumnList{IDColumn, SubjectTypeColumn, SubjectIDColumn, RootIDColumn, ContentColumn, AuthorIDColumn, AuthorUsernameColumn, StatusColumn, CreatedAtColumn, UpdatedAtColumn, AttrColumn}
-		mutableColumns       = postgres.ColumnList{SubjectTypeColumn, SubjectIDColumn, RootIDColumn, ContentColumn, AuthorIDColumn, AuthorUsernameColumn, StatusColumn, CreatedAtColumn, UpdatedAtColumn, AttrColumn}
+		allColumns           = postgres.ColumnList{IDColumn, SubjectTypeColumn, SubjectKeyColumn, RootIDColumn, ContentColumn, AuthorIDColumn, AuthorUsernameColumn, StatusColumn, CreatedAtColumn, UpdatedAtColumn, AttrColumn}
+		mutableColumns       = postgres.ColumnList{SubjectTypeColumn, SubjectKeyColumn, RootIDColumn, ContentColumn, AuthorIDColumn, AuthorUsernameColumn, StatusColumn, CreatedAtColumn, UpdatedAtColumn, AttrColumn}
 		defaultColumns       = postgres.ColumnList{StatusColumn, CreatedAtColumn, UpdatedAtColumn, AttrColumn}
 	)
 
@@ -91,7 +91,7 @@ func newCommentTableImpl(schemaName, tableName, alias string) commentTable {
 		//Columns
 		ID:             IDColumn,
 		SubjectType:    SubjectTypeColumn,
-		SubjectID:      SubjectIDColumn,
+		SubjectKey:     SubjectKeyColumn,
 		RootID:         RootIDColumn,
 		Content:        ContentColumn,
 		AuthorID:       AuthorIDColumn,
