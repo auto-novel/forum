@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
+
+import UserAccountButton from '@/components/UserAccountButton.vue';
 </script>
 
 <template>
@@ -45,6 +47,8 @@ import { RouterLink, RouterView } from 'vue-router';
             </span>
           </span>
         </RouterLink>
+
+        <UserAccountButton />
       </div>
     </header>
 

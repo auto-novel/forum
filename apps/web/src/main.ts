@@ -1,7 +1,11 @@
 import { createApp } from 'vue';
 
 import App from './App.vue';
+import { authApi } from './auth';
 import router from './router';
 import './styles.css';
 
-createApp(App).use(router).mount('#app');
+const app = createApp(App);
+
+app.onUnmount(authApi.dispose);
+app.use(router).mount('#app');

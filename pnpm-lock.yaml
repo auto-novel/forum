@@ -54,6 +54,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@novelia/auth-api':
+        specifier: github:auto-novel/auth#a8f903a502be1431ded885355d892eafb96e821c&path:packages/auth-api
+        version: https://codeload.github.com/auto-novel/auth/tar.gz/a8f903a502be1431ded885355d892eafb96e821c#path:packages/auth-api
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))

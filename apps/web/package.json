@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@novelia/auth-api": "github:auto-novel/auth#a8f903a502be1431ded885355d892eafb96e821c&path:packages/auth-api",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
