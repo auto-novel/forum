@@ -20,28 +20,33 @@
 		file_server
 	}
 
-	route {
-		@external path /api/v1/external /api/v1/external/*
-		respond @external 404
-
-		handle_path /api* {
-			reverse_proxy api:8080
-
-			@options {
-				method OPTIONS
-			}
-			respond @options 204
-			import cors 1 https://books.fishhawk.top
-			import cors 2 https://books1.fishhawk.top
-			import cors 3 https://n.novelia.cc
-			import cors 4 http://localhost:5173
-		}
-	}
-
 	handle {
 		root * /web
-		try_files {path} /index.html
 		file_server
+		route {
+			try_files {path} /
+			header / Cache-Control "no-cache,no-store,max-age=0,must-revalidate"
+		}
+		header /assets/* Cache-Control "public, max-age=7776000"
+		header /*.png Cache-Control "public, max-age=7776000"
+		header /*.svg Cache-Control "public, max-age=7776000"
+		header /*.webp Cache-Control "public, max-age=7776000"
+	}
+
+	@external path /api/v1/external /api/v1/external/*
+	handle @external {
+		respond 404
+	}
+
+	handle_path /api* {
+		reverse_proxy api:8080
+
+		@options {
+			method OPTIONS
+		}
+		respond @options 204
+		import cors 1 http://localhost:5173
+		import cors 2 https://n.novelia.cc
 	}
 }
 
