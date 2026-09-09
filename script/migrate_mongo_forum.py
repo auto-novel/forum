@@ -55,6 +55,7 @@ class SourceStats:
     skipped_articles: int = 0
     skipped_comments: int = 0
     missing_auth_users: set[str] = field(default_factory=set)
+    missing_auth_user_ids: dict[str, str] = field(default_factory=dict)
     migratable_article_ids: set[str] = field(default_factory=set)
     migratable_root_comment_ids: set[str] = field(default_factory=set)
     article_categories: Counter[str] = field(default_factory=Counter)
@@ -159,13 +160,30 @@ def bson_object_id(value: str, field: str) -> ObjectId:
         ) from error
 
 
-def text(value: Any, field: str, max_length: int | None = None) -> str:
+def text(
+    value: Any,
+    field: str,
+    max_length: int | None = None,
+    report_nul: bool = True,
+) -> str:
     if not isinstance(value, str):
         raise MigrationError(f"{field} 必须是字符串：{value_detail(value)}")
     if "\x00" in value:
-        raise MigrationError(
-            f"{field} 包含 PostgreSQL 不支持的 NUL 字符：{value_detail(value)}"
-        )
+        if report_nul:
+            nul_count = value.count("\x00")
+            positions: list[int] = []
+            for index, char in enumerate(value):
+                if char == "\x00":
+                    positions.append(index)
+                    if len(positions) == 20:
+                        break
+            print(
+                f"警告：{field} 包含 {nul_count} 个 NUL 字符，"
+                f"前 20 个位置 {positions!r}，"
+                f"已过滤：{value_detail(value)}",
+                file=sys.stderr,
+            )
+        value = value.replace("\x00", "")
     if max_length is not None and len(value) > max_length:
         raise MigrationError(
             f"{field} 长度 {len(value)} 超过限制 {max_length}："
@@ -249,6 +267,8 @@ def resolve_authors(
     documents: list[dict],
     entity: str,
     missing_auth_users: set[str] | None = None,
+    missing_auth_user_ids: dict[str, str] | None = None,
+    report_nul: bool = True,
 ) -> dict[str, tuple[int, str]]:
     source_values: dict[str, Any] = {}
     for document in documents:
@@ -263,7 +283,10 @@ def resolve_authors(
     ):
         user_id = object_id(user.get("_id"), "user._id")
         source_users[user_id] = text(
-            user.get("username"), f"user[{user_id}].username", 128
+            user.get("username"),
+            f"user[{user_id}].username",
+            128,
+            report_nul,
         )
     missing = sorted(source_values.keys() - source_users.keys())
     if missing:
@@ -275,6 +298,14 @@ def resolve_authors(
     missing = sorted(set(source_users.values()) - auth_users.keys())
     if missing_auth_users is not None:
         missing_auth_users.update(missing)
+    if missing_auth_user_ids is not None:
+        missing_auth_user_ids.update(
+            {
+                source_id: username
+                for source_id, username in source_users.items()
+                if username not in auth_users
+            }
+        )
     return {
         source_id: (auth_users[username], username)
         for source_id, username in source_users.items()
@@ -311,13 +342,20 @@ def validate_articles(
             articles,
             "article",
             stats.missing_auth_users,
+            stats.missing_auth_user_ids,
         )
         for article in articles:
             article_id = object_id(article.get("_id"), "article._id")
-            if object_id(
+            user_id = object_id(
                 article.get("user"), f"article[{article_id}].user"
-            ) not in authors:
+            )
+            if user_id not in authors:
                 stats.skipped_articles += 1
+                print(
+                    f"跳过 article[{article_id}]：auth 缺少用户 "
+                    f"{stats.missing_auth_user_ids[user_id]!r}",
+                    file=sys.stderr,
+                )
                 continue
             text(article.get("title"), f"article[{article_id}].title", 500)
             text(article.get("content"), f"article[{article_id}].content")
@@ -370,6 +408,7 @@ def validate_comments(
                 comments,
                 "comment",
                 stats.missing_auth_users,
+                stats.missing_auth_user_ids,
             )
             article_ids: set[str] = set()
             parent_values: dict[str, Any] = {}
@@ -377,10 +416,16 @@ def validate_comments(
             candidates: list[dict] = []
             for comment in comments:
                 comment_id = object_id(comment.get("_id"), "comment._id")
-                if object_id(
+                user_id = object_id(
                     comment.get("user"), f"comment[{comment_id}].user"
-                ) not in authors:
+                )
+                if user_id not in authors:
                     stats.skipped_comments += 1
+                    print(
+                        f"跳过 comment[{comment_id}]：auth 缺少用户 "
+                        f"{stats.missing_auth_user_ids[user_id]!r}",
+                        file=sys.stderr,
+                    )
                     continue
                 site = text(
                     comment.get("site"), f"comment[{comment_id}].site", 255
@@ -446,6 +491,11 @@ def validate_comments(
                     not in stats.migratable_article_ids
                 ):
                     stats.skipped_comments += 1
+                    print(
+                        f"跳过 comment[{comment_id}]：关联文章 "
+                        f"{site.removeprefix('article-')} 已跳过",
+                        file=sys.stderr,
+                    )
                     continue
                 parent = comment.get("parent")
                 if (
@@ -453,6 +503,10 @@ def validate_comments(
                     and str(parent) not in stats.migratable_root_comment_ids
                 ):
                     stats.skipped_comments += 1
+                    print(
+                        f"跳过 comment[{comment_id}]：父评论 {parent} 已跳过",
+                        file=sys.stderr,
+                    )
                     continue
                 if parent is not None:
                     parent_id = str(parent)
@@ -560,6 +614,17 @@ def insert_article(
 ) -> int:
     source_id = str(article["_id"])
     author_id, username = author
+    title = text(
+        article.get("title"),
+        f"article[{source_id}].title",
+        500,
+        report_nul=False,
+    )
+    content = text(
+        article.get("content"),
+        f"article[{source_id}].content",
+        report_nul=False,
+    )
     cursor.execute(
         """
         insert into post (
@@ -571,10 +636,10 @@ def insert_article(
         """,
         (
             category_ids[CATEGORY_SLUGS[article["category"]]],
-            article["title"],
+            title,
             author_id,
             username,
-            article["content"],
+            content,
             HIDDEN if article.get("hidden", False) else PUBLISHED,
             article.get("numViews", 0),
             article.get("locked", False),
@@ -728,7 +793,11 @@ def migrate(
                                 database, "article", batch_size
                             ):
                                 authors = resolve_authors(
-                                    database, auth_cursor, articles, "article"
+                                    database,
+                                    auth_cursor,
+                                    articles,
+                                    "article",
+                                    report_nul=False,
                                 )
                                 mappings: list[tuple[str, int]] = []
                                 for article in articles:
@@ -762,8 +831,25 @@ def migrate(
                                     database, "comment-alt", batch_size, query=query
                                 ):
                                     authors = resolve_authors(
-                                        database, auth_cursor, comments, "comment"
+                                        database,
+                                        auth_cursor,
+                                        comments,
+                                        "comment",
+                                        report_nul=False,
                                     )
+                                    for comment in comments:
+                                        source_id = str(comment["_id"])
+                                        comment["site"] = text(
+                                            comment.get("site"),
+                                            f"comment[{source_id}].site",
+                                            255,
+                                            report_nul=False,
+                                        )
+                                        comment["content"] = text(
+                                            comment.get("content"),
+                                            f"comment[{source_id}].content",
+                                            report_nul=False,
+                                        )
                                     comments = [
                                         comment
                                         for comment in comments
