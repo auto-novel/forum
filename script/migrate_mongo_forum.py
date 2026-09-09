@@ -52,6 +52,11 @@ class SourceStats:
     users: int = 0
     articles: int = 0
     comments: int = 0
+    skipped_articles: int = 0
+    skipped_comments: int = 0
+    missing_auth_users: set[str] = field(default_factory=set)
+    migratable_article_ids: set[str] = field(default_factory=set)
+    migratable_root_comment_ids: set[str] = field(default_factory=set)
     article_categories: Counter[str] = field(default_factory=Counter)
     article_statuses: Counter[int] = field(default_factory=Counter)
     comment_statuses: Counter[int] = field(default_factory=Counter)
@@ -243,6 +248,7 @@ def resolve_authors(
     auth_cursor: psycopg.Cursor,
     documents: list[dict],
     entity: str,
+    missing_auth_users: set[str] | None = None,
 ) -> dict[str, tuple[int, str]]:
     source_values: dict[str, Any] = {}
     for document in documents:
@@ -267,11 +273,12 @@ def resolve_authors(
 
     auth_users = load_auth_users(auth_cursor, set(source_users.values()))
     missing = sorted(set(source_users.values()) - auth_users.keys())
-    if missing:
-        raise MigrationError(f"auth 缺少用户：{'、'.join(missing[:20])}")
+    if missing_auth_users is not None:
+        missing_auth_users.update(missing)
     return {
         source_id: (auth_users[username], username)
         for source_id, username in source_users.items()
+        if username in auth_users
     }
 
 
@@ -298,9 +305,20 @@ def validate_articles(
     for articles in mongo_batches(
         database, "article", batch_size, projection=projection
     ):
-        resolve_authors(database, auth_cursor, articles, "article")
+        authors = resolve_authors(
+            database,
+            auth_cursor,
+            articles,
+            "article",
+            stats.missing_auth_users,
+        )
         for article in articles:
             article_id = object_id(article.get("_id"), "article._id")
+            if object_id(
+                article.get("user"), f"article[{article_id}].user"
+            ) not in authors:
+                stats.skipped_articles += 1
+                continue
             text(article.get("title"), f"article[{article_id}].title", 500)
             text(article.get("content"), f"article[{article_id}].content")
             category = article.get("category")
@@ -317,9 +335,10 @@ def validate_articles(
             for field in ("createAt", "updateAt"):
                 instant(article.get(field), f"article[{article_id}].{field}")
             article_active_at(article)
+            stats.migratable_article_ids.add(article_id)
             stats.article_categories[CATEGORY_SLUGS[category]] += 1
             stats.article_statuses[HIDDEN if hidden else PUBLISHED] += 1
-        stats.articles += len(articles)
+            stats.articles += 1
 
 
 def validate_comments(
@@ -337,86 +356,133 @@ def validate_comments(
         "parent": 1,
         "user": 1,
     }
-    for comments in mongo_batches(
-        database, "comment-alt", batch_size, projection=projection
-    ):
-        resolve_authors(database, auth_cursor, comments, "comment")
-        article_ids: set[str] = set()
-        parent_values: dict[str, Any] = {}
-        sites: dict[str, str] = {}
-        for comment in comments:
-            comment_id = object_id(comment.get("_id"), "comment._id")
-            site = text(comment.get("site"), f"comment[{comment_id}].site", 255)
-            if not site:
-                raise MigrationError(
-                    f"comment[{comment_id}].site 不能为空：{value_detail(site)}"
-                )
-            sites[comment_id] = site
-            text(comment.get("content"), f"comment[{comment_id}].content")
-            instant(comment.get("createAt"), f"comment[{comment_id}].createAt")
-            hidden = boolean(
-                comment.get("hidden", False), f"comment[{comment_id}].hidden"
+    for query in ({"parent": None}, {"parent": {"$ne": None}}):
+        for comments in mongo_batches(
+            database,
+            "comment-alt",
+            batch_size,
+            query=query,
+            projection=projection,
+        ):
+            authors = resolve_authors(
+                database,
+                auth_cursor,
+                comments,
+                "comment",
+                stats.missing_auth_users,
             )
-            stats.comment_statuses[HIDDEN if hidden else PUBLISHED] += 1
-            if site.startswith("article-"):
-                article_ids.add(site.removeprefix("article-"))
-                stats.comment_subjects[POST_SUBJECT] += 1
-            else:
-                stats.comment_subjects[NOVEL_SUBJECT] += 1
-            if comment.get("parent") is not None:
-                parent = comment["parent"]
-                parent_values[object_id(parent, f"comment[{comment_id}].parent")] = parent
-                stats.comment_levels["reply"] += 1
-            else:
-                stats.comment_levels["root"] += 1
+            article_ids: set[str] = set()
+            parent_values: dict[str, Any] = {}
+            sites: dict[str, str] = {}
+            candidates: list[dict] = []
+            for comment in comments:
+                comment_id = object_id(comment.get("_id"), "comment._id")
+                if object_id(
+                    comment.get("user"), f"comment[{comment_id}].user"
+                ) not in authors:
+                    stats.skipped_comments += 1
+                    continue
+                site = text(
+                    comment.get("site"), f"comment[{comment_id}].site", 255
+                )
+                if not site:
+                    raise MigrationError(
+                        f"comment[{comment_id}].site 不能为空：{value_detail(site)}"
+                    )
+                sites[comment_id] = site
+                text(comment.get("content"), f"comment[{comment_id}].content")
+                instant(comment.get("createAt"), f"comment[{comment_id}].createAt")
+                boolean(
+                    comment.get("hidden", False),
+                    f"comment[{comment_id}].hidden",
+                )
+                if site.startswith("article-"):
+                    article_ids.add(site.removeprefix("article-"))
+                if comment.get("parent") is not None:
+                    parent = comment["parent"]
+                    parent_values[
+                        object_id(parent, f"comment[{comment_id}].parent")
+                    ] = parent
+                candidates.append(comment)
 
-        existing_articles = {
-            str(value["_id"])
-            for value in database["article"].find(
-                {
-                    "_id": {
-                        "$in": [
-                            bson_object_id(value, "comment.site")
-                            for value in article_ids
-                        ]
-                    }
-                },
-                {"_id": 1},
-            )
-        }
-        missing = sorted(article_ids - existing_articles)
-        if missing:
-            raise MigrationError(f"评论引用了不存在的文章：{'、'.join(missing[:20])}")
+            existing_articles = {
+                str(value["_id"])
+                for value in database["article"].find(
+                    {
+                        "_id": {
+                            "$in": [
+                                bson_object_id(value, "comment.site")
+                                for value in article_ids
+                            ]
+                        }
+                    },
+                    {"_id": 1},
+                )
+            }
+            missing = sorted(article_ids - existing_articles)
+            if missing:
+                raise MigrationError(
+                    f"评论引用了不存在的文章：{'、'.join(missing[:20])}"
+                )
 
-        parents = {
-            str(value["_id"]): value
-            for value in database["comment-alt"].find(
-                {"_id": {"$in": list(parent_values.values())}},
-                {"_id": 1, "parent": 1, "site": 1},
-            )
-        }
-        missing = sorted(parent_values.keys() - parents.keys())
-        if missing:
-            raise MigrationError(f"评论引用了不存在的父评论：{'、'.join(missing[:20])}")
-        for comment in comments:
-            parent = comment.get("parent")
-            if parent is None:
-                continue
-            comment_id = str(comment["_id"])
-            parent_id = str(parent)
-            parent_comment = parents[parent_id]
-            if parent_comment.get("parent") is not None:
-                raise MigrationError(
-                    f"comment[{comment_id}] 的父评论 {parent_id} 不是一级评论："
-                    f"parent={value_detail(parent_comment.get('parent'))}"
+            parents = {
+                str(value["_id"]): value
+                for value in database["comment-alt"].find(
+                    {"_id": {"$in": list(parent_values.values())}},
+                    {"_id": 1, "parent": 1, "site": 1},
                 )
-            if parent_comment.get("site") != sites[comment_id]:
+            }
+            missing = sorted(parent_values.keys() - parents.keys())
+            if missing:
                 raise MigrationError(
-                    f"comment[{comment_id}] 与父评论 {parent_id} 不属于同一主体："
-                    f"comment.site={value_detail(sites[comment_id])}，"
-                    f"parent.site={value_detail(parent_comment.get('site'))}"
+                    f"评论引用了不存在的父评论：{'、'.join(missing[:20])}"
                 )
-        stats.comments += len(comments)
+            for comment in candidates:
+                comment_id = str(comment["_id"])
+                site = sites[comment_id]
+                if (
+                    site.startswith("article-")
+                    and site.removeprefix("article-")
+                    not in stats.migratable_article_ids
+                ):
+                    stats.skipped_comments += 1
+                    continue
+                parent = comment.get("parent")
+                if (
+                    parent is not None
+                    and str(parent) not in stats.migratable_root_comment_ids
+                ):
+                    stats.skipped_comments += 1
+                    continue
+                if parent is not None:
+                    parent_id = str(parent)
+                    parent_comment = parents[parent_id]
+                    if parent_comment.get("parent") is not None:
+                        raise MigrationError(
+                            f"comment[{comment_id}] 的父评论 {parent_id} "
+                            "不是一级评论："
+                            f"parent={value_detail(parent_comment.get('parent'))}"
+                        )
+                    if parent_comment.get("site") != site:
+                        raise MigrationError(
+                            f"comment[{comment_id}] 与父评论 {parent_id} "
+                            "不属于同一主体："
+                            f"comment.site={value_detail(site)}，"
+                            "parent.site="
+                            f"{value_detail(parent_comment.get('site'))}"
+                        )
+
+                hidden = comment.get("hidden", False)
+                stats.comment_statuses[HIDDEN if hidden else PUBLISHED] += 1
+                stats.comment_subjects[
+                    POST_SUBJECT if site.startswith("article-") else NOVEL_SUBJECT
+                ] += 1
+                if parent is None:
+                    stats.comment_levels["root"] += 1
+                    stats.migratable_root_comment_ids.add(comment_id)
+                else:
+                    stats.comment_levels["reply"] += 1
+                stats.comments += 1
 
 
 def validate_source(
@@ -667,6 +733,11 @@ def migrate(
                                 mappings: list[tuple[str, int]] = []
                                 for article in articles:
                                     source_id = str(article["_id"])
+                                    if (
+                                        source_id
+                                        not in stats.migratable_article_ids
+                                    ):
+                                        continue
                                     target_id = insert_article(
                                         cursor,
                                         article,
@@ -677,12 +748,13 @@ def migrate(
                                     write_mapping(
                                         mapping_handle, "post", source_id, target_id
                                     )
-                                cursor.executemany(
-                                    "insert into migration_article_map "
-                                    "(source_id, target_id) values (%s, %s)",
-                                    mappings,
-                                )
-                                article_count += len(articles)
+                                if mappings:
+                                    cursor.executemany(
+                                        "insert into migration_article_map "
+                                        "(source_id, target_id) values (%s, %s)",
+                                        mappings,
+                                    )
+                                article_count += len(mappings)
 
                             def migrate_comments(query: dict[str, Any]) -> int:
                                 migrated = 0
@@ -692,6 +764,25 @@ def migrate(
                                     authors = resolve_authors(
                                         database, auth_cursor, comments, "comment"
                                     )
+                                    comments = [
+                                        comment
+                                        for comment in comments
+                                        if str(comment["user"]) in authors
+                                        and (
+                                            not comment["site"].startswith(
+                                                "article-"
+                                            )
+                                            or comment["site"].removeprefix(
+                                                "article-"
+                                            )
+                                            in stats.migratable_article_ids
+                                        )
+                                        and (
+                                            comment.get("parent") is None
+                                            or str(comment["parent"])
+                                            in stats.migratable_root_comment_ids
+                                        )
+                                    ]
                                     article_sources = {
                                         value["site"].removeprefix("article-")
                                         for value in comments
@@ -775,22 +866,24 @@ def migrate(
                                             source_id,
                                             target_id,
                                         )
-                                    cursor.executemany(
-                                        "insert into migration_comment_map "
-                                        "(source_id, target_id) values (%s, %s)",
-                                        mappings,
-                                    )
-                                    cursor.executemany(
-                                        "update migration_article_map set "
-                                        "expected_published_comments = "
-                                        "expected_published_comments + %s "
-                                        "where source_id = %s",
-                                        [
-                                            (count, source_id)
-                                            for source_id, count
-                                            in published_counts.items()
-                                        ],
-                                    )
+                                    if mappings:
+                                        cursor.executemany(
+                                            "insert into migration_comment_map "
+                                            "(source_id, target_id) values (%s, %s)",
+                                            mappings,
+                                        )
+                                    if published_counts:
+                                        cursor.executemany(
+                                            "update migration_article_map set "
+                                            "expected_published_comments = "
+                                            "expected_published_comments + %s "
+                                            "where source_id = %s",
+                                            [
+                                                (count, source_id)
+                                                for source_id, count
+                                                in published_counts.items()
+                                            ],
+                                        )
                                     migrated += len(comments)
                                 return migrated
 
@@ -846,6 +939,17 @@ def main() -> int:
                 f"预检通过：Mongo 用户 {stats.users}，"
                 f"文章 {stats.articles}，评论 {stats.comments}"
             )
+            if stats.missing_auth_users:
+                missing_users = "、".join(
+                    repr(username)
+                    for username in sorted(stats.missing_auth_users)[:20]
+                )
+                print(
+                    f"警告：auth 缺少用户 {missing_users}；"
+                    f"将跳过文章 {stats.skipped_articles}、"
+                    f"评论 {stats.skipped_comments}",
+                    file=sys.stderr,
+                )
             if not args.execute:
                 print("当前为预检模式；确认结果后添加 --execute 执行迁移")
                 return 0
