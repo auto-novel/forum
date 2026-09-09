@@ -175,6 +175,14 @@ def instant(value: Any, field: str) -> datetime:
     return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
 
 
+def article_active_at(article: dict) -> datetime:
+    article_id = object_id(article.get("_id"), "article._id")
+    change_at = article.get("changeAt")
+    if change_at is None:
+        return instant(article.get("updateAt"), f"article[{article_id}].updateAt")
+    return instant(change_at, f"article[{article_id}].changeAt")
+
+
 def create_mapping_file(requested_path: str | None) -> tuple[Path, Any]:
     if requested_path:
         path = Path(requested_path).expanduser().resolve()
@@ -282,8 +290,9 @@ def validate_articles(
             boolean(article.get("locked", False), f"article[{article_id}].locked")
             boolean(article.get("pinned", False), f"article[{article_id}].pinned")
             pg_integer(article.get("numViews", 0), f"article[{article_id}].numViews")
-            for field in ("createAt", "updateAt", "changeAt"):
+            for field in ("createAt", "updateAt"):
                 instant(article.get(field), f"article[{article_id}].{field}")
+            article_active_at(article)
             stats.article_categories[CATEGORY_SLUGS[category]] += 1
             stats.article_statuses[HIDDEN if hidden else PUBLISHED] += 1
         stats.articles += len(articles)
@@ -473,7 +482,7 @@ def insert_article(
             0 if article.get("pinned", False) else None,
             instant(article["createAt"], f"article[{source_id}].createAt"),
             instant(article["updateAt"], f"article[{source_id}].updateAt"),
-            instant(article["changeAt"], f"article[{source_id}].changeAt"),
+            article_active_at(article),
         ),
     )
     return cursor.fetchone()[0]
