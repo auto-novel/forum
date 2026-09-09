@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue';
 
-import { authApi, authUser, loginUrl } from '@/auth';
+import { authApi, authUser } from '@/api';
 
 const roleLabels: Record<string, string> = {
   admin: '管理员',
@@ -17,7 +17,6 @@ const menuOpen = ref(false);
 const loginOpen = ref(false);
 const loginError = ref<string>();
 const completingLogin = ref(false);
-const authOrigin = new URL(loginUrl).origin;
 
 const roleLabel = computed(() => {
   const role = authUser.value?.role;
@@ -32,12 +31,7 @@ const createdAt = computed(() => {
   );
 });
 
-const loginFrameSrc = computed(() => {
-  const url = new URL(loginUrl);
-  url.searchParams.set('app', 'f');
-  url.searchParams.set('theme', 'light');
-  return url.toString();
-});
+const loginFrameSrc = authApi.createLoginUrl('light');
 
 function handleDocumentClick(event: MouseEvent) {
   if (accountRoot.value?.contains(event.target as Node)) return;
@@ -62,30 +56,18 @@ function closeLogin() {
   loginError.value = undefined;
 }
 
-function isLoginSuccessMessage(data: unknown) {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'type' in data &&
-    data.type === 'login_success'
-  );
-}
-
 async function handleMessage(event: MessageEvent) {
-  if (
-    !loginOpen.value ||
-    event.origin !== authOrigin ||
-    event.source !== loginFrame.value?.contentWindow ||
-    !isLoginSuccessMessage(event.data) ||
-    completingLogin.value
-  ) {
-    return;
-  }
+  if (!loginOpen.value || completingLogin.value) return;
+  const completion = authApi.handleLoginMessage(
+    event,
+    loginFrame.value?.contentWindow,
+  );
+  if (!completion) return;
 
   completingLogin.value = true;
   loginError.value = undefined;
   try {
-    await authApi.auth.refresh();
+    await completion;
     loginOpen.value = false;
   } catch {
     loginError.value = '登录状态同步失败，请重试';
@@ -97,7 +79,7 @@ async function handleMessage(event: MessageEvent) {
 async function logout() {
   menuOpen.value = false;
   try {
-    await authApi.auth.logout();
+    await authApi.logout();
   } catch {
     // auth-api clears the local session even if the remote session has expired.
   }

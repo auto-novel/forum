@@ -91,7 +91,9 @@ function endpoint(path: string) {
 }
 
 export function createForumApi(authApi: AuthApi) {
-  const client = authApi.client;
+  const client = authApi.createClient(
+    new URL('/api/v1/', window.location.origin).toString(),
+  );
 
   return {
     getCategories() {

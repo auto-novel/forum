@@ -1,3 +1,29 @@
+import { createAuthApi, type AuthUser } from '@novelia/auth-api';
+import { readonly, ref } from 'vue';
+
+const authUrl = new URL(__AUTH_URL__, window.location.origin);
+
+export const authApi = createAuthApi({
+  app: 'f',
+  url: authUrl.toString(),
+  storage: {
+    key: 'f-session',
+    target: localStorage,
+  },
+});
+
+const user = ref<AuthUser>();
+
+authApi.watchUser((profile) => {
+  user.value = profile;
+});
+
+export const authUser = readonly(user);
+
+const client = authApi.createClient(
+  new URL('/api/v1/', window.location.origin).toString(),
+);
+
 export interface Page<T> {
   total: number;
   items: T[];
@@ -39,30 +65,18 @@ export interface Post {
   tags: PostTag[];
 }
 
-function endpoint(path: string) {
-  return new URL(path, new URL('/api/v1/', window.location.origin));
-}
-
-async function getJson<T>(url: URL, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`请求失败（${response.status}）`);
-  }
-
-  return response.json() as Promise<T>;
-}
-
 export function getPosts(
   params: { page: number; pageSize: number; category?: string },
   signal?: AbortSignal,
 ) {
-  const url = endpoint('post/');
-  url.searchParams.set('page', String(params.page));
-  url.searchParams.set('page_size', String(params.pageSize));
-  if (params.category) url.searchParams.set('category', params.category);
-  return getJson<Page<Post>>(url, signal);
+  return client
+    .get('post/', {
+      searchParams: {
+        page: params.page,
+        page_size: params.pageSize,
+        category: params.category,
+      },
+      signal,
+    })
+    .json<Page<Post>>();
 }

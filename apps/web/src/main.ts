@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 
 import App from './App.vue';
-import { authApi } from './auth';
+import { authApi } from './api';
 import router from './router';
 import './styles.css';
 
