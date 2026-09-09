@@ -40,6 +40,13 @@ class MigrationError(RuntimeError):
     pass
 
 
+def value_detail(value: Any) -> str:
+    rendered = repr(value)
+    if len(rendered) > 200:
+        rendered = rendered[:197] + "..."
+    return f"类型 {type(value).__name__}，值 {rendered}"
+
+
 @dataclass
 class SourceStats:
     users: int = 0
@@ -134,7 +141,7 @@ def mongo_batches(
 def object_id(value: Any, field: str) -> str:
     result = "" if value is None else str(value)
     if not result:
-        raise MigrationError(f"{field} 不能为空")
+        raise MigrationError(f"{field} 不能为空：{value_detail(value)}")
     return result
 
 
@@ -142,36 +149,45 @@ def bson_object_id(value: str, field: str) -> ObjectId:
     try:
         return ObjectId(value)
     except (InvalidId, TypeError) as error:
-        raise MigrationError(f"{field} 不是有效的 Mongo ObjectId：{value!r}") from error
+        raise MigrationError(
+            f"{field} 不是有效的 Mongo ObjectId：{value_detail(value)}"
+        ) from error
 
 
 def text(value: Any, field: str, max_length: int | None = None) -> str:
     if not isinstance(value, str):
-        raise MigrationError(f"{field} 必须是字符串")
+        raise MigrationError(f"{field} 必须是字符串：{value_detail(value)}")
     if "\x00" in value:
-        raise MigrationError(f"{field} 包含 PostgreSQL 不支持的 NUL 字符")
+        raise MigrationError(
+            f"{field} 包含 PostgreSQL 不支持的 NUL 字符：{value_detail(value)}"
+        )
     if max_length is not None and len(value) > max_length:
-        raise MigrationError(f"{field} 长度 {len(value)} 超过限制 {max_length}")
+        raise MigrationError(
+            f"{field} 长度 {len(value)} 超过限制 {max_length}："
+            f"{value_detail(value)}"
+        )
     return value
 
 
 def boolean(value: Any, field: str) -> bool:
     if not isinstance(value, bool):
-        raise MigrationError(f"{field} 必须是布尔值")
+        raise MigrationError(f"{field} 必须是布尔值：{value_detail(value)}")
     return value
 
 
 def pg_integer(value: Any, field: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int):
-        raise MigrationError(f"{field} 必须是整数")
+        raise MigrationError(f"{field} 必须是整数：{value_detail(value)}")
     if value < 0 or value > 2_147_483_647:
-        raise MigrationError(f"{field} 超出 PostgreSQL int 非负数范围")
+        raise MigrationError(
+            f"{field} 超出 PostgreSQL int 非负数范围：{value_detail(value)}"
+        )
     return value
 
 
 def instant(value: Any, field: str) -> datetime:
     if not isinstance(value, datetime):
-        raise MigrationError(f"{field} 不是日期")
+        raise MigrationError(f"{field} 不是日期：{value_detail(value)}")
     return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
 
 
@@ -282,7 +298,7 @@ def validate_articles(
             category = article.get("category")
             if category not in CATEGORY_SLUGS:
                 raise MigrationError(
-                    f"article[{article_id}] 存在未知分类 {category!r}"
+                    f"article[{article_id}] 存在未知分类：{value_detail(category)}"
                 )
             hidden = boolean(
                 article.get("hidden", False), f"article[{article_id}].hidden"
@@ -324,7 +340,9 @@ def validate_comments(
             comment_id = object_id(comment.get("_id"), "comment._id")
             site = text(comment.get("site"), f"comment[{comment_id}].site", 255)
             if not site:
-                raise MigrationError(f"comment[{comment_id}].site 不能为空")
+                raise MigrationError(
+                    f"comment[{comment_id}].site 不能为空：{value_detail(site)}"
+                )
             sites[comment_id] = site
             text(comment.get("content"), f"comment[{comment_id}].content")
             instant(comment.get("createAt"), f"comment[{comment_id}].createAt")
@@ -381,11 +399,14 @@ def validate_comments(
             parent_comment = parents[parent_id]
             if parent_comment.get("parent") is not None:
                 raise MigrationError(
-                    f"comment[{comment_id}] 的父评论 {parent_id} 不是一级评论"
+                    f"comment[{comment_id}] 的父评论 {parent_id} 不是一级评论："
+                    f"parent={value_detail(parent_comment.get('parent'))}"
                 )
             if parent_comment.get("site") != sites[comment_id]:
                 raise MigrationError(
-                    f"comment[{comment_id}] 与父评论 {parent_id} 不属于同一主体"
+                    f"comment[{comment_id}] 与父评论 {parent_id} 不属于同一主体："
+                    f"comment.site={value_detail(sites[comment_id])}，"
+                    f"parent.site={value_detail(parent_comment.get('site'))}"
                 )
         stats.comments += len(comments)
 
@@ -413,8 +434,12 @@ def preflight_target(forum_dsn: str) -> dict[str, int]:
                   and column_name = 'subject_key'
                 """
             )
-            if cursor.fetchone() != ("character varying", 255):
-                raise MigrationError("forum.comment.subject_key 必须是 varchar(255)")
+            subject_key_definition = cursor.fetchone()
+            if subject_key_definition != ("character varying", 255):
+                raise MigrationError(
+                    "forum.comment.subject_key 必须是 varchar(255)，"
+                    f"当前为 {subject_key_definition!r}"
+                )
             cursor.execute(
                 "select (select count(*) from post), "
                 "(select count(*) from comment)"
@@ -536,27 +561,43 @@ def validate_migrated(cursor: psycopg.Cursor, stats: SourceStats) -> None:
     )
     cursor.execute(
         """
-        select count(*)
+        select m.source_id, p.id, p.comments_count,
+               m.expected_published_comments
         from migration_article_map m
         join post p on p.id = m.target_id
         where p.comments_count != m.expected_published_comments
+        limit 20
         """
     )
-    if cursor.fetchone()[0]:
-        raise MigrationError("迁移后存在帖子公开评论计数不一致")
+    comment_count_mismatches = cursor.fetchall()
+    if comment_count_mismatches:
+        raise MigrationError(
+            "迁移后存在帖子公开评论计数不一致："
+            f"(source_id, post_id, 实际值, 预期值)={comment_count_mismatches!r}"
+        )
     cursor.execute(
         """
-        select count(*)
+        select reply.id, reply.root_id, root.id, root.root_id,
+               reply.subject_type, root.subject_type,
+               reply.subject_key, root.subject_key
         from comment reply
         left join comment root on root.id = reply.root_id
         where reply.root_id is not null
           and (root.id is null or root.root_id is not null
                or root.subject_type != reply.subject_type
                or root.subject_key != reply.subject_key)
+        limit 20
         """
     )
-    if cursor.fetchone()[0]:
-        raise MigrationError("迁移后存在无效的评论父子关系")
+    invalid_relationships = cursor.fetchall()
+    if invalid_relationships:
+        raise MigrationError(
+            "迁移后存在无效的评论父子关系："
+            "(reply_id, root_id, 实际 root_id, root.root_id, "
+            "reply.subject_type, root.subject_type, "
+            "reply.subject_key, root.subject_key)="
+            f"{invalid_relationships!r}"
+        )
 
 
 def migrate(
@@ -584,8 +625,13 @@ def migrate(
                                 "select (select count(*) from post), "
                                 "(select count(*) from comment)"
                             )
-                            if cursor.fetchone() != (0, 0):
-                                raise MigrationError("目标表在预检后发生变化")
+                            target_counts = cursor.fetchone()
+                            if target_counts != (0, 0):
+                                raise MigrationError(
+                                    "目标表在预检后发生变化："
+                                    f"当前 post={target_counts[0]}、"
+                                    f"comment={target_counts[1]}"
+                                )
                             cursor.execute(
                                 """
                                 create temporary table migration_article_map (
@@ -756,9 +802,15 @@ def migrate(
                                 (POST_SUBJECT, PUBLISHED),
                             )
                             if article_count != stats.articles:
-                                raise MigrationError("迁移后文章总数不一致")
+                                raise MigrationError(
+                                    "迁移后文章总数不一致："
+                                    f"实际 {article_count}，预期 {stats.articles}"
+                                )
                             if comment_count != stats.comments:
-                                raise MigrationError("迁移后评论总数不一致")
+                                raise MigrationError(
+                                    "迁移后评论总数不一致："
+                                    f"实际 {comment_count}，预期 {stats.comments}"
+                                )
                             validate_migrated(cursor, stats)
                             mapping_handle.flush()
                             os.fsync(mapping_handle.fileno())
