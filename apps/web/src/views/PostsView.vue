@@ -95,8 +95,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="page-container py-6">
-    <div class="grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+  <div class="page-container py-4 md:py-6">
+    <div
+      class="grid gap-6 md:grid-cols-[4rem_minmax(0,1fr)] lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8"
+    >
       <CategorySidebar
         :categories="categories"
         :selected="selectedCategory"

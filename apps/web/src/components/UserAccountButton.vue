@@ -107,7 +107,7 @@ async function focusLoginFrame() {
 </script>
 
 <template>
-  <div ref="accountRoot" class="relative ml-auto flex-none">
+  <div ref="accountRoot" class="relative ml-auto min-w-0 flex-none">
     <button
       v-if="authUser"
       type="button"
@@ -116,8 +116,15 @@ async function focusLoginFrame() {
       aria-haspopup="menu"
       @click="openMenu"
     >
-      @{{ authUser.username }}
-      <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
+      <span class="max-w-20 truncate sm:max-w-none">
+        @{{ authUser.username }}
+      </span>
+      <svg
+        viewBox="0 0 20 20"
+        class="size-4 flex-none"
+        fill="none"
+        aria-hidden="true"
+      >
         <path
           d="m6.5 8 3.5 3.5L13.5 8"
           stroke="currentColor"

@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { inject, nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
+
 import type { Category } from '@/api';
+import { mobileNavigationKey } from '@/mobileNavigation';
+
+import CategoryNavigation from './CategoryNavigation.vue';
 
 defineProps<{
   categories: Category[];
@@ -9,104 +14,156 @@ defineProps<{
 const emit = defineEmits<{
   select: [slug: string];
 }>();
+
+const mobileNavigation = inject(mobileNavigationKey);
+const desktopMediaQuery = window.matchMedia('(min-width: 768px)');
+let previousBodyOverflow = '';
+let bodyScrollLocked = false;
+
+function closeMobileNavigation(restoreFocus = false) {
+  if (!mobileNavigation) return;
+  mobileNavigation.open.value = false;
+  if (restoreFocus) {
+    void nextTick(() =>
+      document
+        .querySelector<HTMLElement>('#mobile-navigation-trigger')
+        ?.focus(),
+    );
+  }
+}
+
+function selectCategory(slug: string) {
+  emit('select', slug);
+  closeMobileNavigation();
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && mobileNavigation?.open.value) {
+    closeMobileNavigation(true);
+  }
+}
+
+function handleViewportChange(event: MediaQueryListEvent) {
+  if (event.matches) closeMobileNavigation();
+}
+
+watch(
+  () => mobileNavigation?.open.value,
+  (open) => {
+    if (open) {
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      bodyScrollLocked = true;
+      void nextTick(() =>
+        document
+          .querySelector<HTMLElement>('#mobile-category-navigation button')
+          ?.focus(),
+      );
+    } else if (bodyScrollLocked) {
+      document.body.style.overflow = previousBodyOverflow;
+      bodyScrollLocked = false;
+    }
+  },
+);
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+  desktopMediaQuery.addEventListener('change', handleViewportChange);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+  desktopMediaQuery.removeEventListener('change', handleViewportChange);
+  if (bodyScrollLocked) document.body.style.overflow = previousBodyOverflow;
+});
 </script>
 
 <template>
-  <aside class="lg:sticky lg:top-24 lg:self-start" aria-label="帖子分类">
-    <div class="overflow-x-auto rounded-sm bg-surface p-2 lg:overflow-visible">
-      <div class="flex min-w-max gap-1 lg:grid lg:min-w-0">
-        <button
-          v-for="category in categories"
-          :key="category.id"
-          type="button"
-          class="category-item"
-          :class="
-            selected === category.slug
-              ? 'bg-primary-soft text-primary'
-              : 'text-ink hover:bg-paper'
-          "
-          :aria-pressed="selected === category.slug"
-          @click="emit('select', category.slug)"
-        >
-          <span
-            class="grid size-7 place-items-center rounded-md text-primary transition-colors duration-300"
-            :class="selected === category.slug ? 'bg-surface' : ''"
-            aria-hidden="true"
-          >
-            <svg
-              v-if="category.slug === 'novel'"
-              viewBox="0 0 24 24"
-              class="size-4"
-              fill="none"
-            >
-              <path
-                d="M4.5 5.5c2.7-.7 5.2.1 7.5 2.2v11c-2.3-2.1-4.8-2.9-7.5-2.2v-11Zm15 0c-2.7-.7-5.2.1-7.5 2.2v11c2.3-2.1 4.8-2.9 7.5-2.2v-11Z"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <svg
-              v-else-if="category.slug === 'guide'"
-              viewBox="0 0 24 24"
-              class="size-4"
-              fill="none"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="8"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <path
-                d="m14.8 9.2-1.5 4.1-4.1 1.5 1.5-4.1 4.1-1.5Z"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <svg v-else viewBox="0 0 24 24" class="size-4" fill="none">
-              <path
-                d="M5 6.5h14v9H11l-4.5 3v-3H5v-9Z"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M8.5 10h7M8.5 12.5h4"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-              />
-            </svg>
-          </span>
-          <span class="truncate">{{ category.title }}</span>
-        </button>
-      </div>
+  <aside class="sticky top-24 hidden self-start md:block" aria-label="帖子分类">
+    <div class="rounded-sm bg-surface p-2">
+      <CategoryNavigation
+        :categories="categories"
+        :selected="selected"
+        collapsed
+        @select="selectCategory"
+      />
     </div>
   </aside>
+
+  <Teleport to="body">
+    <Transition name="mobile-drawer">
+      <div
+        v-if="mobileNavigation?.open.value"
+        class="fixed inset-0 z-40 md:hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="分类导航"
+      >
+        <button
+          type="button"
+          class="mobile-drawer-backdrop absolute inset-0 bg-black/45"
+          aria-label="关闭分类导航"
+          @click="closeMobileNavigation(true)"
+        />
+        <aside
+          id="mobile-category-navigation"
+          class="mobile-drawer-panel absolute inset-y-0 left-0 w-[min(17.5rem,calc(100vw-3rem))] bg-surface shadow-2xl"
+        >
+          <div
+            class="flex h-16 items-center justify-between border-b border-divider px-4"
+          >
+            <span class="font-semibold">帖子分类</span>
+            <button
+              type="button"
+              class="grid size-9 place-items-center rounded-full transition-colors hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              aria-label="关闭分类导航"
+              @click="closeMobileNavigation(true)"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="m7 7 10 10M17 7 7 17"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="p-2">
+            <CategoryNavigation
+              :categories="categories"
+              :selected="selected"
+              @select="selectCategory"
+            />
+          </div>
+        </aside>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
-.category-item {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.7rem;
-  border-radius: 0.25rem;
-  padding-inline: 0.7rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-align: left;
-  transition:
-    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.mobile-drawer-enter-active,
+.mobile-drawer-leave-active,
+.mobile-drawer-enter-active .mobile-drawer-backdrop,
+.mobile-drawer-leave-active .mobile-drawer-backdrop,
+.mobile-drawer-enter-active .mobile-drawer-panel,
+.mobile-drawer-leave-active .mobile-drawer-panel {
+  transition: 0.25s ease;
 }
 
-.category-item:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+.mobile-drawer-enter-from .mobile-drawer-backdrop,
+.mobile-drawer-leave-to .mobile-drawer-backdrop {
+  opacity: 0;
+}
+
+.mobile-drawer-enter-from .mobile-drawer-panel,
+.mobile-drawer-leave-to .mobile-drawer-panel {
+  transform: translateX(-100%);
 }
 </style>
