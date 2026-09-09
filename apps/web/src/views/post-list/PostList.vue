@@ -5,7 +5,6 @@ import PostListItem from './PostListItem.vue';
 
 defineProps<{
   posts: Post[];
-  categoryNames: Map<number, string>;
   loading: boolean;
   error?: string;
   page: number;
@@ -80,12 +79,7 @@ const emit = defineEmits<{
     </div>
 
     <div v-else class="divide-y divide-divider">
-      <PostListItem
-        v-for="post in posts"
-        :key="post.id"
-        :post="post"
-        :category-name="categoryNames.get(post.categoryId) ?? '未分类'"
-      />
+      <PostListItem v-for="post in posts" :key="post.id" :post="post" />
     </div>
 
     <div

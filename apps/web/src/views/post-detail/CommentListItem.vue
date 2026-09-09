@@ -26,12 +26,6 @@ function formatDate(value: string) {
     "
   >
     <header class="flex items-center gap-2 text-xs text-muted">
-      <span
-        class="grid size-8 place-items-center rounded-full bg-primary-soft font-semibold text-primary"
-        aria-hidden="true"
-      >
-        {{ comment.authorUsername.slice(0, 1).toUpperCase() }}
-      </span>
       <span class="font-medium text-ink">{{ comment.authorUsername }}</span>
       <span aria-hidden="true">·</span>
       <time :datetime="comment.createdAt">

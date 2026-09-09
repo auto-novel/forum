@@ -31,9 +31,6 @@ const page = computed(() => {
   return Number.isInteger(value) && value > 0 ? value : 1;
 });
 
-const categoryNames = computed(
-  () => new Map(categories.map((category) => [category.id, category.title])),
-);
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(total.value / PAGE_SIZE)),
 );
@@ -107,7 +104,6 @@ onBeforeUnmount(() => {
       <PostList
         class="min-w-0"
         :posts="posts"
-        :category-names="categoryNames"
         :loading="postsLoading"
         :error="postsError"
         :page="page"

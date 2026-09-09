@@ -36,11 +36,8 @@ const emit = defineEmits<{
       aria-label="正在加载评论"
     >
       <div v-for="index in 3" :key="index" class="px-4 py-5 sm:px-6">
-        <div class="flex items-center gap-2">
-          <div class="size-8 animate-pulse rounded-full bg-divider" />
-          <div class="h-3 w-28 animate-pulse rounded-sm bg-border" />
-        </div>
-        <div class="mt-4 h-4 w-full animate-pulse rounded-sm bg-divider" />
+        <div class="h-3 w-28 animate-pulse rounded-sm bg-border" />
+        <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
         <div class="mt-2 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
       </div>
     </div>

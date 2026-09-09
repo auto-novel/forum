@@ -5,7 +5,6 @@ import type { Post } from '@/api';
 
 defineProps<{
   post: Post;
-  categoryName: string;
 }>();
 
 const tagColors = [
@@ -40,8 +39,10 @@ function formatDate(value: string) {
   <article
     class="group relative px-4 py-4 transition-colors duration-300 hover:bg-paper sm:px-5"
   >
-    <div class="mb-2 flex flex-wrap items-center gap-1.5 text-xs">
-      <span class="font-medium text-primary">{{ categoryName }}</span>
+    <div
+      v-if="post.pinOrder != null || post.tags.length"
+      class="mb-2 flex flex-wrap items-center gap-1.5 text-xs"
+    >
       <span
         v-if="post.pinOrder != null"
         class="rounded-sm bg-orange-50 px-2 py-0.5 font-medium text-orange-600"
@@ -74,12 +75,6 @@ function formatDate(value: string) {
       class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted"
     >
       <div class="flex items-center gap-2">
-        <span
-          class="grid size-7 place-items-center rounded-full bg-primary-soft font-semibold text-primary"
-          aria-hidden="true"
-        >
-          {{ post.authorUsername.slice(0, 1).toUpperCase() }}
-        </span>
         <span class="font-medium text-ink/80">{{ post.authorUsername }}</span>
         <span aria-hidden="true">·</span>
         <time :datetime="post.activeAt">{{ formatDate(post.activeAt) }}</time>

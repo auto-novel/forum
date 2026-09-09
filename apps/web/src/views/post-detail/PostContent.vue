@@ -59,12 +59,6 @@ function formatDate(value: string) {
       class="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-muted"
     >
       <div class="flex items-center gap-2">
-        <span
-          class="grid size-8 place-items-center rounded-full bg-primary-soft font-semibold text-primary"
-          aria-hidden="true"
-        >
-          {{ post.authorUsername.slice(0, 1).toUpperCase() }}
-        </span>
         <span class="font-medium text-ink/80">{{ post.authorUsername }}</span>
         <span aria-hidden="true">·</span>
         <time :datetime="post.createdAt">{{ formatDate(post.createdAt) }}</time>
