@@ -186,6 +186,14 @@ def pg_integer(value: Any, field: str) -> int:
 
 
 def instant(value: Any, field: str) -> datetime:
+    if isinstance(value, str):
+        normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
+        try:
+            value = datetime.fromisoformat(normalized)
+        except ValueError as error:
+            raise MigrationError(
+                f"{field} 不是日期：{value_detail(value)}"
+            ) from error
     if not isinstance(value, datetime):
         raise MigrationError(f"{field} 不是日期：{value_detail(value)}")
     return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
