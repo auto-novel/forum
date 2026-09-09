@@ -112,3 +112,10 @@ export function getPostComments(
     })
     .json<Page<PostComment>>();
 }
+
+export function createPostComment(
+  id: number,
+  input: { content: string; rootId?: number },
+) {
+  return client.post(`post/${id}/comment`, { json: input }).json<PostComment>();
+}

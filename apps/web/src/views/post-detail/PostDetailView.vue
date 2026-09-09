@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import {
@@ -10,6 +10,7 @@ import {
   type PostComment,
 } from '@/api';
 
+import CommentComposer from './CommentComposer.vue';
 import CommentList from './CommentList.vue';
 import PostContent from './PostContent.vue';
 
@@ -108,6 +109,30 @@ function changeCommentPage(nextPage: number) {
   document.querySelector('#comments')?.scrollIntoView({ behavior: 'smooth' });
 }
 
+async function handleCommentCreated(comment: PostComment) {
+  if (!post.value) return;
+  commentsController?.abort();
+  commentsController = undefined;
+  commentsLoading.value = false;
+  commentsError.value = '';
+  const nextTotal = post.value.commentsCount + 1;
+  const lastPage = Math.max(1, Math.ceil(nextTotal / COMMENT_PAGE_SIZE));
+  post.value = { ...post.value, commentsCount: nextTotal };
+  commentsTotal.value = nextTotal;
+
+  if (commentPage.value === lastPage) {
+    comments.value.push(comment);
+  } else {
+    await router.push({
+      name: 'post-detail',
+      params: { id: postId.value },
+      query: { commentPage: String(lastPage) },
+    });
+  }
+  await nextTick();
+  document.querySelector('#comments')?.scrollIntoView({ behavior: 'smooth' });
+}
+
 watch(postId, loadPost, { immediate: true });
 watch([postId, commentPage], loadComments, { immediate: true });
 
@@ -175,6 +200,11 @@ onBeforeUnmount(() => {
         <PostContent
           :post="post"
           :category-name="category?.title ?? '未分类'"
+        />
+        <CommentComposer
+          :post-id="post.id"
+          :locked="post.commentsLocked"
+          @created="handleCommentCreated"
         />
         <div id="comments">
           <CommentList
