@@ -3,8 +3,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { CATEGORIES, getPosts, type Post } from '@/api';
-import CategorySidebar from '@/components/CategorySidebar.vue';
-import PostList from '@/components/PostList.vue';
+import CategorySidebar from './CategorySidebar.vue';
+import PostList from './PostList.vue';
 
 const PAGE_SIZE = 20;
 

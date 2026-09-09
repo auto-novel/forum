@@ -2,9 +2,9 @@
 import { inject, nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
 
 import type { Category } from '@/api';
-import { mobileNavigationKey } from '@/mobileNavigation';
 
 import CategoryNavigation from './CategoryNavigation.vue';
+import { postListMobileNavigationKey } from './mobileNavigation';
 
 defineProps<{
   categories: Category[];
@@ -15,7 +15,7 @@ const emit = defineEmits<{
   select: [slug: string];
 }>();
 
-const mobileNavigation = inject(mobileNavigationKey);
+const mobileNavigation = inject(postListMobileNavigationKey);
 const desktopMediaQuery = window.matchMedia('(min-width: 768px)');
 let previousBodyOverflow = '';
 let bodyScrollLocked = false;

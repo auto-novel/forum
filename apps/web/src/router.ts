@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import PostsView from '@/views/PostsView.vue';
+import PostListView from '@/views/posts/PostListView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -9,7 +9,7 @@ const router = createRouter({
     {
       path: '/posts',
       name: 'posts',
-      component: PostsView,
+      component: PostListView,
       meta: { title: '讨论' },
     },
     { path: '/:pathMatch(.*)*', redirect: { name: 'posts' } },
