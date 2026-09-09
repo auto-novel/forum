@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Post } from '@/api';
+import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 
 defineProps<{
   post: Post;
@@ -70,8 +71,6 @@ function formatDate(value: string) {
     </div>
 
     <div class="my-6 h-px bg-divider" />
-    <div class="whitespace-pre-wrap break-words text-[15px] leading-7 text-ink">
-      {{ post.content }}
-    </div>
+    <MarkdownContent mode="article" :source="post.content" />
   </article>
 </template>

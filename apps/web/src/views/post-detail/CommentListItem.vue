@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PostComment } from '@/api';
+import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 
 defineProps<{
   comment: PostComment;
@@ -32,8 +33,6 @@ function formatDate(value: string) {
         {{ formatDate(comment.createdAt) }}
       </time>
     </header>
-    <p class="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink">
-      {{ comment.content }}
-    </p>
+    <MarkdownContent class="mt-3" mode="comment" :source="comment.content" />
   </article>
 </template>

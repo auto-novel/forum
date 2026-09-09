@@ -9,10 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mdit/plugin-container": "^2.0.1",
+    "@mdit/plugin-spoiler": "^2.1.1",
     "@novelia/auth-api": "github:auto-novel/auth#669aaed83252c6a1019a3dbabfe5e5bda2c9664f&path:packages/auth-api",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
+    "dompurify": "^3.4.15",
+    "markdown-it": "^15.0.1",
+    "markdown-it-anchor": "^10.0.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.0",
     "vite": "^8.2.2",
