@@ -288,12 +288,6 @@ def resolve_authors(
             128,
             report_nul,
         )
-    missing = sorted(source_values.keys() - source_users.keys())
-    if missing:
-        raise MigrationError(
-            f"{entity} 引用了不存在的 Mongo 用户：{'、'.join(missing[:20])}"
-        )
-
     auth_users = load_auth_users(auth_cursor, set(source_users.values()))
     missing = sorted(set(source_users.values()) - auth_users.keys())
     if missing_auth_users is not None:
@@ -351,11 +345,14 @@ def validate_articles(
             )
             if user_id not in authors:
                 stats.skipped_articles += 1
-                print(
-                    f"跳过 article[{article_id}]：auth 缺少用户 "
-                    f"{stats.missing_auth_user_ids[user_id]!r}",
-                    file=sys.stderr,
-                )
+                if user_id in stats.missing_auth_user_ids:
+                    reason = (
+                        "auth 缺少用户 "
+                        f"{stats.missing_auth_user_ids[user_id]!r}"
+                    )
+                else:
+                    reason = f"Mongo 用户 {user_id} 不存在"
+                print(f"跳过 article[{article_id}]：{reason}", file=sys.stderr)
                 continue
             text(article.get("title"), f"article[{article_id}].title", 500)
             text(article.get("content"), f"article[{article_id}].content")
@@ -421,11 +418,14 @@ def validate_comments(
                 )
                 if user_id not in authors:
                     stats.skipped_comments += 1
-                    print(
-                        f"跳过 comment[{comment_id}]：auth 缺少用户 "
-                        f"{stats.missing_auth_user_ids[user_id]!r}",
-                        file=sys.stderr,
-                    )
+                    if user_id in stats.missing_auth_user_ids:
+                        reason = (
+                            "auth 缺少用户 "
+                            f"{stats.missing_auth_user_ids[user_id]!r}"
+                        )
+                    else:
+                        reason = f"Mongo 用户 {user_id} 不存在"
+                    print(f"跳过 comment[{comment_id}]：{reason}", file=sys.stderr)
                     continue
                 site = text(
                     comment.get("site"), f"comment[{comment_id}].site", 255
@@ -450,26 +450,22 @@ def validate_comments(
                     ] = parent
                 candidates.append(comment)
 
+            invalid_article_ids: dict[str, str] = {}
+            article_object_ids: list[ObjectId] = []
+            for article_id in article_ids:
+                try:
+                    article_object_ids.append(
+                        bson_object_id(article_id, "comment.site")
+                    )
+                except MigrationError as error:
+                    invalid_article_ids[article_id] = str(error)
             existing_articles = {
                 str(value["_id"])
                 for value in database["article"].find(
-                    {
-                        "_id": {
-                            "$in": [
-                                bson_object_id(value, "comment.site")
-                                for value in article_ids
-                            ]
-                        }
-                    },
+                    {"_id": {"$in": article_object_ids}},
                     {"_id": 1},
                 )
             }
-            missing = sorted(article_ids - existing_articles)
-            if missing:
-                raise MigrationError(
-                    f"评论引用了不存在的文章：{'、'.join(missing[:20])}"
-                )
-
             parents = {
                 str(value["_id"]): value
                 for value in database["comment-alt"].find(
@@ -477,27 +473,49 @@ def validate_comments(
                     {"_id": 1, "parent": 1, "site": 1},
                 )
             }
-            missing = sorted(parent_values.keys() - parents.keys())
-            if missing:
-                raise MigrationError(
-                    f"评论引用了不存在的父评论：{'、'.join(missing[:20])}"
-                )
             for comment in candidates:
                 comment_id = str(comment["_id"])
                 site = sites[comment_id]
+                article_id = (
+                    site.removeprefix("article-")
+                    if site.startswith("article-")
+                    else None
+                )
+                if article_id in invalid_article_ids:
+                    stats.skipped_comments += 1
+                    print(
+                        f"跳过 comment[{comment_id}]："
+                        f"{invalid_article_ids[article_id]}",
+                        file=sys.stderr,
+                    )
+                    continue
+                if article_id is not None and article_id not in existing_articles:
+                    stats.skipped_comments += 1
+                    print(
+                        f"跳过 comment[{comment_id}]：关联文章 "
+                        f"{article_id} 不存在",
+                        file=sys.stderr,
+                    )
+                    continue
                 if (
-                    site.startswith("article-")
-                    and site.removeprefix("article-")
-                    not in stats.migratable_article_ids
+                    article_id is not None
+                    and article_id not in stats.migratable_article_ids
                 ):
                     stats.skipped_comments += 1
                     print(
                         f"跳过 comment[{comment_id}]：关联文章 "
-                        f"{site.removeprefix('article-')} 已跳过",
+                        f"{article_id} 已跳过",
                         file=sys.stderr,
                     )
                     continue
                 parent = comment.get("parent")
+                if parent is not None and str(parent) not in parents:
+                    stats.skipped_comments += 1
+                    print(
+                        f"跳过 comment[{comment_id}]：父评论 {parent} 不存在",
+                        file=sys.stderr,
+                    )
+                    continue
                 if (
                     parent is not None
                     and str(parent) not in stats.migratable_root_comment_ids
@@ -512,19 +530,26 @@ def validate_comments(
                     parent_id = str(parent)
                     parent_comment = parents[parent_id]
                     if parent_comment.get("parent") is not None:
-                        raise MigrationError(
+                        stats.skipped_comments += 1
+                        print(
                             f"comment[{comment_id}] 的父评论 {parent_id} "
                             "不是一级评论："
-                            f"parent={value_detail(parent_comment.get('parent'))}"
+                            f"parent={value_detail(parent_comment.get('parent'))}，"
+                            "已跳过",
+                            file=sys.stderr,
                         )
+                        continue
                     if parent_comment.get("site") != site:
-                        raise MigrationError(
+                        stats.skipped_comments += 1
+                        print(
                             f"comment[{comment_id}] 与父评论 {parent_id} "
                             "不属于同一主体："
                             f"comment.site={value_detail(site)}，"
                             "parent.site="
-                            f"{value_detail(parent_comment.get('site'))}"
+                            f"{value_detail(parent_comment.get('site'))}，已跳过",
+                            file=sys.stderr,
                         )
+                        continue
 
                 hidden = comment.get("hidden", False)
                 stats.comment_statuses[HIDDEN if hidden else PUBLISHED] += 1
@@ -1031,8 +1056,12 @@ def main() -> int:
                     for username in sorted(stats.missing_auth_users)[:20]
                 )
                 print(
-                    f"警告：auth 缺少用户 {missing_users}；"
-                    f"将跳过文章 {stats.skipped_articles}、"
+                    f"警告：auth 缺少用户 {missing_users}",
+                    file=sys.stderr,
+                )
+            if stats.skipped_articles or stats.skipped_comments:
+                print(
+                    f"跳过汇总：文章 {stats.skipped_articles}、"
                     f"评论 {stats.skipped_comments}",
                     file=sys.stderr,
                 )
