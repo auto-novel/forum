@@ -65,6 +65,18 @@ export interface Post {
   tags: PostTag[];
 }
 
+export interface PostComment {
+  id: number;
+  postId: number;
+  rootId: number | null;
+  content: string;
+  authorId: number;
+  authorUsername: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export function getPosts(
   params: { page: number; pageSize: number; category?: string },
   signal?: AbortSignal,
@@ -79,4 +91,24 @@ export function getPosts(
       signal,
     })
     .json<Page<Post>>();
+}
+
+export function getPost(id: number, signal?: AbortSignal) {
+  return client.get(`post/${id}/`, { signal }).json<Post>();
+}
+
+export function getPostComments(
+  id: number,
+  params: { page: number; pageSize: number },
+  signal?: AbortSignal,
+) {
+  return client
+    .get(`post/${id}/comment`, {
+      searchParams: {
+        page: params.page,
+        page_size: params.pageSize,
+      },
+      signal,
+    })
+    .json<Page<PostComment>>();
 }

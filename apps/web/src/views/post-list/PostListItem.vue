@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router';
+
 import type { Post } from '@/api';
 
 defineProps<{
@@ -56,10 +58,13 @@ function formatDate(value: string) {
       </span>
     </div>
 
-    <h2
-      class="text-[17px] leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-primary"
-    >
-      {{ post.title }}
+    <h2 class="text-[17px] leading-snug font-semibold">
+      <RouterLink
+        :to="{ name: 'post-detail', params: { id: post.id } }"
+        class="text-ink transition-colors duration-300 before:absolute before:inset-0 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary group-hover:text-primary"
+      >
+        {{ post.title }}
+      </RouterLink>
     </h2>
     <p class="mt-1.5 line-clamp-2 text-sm leading-6 text-muted">
       {{ excerpt(post.content) || '这篇帖子暂时没有摘要。' }}

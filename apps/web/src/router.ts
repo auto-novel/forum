@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import PostListView from '@/views/posts/PostListView.vue';
+import PostDetailView from '@/views/post-detail/PostDetailView.vue';
+import PostListView from '@/views/post-list/PostListView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,6 +12,12 @@ const router = createRouter({
       name: 'posts',
       component: PostListView,
       meta: { title: '讨论' },
+    },
+    {
+      path: '/posts/:id',
+      name: 'post-detail',
+      component: PostDetailView,
+      meta: { title: '帖子详情' },
     },
     { path: '/:pathMatch(.*)*', redirect: { name: 'posts' } },
   ],

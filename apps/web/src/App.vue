@@ -3,7 +3,7 @@ import { provide, ref, watch } from 'vue';
 import { RouterLink, RouterView, useRoute } from 'vue-router';
 
 import UserAccountButton from '@/components/UserAccountButton.vue';
-import { postListMobileNavigationKey } from '@/views/posts/mobileNavigation';
+import { postListMobileNavigationKey } from '@/views/post-list/mobileNavigation';
 
 const route = useRoute();
 const mobileNavigationOpen = ref(false);
