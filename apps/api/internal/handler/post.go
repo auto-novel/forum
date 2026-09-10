@@ -97,9 +97,19 @@ func (h *postHandler) RegisterRoutes(router chi.Router) {
 }
 
 func postFilterFrom(r *http.Request) (repository.PostFilter, error) {
+	sort := r.URL.Query().Get("sort")
+	if sort == "" {
+		sort = repository.PostSortActive
+	}
+	switch sort {
+	case repository.PostSortActive, repository.PostSortNewest, repository.PostSortViews, repository.PostSortComments:
+	default:
+		return repository.PostFilter{}, httpx.BadRequest("sort 必须为 active、newest、views 或 comments")
+	}
 	filter := repository.PostFilter{
 		CategorySlug: r.URL.Query().Get("category"),
 		Search:       strings.TrimSpace(r.URL.Query().Get("q")),
+		Sort:         sort,
 	}
 	for _, part := range r.URL.Query()["tag"] {
 		for _, value := range strings.Split(part, ",") {

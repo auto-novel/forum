@@ -17,8 +17,16 @@ type PostDetails struct {
 	Tags []Tag
 }
 
+const (
+	PostSortActive   = "active"
+	PostSortNewest   = "newest"
+	PostSortViews    = "views"
+	PostSortComments = "comments"
+)
+
 type PostFilter struct {
 	CategorySlug, Search     string
+	Sort                     string
 	TagIDs                   []int64
 	AuthorID, FavoriteUserID int64
 }
@@ -96,6 +104,20 @@ func postFrom(filter PostFilter) ReadableTable {
 	return from
 }
 
+func postOrderBy(sort string) []OrderByClause {
+	pinned := table.Post.PinOrder.ASC().NULLS_LAST()
+	switch sort {
+	case PostSortNewest:
+		return []OrderByClause{pinned, table.Post.CreatedAt.DESC(), table.Post.ID.DESC()}
+	case PostSortViews:
+		return []OrderByClause{pinned, table.Post.ViewsCount.DESC(), table.Post.ActiveAt.DESC(), table.Post.ID.DESC()}
+	case PostSortComments:
+		return []OrderByClause{pinned, table.Post.CommentsCount.DESC(), table.Post.ActiveAt.DESC(), table.Post.ID.DESC()}
+	default:
+		return []OrderByClause{pinned, table.Post.ActiveAt.DESC(), table.Post.ID.DESC()}
+	}
+}
+
 func (r *postRepository) List(filter PostFilter, limit, offset int64) (int64, []PostDetails, error) {
 	condition := filter.condition()
 	from := postFrom(filter)
@@ -108,7 +130,7 @@ func (r *postRepository) List(filter PostFilter, limit, offset int64) (int64, []
 	stmt := SELECT(table.Post.AllColumns).
 		FROM(from).
 		WHERE(condition).
-		ORDER_BY(table.Post.PinOrder.ASC().NULLS_LAST(), table.Post.ActiveAt.DESC(), table.Post.ID.DESC()).
+		ORDER_BY(postOrderBy(filter.Sort)...).
 		LIMIT(limit).
 		OFFSET(offset)
 	var records []Post

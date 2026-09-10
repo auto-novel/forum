@@ -169,4 +169,34 @@ func TestJetRepositories(t *testing.T) {
 	if updated.Title != "更新标题" || updated.CommentsCount != 1 {
 		t.Fatalf("unexpected updated post: %#v", updated.Post)
 	}
+
+	secondPost, err := postRepo.Create(repository.CreatePostInput{
+		CategorySlug: category.Slug,
+		Title:        "第二篇帖子", Content: "用于排序", AuthorID: 8, AuthorUsername: "bob",
+		Attr: `{}`,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, newestPosts, err := postRepo.List(repository.PostFilter{Sort: repository.PostSortNewest}, 20, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(newestPosts) < 2 || newestPosts[0].ID != secondPost.ID {
+		t.Fatalf("unexpected newest order: %#v", newestPosts)
+	}
+	_, viewedPosts, err := postRepo.List(repository.PostFilter{Sort: repository.PostSortViews}, 20, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(viewedPosts) < 2 || viewedPosts[0].ID != post.ID {
+		t.Fatalf("unexpected views order: %#v", viewedPosts)
+	}
+	_, commentedPosts, err := postRepo.List(repository.PostFilter{Sort: repository.PostSortComments}, 20, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(commentedPosts) < 2 || commentedPosts[0].ID != post.ID {
+		t.Fatalf("unexpected comments order: %#v", commentedPosts)
+	}
 }

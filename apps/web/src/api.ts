@@ -73,6 +73,8 @@ export interface Post {
   tags: PostTag[];
 }
 
+export type PostSort = 'active' | 'newest' | 'views' | 'comments';
+
 export interface PostComment {
   id: number;
   postId: number;
@@ -86,7 +88,14 @@ export interface PostComment {
 }
 
 export function getPosts(
-  params: { page: number; pageSize: number; category?: string },
+  params: {
+    page: number;
+    pageSize: number;
+    category?: string;
+    query?: string;
+    tagIds?: number[];
+    sort?: PostSort;
+  },
   signal?: AbortSignal,
 ) {
   return client
@@ -95,6 +104,9 @@ export function getPosts(
         page: params.page,
         page_size: params.pageSize,
         category: params.category,
+        q: params.query,
+        tag: params.tagIds?.join(','),
+        sort: params.sort,
       },
       signal,
     })
