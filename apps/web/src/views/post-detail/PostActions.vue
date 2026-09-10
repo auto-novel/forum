@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import {
   authUser,
   deletePost,
-  getPostFavorite,
   moderatePost,
   setPostFavorite,
   type Post,
@@ -20,11 +19,10 @@ const emit = defineEmits<{
 }>();
 
 const menu = useTemplateRef<HTMLDetailsElement>('menu');
-const favorited = ref(false);
+const favorited = ref(props.post.favorited);
 const favoriteLoading = ref(false);
 const actionLoading = ref(false);
 const actionError = ref('');
-let favoriteController: AbortController | undefined;
 
 const isAdmin = computed(() => authUser.value?.role === 'admin');
 const canManage = computed(
@@ -47,25 +45,6 @@ async function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback;
 }
 
-async function loadFavorite() {
-  favoriteController?.abort();
-  favorited.value = false;
-  if (!authUser.value) return;
-
-  const controller = new AbortController();
-  favoriteController = controller;
-  favoriteLoading.value = true;
-  try {
-    const result = await getPostFavorite(props.post.id, controller.signal);
-    favorited.value = result.favorited;
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === 'AbortError') return;
-    actionError.value = await errorMessage(reason, '收藏状态加载失败');
-  } finally {
-    if (favoriteController === controller) favoriteLoading.value = false;
-  }
-}
-
 async function toggleFavorite() {
   if (!authUser.value || favoriteLoading.value) return;
   favoriteLoading.value = true;
@@ -74,6 +53,7 @@ async function toggleFavorite() {
   try {
     await setPostFavorite(props.post.id, nextValue);
     favorited.value = nextValue;
+    emit('updated', { ...props.post, favorited: nextValue });
   } catch (reason) {
     actionError.value = await errorMessage(reason, '更新收藏失败');
   } finally {
@@ -132,8 +112,12 @@ function hidePost() {
   void updateModeration({ status: 1 });
 }
 
-watch([() => props.post.id, authUser], loadFavorite, { immediate: true });
-onBeforeUnmount(() => favoriteController?.abort());
+watch(
+  () => props.post.favorited,
+  (value) => {
+    favorited.value = value;
+  },
+);
 </script>
 
 <template>

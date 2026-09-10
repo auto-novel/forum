@@ -9,10 +9,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type meHandler struct{ postRepo repository.PostRepository }
+type meHandler struct {
+	postRepo     repository.PostRepository
+	favoriteRepo repository.FavoriteRepository
+}
 
-func NewMeHandler(postRepo repository.PostRepository) *meHandler {
-	return &meHandler{postRepo: postRepo}
+func NewMeHandler(
+	postRepo repository.PostRepository,
+	favoriteRepo repository.FavoriteRepository,
+) *meHandler {
+	return &meHandler{postRepo: postRepo, favoriteRepo: favoriteRepo}
 }
 
 func (h *meHandler) RegisterRoutes(router chi.Router) {
@@ -23,10 +29,10 @@ func (h *meHandler) RegisterRoutes(router chi.Router) {
 
 func (h *meHandler) listPosts(w http.ResponseWriter, r *http.Request) error {
 	principal, _ := httpx.AuthenticatedPrincipal(r)
-	return respondPosts(w, r, h.postRepo, repository.PostFilter{AuthorID: principal.UserID})
+	return respondPosts(w, r, h.postRepo, h.favoriteRepo, repository.PostFilter{AuthorID: principal.UserID})
 }
 
 func (h *meHandler) listFavorites(w http.ResponseWriter, r *http.Request) error {
 	principal, _ := httpx.AuthenticatedPrincipal(r)
-	return respondPosts(w, r, h.postRepo, repository.PostFilter{FavoriteUserID: principal.UserID})
+	return respondPosts(w, r, h.postRepo, h.favoriteRepo, repository.PostFilter{FavoriteUserID: principal.UserID})
 }

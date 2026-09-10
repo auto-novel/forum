@@ -80,6 +80,29 @@ func RequireAccessToken(next http.Handler) http.Handler {
 	})
 }
 
+func OptionalAccessToken(next http.Handler) http.Handler {
+	return EH(func(w http.ResponseWriter, r *http.Request) error {
+		authorization := r.Header.Get("Authorization")
+		if authorization == "" {
+			next.ServeHTTP(w, r)
+			return nil
+		}
+		tokenString, ok := strings.CutPrefix(authorization, "Bearer ")
+		if !ok {
+			w.Header().Set("WWW-Authenticate", bearerChallenge)
+			return Unauthorized("无效的访问令牌")
+		}
+		principal, err := verifyAccessToken(tokenString)
+		if err != nil {
+			w.Header().Set("WWW-Authenticate", invalidAccessTokenChallenge)
+			return Unauthorized("无效的访问令牌")
+		}
+		ctx := context.WithValue(r.Context(), principalContextKey{}, principal)
+		next.ServeHTTP(w, r.WithContext(ctx))
+		return nil
+	})
+}
+
 func roleLevel(role string) (int, bool) {
 	switch role {
 	case roleBanned:

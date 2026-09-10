@@ -32,13 +32,14 @@ type postResponse struct {
 	CommentsCount  int32             `json:"commentsCount"`
 	CommentsLocked bool              `json:"commentsLocked"`
 	PinOrder       *int32            `json:"pinOrder"`
+	Favorited      bool              `json:"favorited"`
 	CreatedAt      time.Time         `json:"createdAt"`
 	UpdatedAt      time.Time         `json:"updatedAt"`
 	ActiveAt       time.Time         `json:"activeAt"`
 	Tags           []postTagResponse `json:"tags"`
 }
 
-func newPostResponse(value repository.PostDetails) postResponse {
+func newPostResponse(value repository.PostDetails, favorited bool) postResponse {
 	tags := make([]postTagResponse, len(value.Tags))
 	for i, tag := range value.Tags {
 		tags[i] = postTagResponse{
@@ -59,6 +60,7 @@ func newPostResponse(value repository.PostDetails) postResponse {
 		CommentsCount:  value.CommentsCount,
 		CommentsLocked: value.CommentsLocked,
 		PinOrder:       value.PinOrder,
+		Favorited:      favorited,
 		CreatedAt:      value.CreatedAt,
 		UpdatedAt:      value.UpdatedAt,
 		ActiveAt:       value.ActiveAt,
@@ -87,7 +89,6 @@ func (h *postHandler) RegisterRoutes(router chi.Router) {
 		router.Get("/", httpx.EH(h.get))
 		router.With(httpx.RequireAccessToken).Patch("/", httpx.EH(h.update))
 		router.With(httpx.RequireAccessToken).Delete("/", httpx.EH(h.delete))
-		router.With(httpx.RequireAccessToken).Get("/favorite", httpx.EH(h.getFavorite))
 		router.With(httpx.RequireAccessToken).Put("/favorite", httpx.EH(h.favorite))
 		router.With(httpx.RequireAccessToken).Delete("/favorite", httpx.EH(h.unfavorite))
 		router.Get("/comment", httpx.EH(h.listComments))
@@ -119,6 +120,7 @@ func respondPosts(
 	w http.ResponseWriter,
 	r *http.Request,
 	repo repository.PostRepository,
+	favoriteRepo repository.FavoriteRepository,
 	filter repository.PostFilter,
 ) error {
 	pagination, err := parsePagination(r.URL.Query(), 20, 100)
@@ -129,9 +131,20 @@ func respondPosts(
 	if err != nil {
 		return repoError(err, "查询帖子失败")
 	}
+	favorites := map[int64]bool{}
+	if principal, principalErr := httpx.AuthenticatedPrincipal(r); principalErr == nil {
+		postIDs := make([]int64, len(items))
+		for i, item := range items {
+			postIDs[i] = item.ID
+		}
+		favorites, err = favoriteRepo.ListPostIDs(principal.UserID, postIDs)
+		if err != nil {
+			return repoError(err, "查询收藏状态失败")
+		}
+	}
 	response := make([]postResponse, len(items))
 	for i, item := range items {
-		response[i] = newPostResponse(item)
+		response[i] = newPostResponse(item, favorites[item.ID])
 	}
 	render.JSON(w, r, page[postResponse]{Total: total, Items: response})
 	return nil
@@ -142,7 +155,7 @@ func (h *postHandler) list(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return respondPosts(w, r, h.postRepo, filter)
+	return respondPosts(w, r, h.postRepo, h.favoriteRepo, filter)
 }
 
 func (h *postHandler) get(w http.ResponseWriter, r *http.Request) error {
@@ -154,7 +167,14 @@ func (h *postHandler) get(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return repoError(err, "查询帖子失败")
 	}
-	render.JSON(w, r, newPostResponse(*post))
+	favorited := false
+	if principal, principalErr := httpx.AuthenticatedPrincipal(r); principalErr == nil {
+		favorited, err = h.favoriteRepo.Has(post.ID, principal.UserID)
+		if err != nil {
+			return repoError(err, "查询收藏状态失败")
+		}
+	}
+	render.JSON(w, r, newPostResponse(*post, favorited))
 	return nil
 }
 
@@ -203,7 +223,7 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 		return repoError(err, "创建帖子失败")
 	}
 	render.Status(r, http.StatusCreated)
-	render.JSON(w, r, newPostResponse(*post))
+	render.JSON(w, r, newPostResponse(*post, false))
 	return nil
 }
 
@@ -243,7 +263,12 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return repoError(err, "更新帖子失败")
 	}
-	render.JSON(w, r, newPostResponse(*post))
+	principal, _ := httpx.AuthenticatedPrincipal(r)
+	favorited, favoriteErr := h.favoriteRepo.Has(post.ID, principal.UserID)
+	if favoriteErr != nil {
+		return repoError(favoriteErr, "查询收藏状态失败")
+	}
+	render.JSON(w, r, newPostResponse(*post, favorited))
 	return nil
 }
 
@@ -256,22 +281,6 @@ func (h *postHandler) delete(w http.ResponseWriter, r *http.Request) error {
 		return repoError(err, "删除帖子失败")
 	}
 	w.WriteHeader(http.StatusNoContent)
-	return nil
-}
-
-func (h *postHandler) getFavorite(w http.ResponseWriter, r *http.Request) error {
-	postID, err := httpx.ParseParamPositiveInt(r, "id")
-	if err != nil {
-		return err
-	}
-	principal, _ := httpx.AuthenticatedPrincipal(r)
-	favorited, err := h.favoriteRepo.Has(postID, principal.UserID)
-	if err != nil {
-		return repoError(err, "查询收藏状态失败")
-	}
-	render.JSON(w, r, struct {
-		Favorited bool `json:"favorited"`
-	}{Favorited: favorited})
 	return nil
 }
 

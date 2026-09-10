@@ -59,7 +59,7 @@ func main() {
 	postHandler := handler.NewPostHandler(postRepo, favoriteRepo, commentRepo)
 	commentHandler := handler.NewCommentHandler(commentRepo)
 	externalCommentHandler := handler.NewExternalCommentHandler(commentRepo)
-	meHandler := handler.NewMeHandler(postRepo)
+	meHandler := handler.NewMeHandler(postRepo, favoriteRepo)
 
 	// router
 	router := chi.NewRouter()
@@ -76,6 +76,7 @@ func main() {
 			Schema:        httplog.SchemaECS,
 			RecoverPanics: true,
 		}))
+		router.Use(httpx.OptionalAccessToken)
 		router.Route("/category", categoryHandler.RegisterRoutes)
 		router.Route("/post", postHandler.RegisterRoutes)
 		router.Route("/comment", commentHandler.RegisterRoutes)

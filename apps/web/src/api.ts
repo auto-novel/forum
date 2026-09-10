@@ -66,6 +66,7 @@ export interface Post {
   commentsCount: number;
   commentsLocked: boolean;
   pinOrder?: number;
+  favorited: boolean;
   createdAt: string;
   updatedAt: string;
   activeAt: string;
@@ -117,12 +118,6 @@ export function getFavoritePosts(
 
 export function getPost(id: number, signal?: AbortSignal) {
   return client.get(`post/${id}/`, { signal }).json<Post>();
-}
-
-export function getPostFavorite(id: number, signal?: AbortSignal) {
-  return client
-    .get(`post/${id}/favorite`, { signal })
-    .json<{ favorited: boolean }>();
 }
 
 export function setPostFavorite(id: number, favorited: boolean) {

@@ -83,6 +83,46 @@ func TestRequireAccessTokenStoresPrincipal(t *testing.T) {
 	}
 }
 
+func TestOptionalAccessToken(t *testing.T) {
+	previousSecret := AccessTokenSecret
+	AccessTokenSecret = "optional-middleware-test-secret"
+	t.Cleanup(func() { AccessTokenSecret = previousSecret })
+
+	handler := OptionalAccessToken(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		principal, err := AuthenticatedPrincipal(r)
+		if err != nil {
+			_, _ = io.WriteString(w, "anonymous")
+			return
+		}
+		_, _ = io.WriteString(w, principal.Username)
+	}))
+
+	tests := []struct {
+		name       string
+		header     string
+		wantStatus int
+		wantBody   string
+	}{
+		{name: "anonymous", wantStatus: http.StatusOK, wantBody: "anonymous"},
+		{name: "authenticated", header: "Bearer " + testAccessToken(t, "member", roleMember), wantStatus: http.StatusOK, wantBody: "member"},
+		{name: "invalid scheme", header: "Basic token", wantStatus: http.StatusUnauthorized, wantBody: "无效的访问令牌"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/post", nil)
+			if tt.header != "" {
+				req.Header.Set("Authorization", tt.header)
+			}
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, req)
+			if response.Code != tt.wantStatus || response.Body.String() != tt.wantBody {
+				t.Fatalf("OptionalAccessToken returned (%d, %q), want (%d, %q)", response.Code, response.Body.String(), tt.wantStatus, tt.wantBody)
+			}
+		})
+	}
+}
+
 func TestRequireRoleUsesMinimumLevel(t *testing.T) {
 	previousSecret := AccessTokenSecret
 	AccessTokenSecret = "role-level-test-secret"
