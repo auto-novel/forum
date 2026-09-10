@@ -4,6 +4,9 @@ import App from './App.vue';
 import { authApi } from './api';
 import router from './router';
 import './styles.css';
+import { initializeTheme } from './theme';
+
+initializeTheme();
 
 const app = createApp(App);
 

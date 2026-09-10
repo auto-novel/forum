@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { SmartToyOutlined } from '@vicons/material';
+import {
+  DarkModeOutlined,
+  LightModeOutlined,
+  SmartToyOutlined,
+} from '@vicons/material';
 
 import type { Category } from '@/api';
+import { useTheme } from '@/theme';
 
 import CategoryNavigation from './CategoryNavigation.vue';
 
@@ -15,6 +20,8 @@ defineProps<{
 const emit = defineEmits<{
   select: [slug: string];
 }>();
+
+const { isDark, toggleTheme } = useTheme();
 </script>
 
 <template>
@@ -49,5 +56,50 @@ const emit = defineEmits<{
         @select="emit('select', $event)"
       />
     </div>
+
+    <div class="flex-none p-2">
+      <button
+        type="button"
+        class="theme-toggle"
+        :class="collapsed ? 'justify-center px-0' : 'px-3'"
+        :aria-label="isDark ? '切换到浅色主题' : '切换到深色主题'"
+        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+        @click="toggleTheme"
+      >
+        <LightModeOutlined v-if="isDark" class="size-5" aria-hidden="true" />
+        <DarkModeOutlined v-else class="size-5" aria-hidden="true" />
+        <span v-if="!collapsed">
+          {{ isDark ? '浅色主题' : '深色主题' }}
+        </span>
+      </button>
+    </div>
   </aside>
 </template>
+
+<style scoped>
+.theme-toggle {
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.theme-toggle:hover {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+</style>
