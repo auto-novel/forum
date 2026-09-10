@@ -30,7 +30,15 @@ function formatDate(value: string) {
         回复 #{{ comment.rootId }}
       </n-tag>
     </div>
-    <n-text class="comment-content">{{ comment.content }}</n-text>
+    <n-text class="comment-content">
+      {{
+        comment.status === 0
+          ? comment.content
+          : comment.status === 2
+            ? '该评论已删除'
+            : '该评论已隐藏'
+      }}
+    </n-text>
     <div class="comment-actions">
       <n-button
         size="small"

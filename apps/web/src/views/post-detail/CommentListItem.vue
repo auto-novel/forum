@@ -19,7 +19,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   reply: [comment: PostComment];
   updated: [comment: PostComment];
-  deleted: [id: number];
+  statusChanged: [id: number, status: number];
 }>();
 
 const menu = useTemplateRef<HTMLDetailsElement>('menu');
@@ -38,6 +38,7 @@ const expiryTimer = window.setTimeout(
   Math.max(0, modificationDeadline - Date.now() + 50),
 );
 
+const isPublished = computed(() => props.comment.status === 0);
 const isAdmin = computed(() => authUser.value?.role === 'admin');
 const isOwner = computed(() => authUser.value?.id === props.comment.authorId);
 const withinModificationWindow = computed(
@@ -109,7 +110,7 @@ async function removeComment() {
   try {
     if (isAdmin.value) await setPostCommentStatus(props.comment.id, 'deleted');
     else await deletePostComment(props.comment.id);
-    emit('deleted', props.comment.id);
+    emit('statusChanged', props.comment.id, 2);
   } catch (reason) {
     actionError.value = await errorMessage(reason, '删除评论失败');
   } finally {
@@ -124,7 +125,7 @@ async function hideComment() {
   actionError.value = '';
   try {
     await setPostCommentStatus(props.comment.id, 'hidden');
-    emit('deleted', props.comment.id);
+    emit('statusChanged', props.comment.id, 1);
   } catch (reason) {
     actionError.value = await errorMessage(reason, '隐藏评论失败');
   } finally {
@@ -150,7 +151,10 @@ async function hideComment() {
         {{ formatDate(comment.createdAt) }}
       </time>
     </header>
-    <form v-if="editing" class="mt-3" @submit.prevent="saveEdit">
+    <p v-if="!isPublished" class="mt-3 text-sm text-muted">
+      {{ comment.status === 2 ? '该评论已删除' : '该评论已隐藏' }}
+    </p>
+    <form v-else-if="editing" class="mt-3" @submit.prevent="saveEdit">
       <MarkdownEditor
         v-model="content"
         mode="comment"
@@ -182,7 +186,7 @@ async function hideComment() {
       :source="comment.content"
     />
 
-    <div v-if="!editing" class="mt-3 flex items-center gap-1">
+    <div v-if="isPublished && !editing" class="mt-3 flex items-center gap-1">
       <button
         v-if="authUser && !locked"
         type="button"

@@ -20,7 +20,7 @@ const emit = defineEmits<{
   changePage: [page: number];
   reply: [comment: PostComment];
   updated: [comment: PostComment];
-  deleted: [id: number];
+  statusChanged: [id: number, status: number];
 }>();
 </script>
 
@@ -85,7 +85,7 @@ const emit = defineEmits<{
         :locked="locked"
         @reply="emit('reply', $event)"
         @updated="emit('updated', $event)"
-        @deleted="emit('deleted', $event)"
+        @status-changed="(id, status) => emit('statusChanged', id, status)"
       />
     </div>
 

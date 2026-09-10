@@ -120,9 +120,9 @@ async function handleCommentCreated(comment: PostComment) {
   commentsController = undefined;
   commentsLoading.value = false;
   commentsError.value = '';
-  const nextTotal = post.value.commentsCount + 1;
+  const nextTotal = commentsTotal.value + 1;
   const lastPage = Math.max(1, Math.ceil(nextTotal / COMMENT_PAGE_SIZE));
-  post.value = { ...post.value, commentsCount: nextTotal };
+  post.value = { ...post.value, commentsCount: post.value.commentsCount + 1 };
   commentsTotal.value = nextTotal;
 
   if (comment.rootId != null) {
@@ -164,19 +164,19 @@ function handleCommentUpdated(comment: PostComment) {
   if (index >= 0) comments.value[index] = comment;
 }
 
-function handleCommentDeleted(id: number) {
-  comments.value = comments.value.filter((comment) => comment.id !== id);
-  commentsTotal.value = Math.max(0, commentsTotal.value - 1);
-  if (post.value) {
+function handleCommentStatusChanged(id: number, status: number) {
+  const comment = comments.value.find((item) => item.id === id);
+  if (!comment) return;
+  const wasPublished = comment.status === 0;
+  comment.status = status;
+  comment.content = '';
+  if (post.value && wasPublished) {
     post.value = {
       ...post.value,
       commentsCount: Math.max(0, post.value.commentsCount - 1),
     };
   }
   if (replyTo.value?.id === id) replyTo.value = undefined;
-  if (!comments.value.length && commentPage.value > 1) {
-    changeCommentPage(commentPage.value - 1);
-  }
 }
 
 function scrollToComposer() {
@@ -299,7 +299,7 @@ onBeforeUnmount(() => {
               @change-page="changeCommentPage"
               @reply="startReply"
               @updated="handleCommentUpdated"
-              @deleted="handleCommentDeleted"
+              @status-changed="handleCommentStatusChanged"
             />
           </div>
         </template>

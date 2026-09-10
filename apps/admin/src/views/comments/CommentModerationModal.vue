@@ -54,6 +54,6 @@ async function confirm() {
     @negative-click="close"
     @mask-click="close"
   >
-    处理后，该评论将立即从公开讨论中移除。
+    处理后，该评论将显示占位，原文不再展示。
   </n-modal>
 </template>
