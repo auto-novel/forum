@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import { authApi, authUser } from '@/api';
 
@@ -145,6 +146,27 @@ async function focusLoginFrame() {
         <p class="mt-0.5 text-xs text-muted">注册于 {{ createdAt }}</p>
       </div>
       <div class="border-t border-divider p-1">
+        <RouterLink
+          :to="{ name: 'favorites' }"
+          class="account-menu-item"
+          role="menuitem"
+          @click="menuOpen = false"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76L12 4Z"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+          </svg>
+          我的收藏
+        </RouterLink>
         <button
           type="button"
           class="account-menu-item"

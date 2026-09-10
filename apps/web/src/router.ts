@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+import FavoritePostListView from '@/views/favorite/FavoritePostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
-import PostListView from '@/views/post-list/PostListView.vue';
 import PostCreateView from '@/views/post-create/PostCreateView.vue';
+import PostListView from '@/views/post-list/PostListView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +14,12 @@ const router = createRouter({
       name: 'posts',
       component: PostListView,
       meta: { title: '讨论' },
+    },
+    {
+      path: '/favorites',
+      name: 'favorites',
+      component: FavoritePostListView,
+      meta: { title: '我的收藏' },
     },
     {
       path: '/posts/new',

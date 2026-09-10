@@ -9,6 +9,8 @@ defineProps<{
   error?: string;
   page: number;
   totalPages: number;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }>();
 
 const emit = defineEmits<{
@@ -73,8 +75,12 @@ const emit = defineEmits<{
             />
           </svg>
         </div>
-        <h2 class="mt-4 text-lg font-semibold">暂无帖子</h2>
-        <p class="mt-2 text-sm text-muted">这个分类暂时没有帖子。</p>
+        <h2 class="mt-4 text-lg font-semibold">
+          {{ emptyTitle ?? '暂无帖子' }}
+        </h2>
+        <p class="mt-2 text-sm text-muted">
+          {{ emptyDescription ?? '这个分类暂时没有帖子。' }}
+        </p>
       </div>
     </div>
 
