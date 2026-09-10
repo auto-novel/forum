@@ -3,7 +3,7 @@ import type { Category } from '@/api';
 
 defineProps<{
   categories: Category[];
-  selected: string;
+  selected?: string;
   collapsed?: boolean;
 }>();
 

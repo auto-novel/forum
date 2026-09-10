@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { CATEGORIES, getPosts, type Post, type PostSort } from '@/api';
-import CategorySidebar from './CategorySidebar.vue';
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
 
@@ -93,17 +92,6 @@ async function loadPosts() {
   }
 }
 
-function selectCategory(slug: string) {
-  void router.push({
-    name: 'posts',
-    query: {
-      category: slug,
-      ...(searchQuery.value ? { q: searchQuery.value } : {}),
-      ...(selectedSort.value !== 'active' ? { sort: selectedSort.value } : {}),
-    },
-  });
-}
-
 function applyFilters(filters: {
   query: string;
   tagId?: number;
@@ -131,7 +119,7 @@ function changePage(nextPage: number) {
       ...(nextPage > 1 ? { page: String(nextPage) } : {}),
     },
   });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 watch(
@@ -150,36 +138,51 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="page-container py-4 md:py-6">
-    <div
-      class="grid gap-6 md:grid-cols-[4rem_minmax(0,1fr)] lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8"
-    >
-      <CategorySidebar
-        :categories="categories"
-        :selected="selectedCategory"
-        @select="selectCategory"
-      />
-      <div class="min-w-0 space-y-4">
-        <PostFilters
-          :category-id="selectedCategoryItem.id"
-          :query="searchQuery"
-          :tag-id="selectedTagId"
-          :sort="selectedSort"
-          @apply="applyFilters"
-        />
-        <PostList
-          :posts="posts"
-          :loading="postsLoading"
-          :error="postsError"
-          :page="page"
-          :total-pages="totalPages"
-          :empty-title="hasFilters ? '没有找到帖子' : undefined"
-          :empty-description="
-            hasFilters ? '可以尝试调整关键词或标签条件。' : undefined
-          "
-          @retry="loadPosts"
-          @change-page="changePage"
-        />
+    <div class="min-w-0 space-y-4">
+      <div class="flex justify-end">
+        <RouterLink
+          :to="{
+            name: 'post-create',
+            query: { category: selectedCategory },
+          }"
+          class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-sm bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          <svg
+            viewBox="0 0 20 20"
+            class="size-4"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M10 4v12M4 10h12"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            />
+          </svg>
+          发表帖子
+        </RouterLink>
       </div>
+      <PostFilters
+        :category-id="selectedCategoryItem.id"
+        :query="searchQuery"
+        :tag-id="selectedTagId"
+        :sort="selectedSort"
+        @apply="applyFilters"
+      />
+      <PostList
+        :posts="posts"
+        :loading="postsLoading"
+        :error="postsError"
+        :page="page"
+        :total-pages="totalPages"
+        :empty-title="hasFilters ? '没有找到帖子' : undefined"
+        :empty-description="
+          hasFilters ? '可以尝试调整关键词或标签条件。' : undefined
+        "
+        @retry="loadPosts"
+        @change-page="changePage"
+      />
     </div>
   </div>
 </template>

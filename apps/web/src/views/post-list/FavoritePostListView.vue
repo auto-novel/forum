@@ -63,7 +63,7 @@ function changePage(nextPage: number) {
     name: 'favorites',
     query: nextPage > 1 ? { page: String(nextPage) } : {},
   });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 watch([authUser, page], loadFavorites, { immediate: true });
