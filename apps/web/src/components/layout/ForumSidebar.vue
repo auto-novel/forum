@@ -44,14 +44,13 @@ const { isDark, toggleTheme } = useTheme();
         :collapsed="collapsed"
         @select="emit('select', $event)"
       />
-    </div>
 
-    <div class="flex-none p-2">
+      <div class="my-2 min-w-52 border-t border-divider" role="separator" />
       <button
         type="button"
         class="theme-toggle"
-        :aria-label="isDark ? '切换到浅色主题' : '切换到深色主题'"
-        :title="isDark ? '切换到浅色主题' : '切换到深色主题'"
+        aria-label="切换主题"
+        title="切换主题"
         @click="toggleTheme"
       >
         <span
@@ -66,7 +65,7 @@ const { isDark, toggleTheme } = useTheme();
           :class="collapsed ? 'opacity-0' : 'opacity-100'"
           :aria-hidden="collapsed"
         >
-          {{ isDark ? '浅色主题' : '深色主题' }}
+          切换主题
         </span>
       </button>
     </div>
@@ -100,7 +99,7 @@ const { isDark, toggleTheme } = useTheme();
   gap: 0.7rem;
   border-radius: 0.25rem;
   padding-inline: 0.625rem;
-  color: var(--color-muted);
+  color: var(--color-ink);
   font-size: 0.875rem;
   font-weight: 600;
   text-align: left;
