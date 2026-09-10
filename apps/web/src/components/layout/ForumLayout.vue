@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   ChevronLeftOutlined,
-  ChevronRightOutlined,
   CloseOutlined,
   MenuOutlined,
 } from '@vicons/material';
@@ -191,12 +190,11 @@ watch(mobileMenuOpen, (open) => {
           :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
           @click="sidebarCollapsed = !sidebarCollapsed"
         >
-          <ChevronRightOutlined
-            v-if="sidebarCollapsed"
-            class="size-5"
+          <ChevronLeftOutlined
+            class="size-5 transition-transform duration-300"
+            :class="sidebarCollapsed ? 'rotate-180' : ''"
             aria-hidden="true"
           />
-          <ChevronLeftOutlined v-else class="size-5" aria-hidden="true" />
         </button>
         <span class="ml-2 truncate text-sm font-semibold text-ink sm:text-base">
           {{ currentTitle }}

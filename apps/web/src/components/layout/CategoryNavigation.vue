@@ -29,7 +29,6 @@ const emit = defineEmits<{
         selected === category.slug
           ? 'bg-primary-soft text-primary'
           : 'text-ink hover:bg-paper',
-        collapsed ? 'justify-center px-0 lg:justify-start lg:px-3' : 'px-3',
       ]"
       :aria-label="collapsed ? category.title : undefined"
       :title="collapsed ? category.title : undefined"
@@ -45,7 +44,11 @@ const emit = defineEmits<{
         <ExploreOutlined v-else-if="category.slug === 'guide'" class="size-4" />
         <ForumOutlined v-else class="size-4" />
       </span>
-      <span :class="collapsed ? 'hidden lg:block' : ''" class="truncate">
+      <span
+        class="category-label truncate"
+        :class="collapsed ? 'opacity-0' : 'opacity-100'"
+        :aria-hidden="collapsed"
+      >
         {{ category.title }}
       </span>
     </button>
@@ -56,15 +59,21 @@ const emit = defineEmits<{
 .category-item {
   display: flex;
   min-height: 2.75rem;
+  min-width: 13rem;
   align-items: center;
   gap: 0.7rem;
   border-radius: 0.25rem;
+  padding-inline: 0.625rem;
   font-size: 0.875rem;
   font-weight: 600;
   text-align: left;
   transition:
     color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-label {
+  transition: opacity 150ms ease;
 }
 
 .category-item:focus-visible {
