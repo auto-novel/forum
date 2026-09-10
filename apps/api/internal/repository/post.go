@@ -82,8 +82,10 @@ func (filter PostFilter) condition() BoolExpression {
 		expressions = append(expressions, table.PostFavorite.UserID.EQ(Int64(filter.FavoriteUserID)))
 	}
 	if filter.Search != "" {
-		pattern := String("%" + filter.Search + "%")
-		expressions = append(expressions, OR(table.Post.Title.LIKE(pattern), table.Post.Content.LIKE(pattern)))
+		expressions = append(expressions, RawBool(
+			`("post"."title" ILIKE :pattern OR "post"."content" ILIKE :pattern)`,
+			RawArgs{":pattern": "%" + filter.Search + "%"},
+		))
 	}
 	if len(filter.TagIDs) > 0 {
 		taggedPosts := SELECT(table.PostTag.PostID).

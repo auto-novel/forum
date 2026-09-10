@@ -172,7 +172,7 @@ func TestJetRepositories(t *testing.T) {
 
 	secondPost, err := postRepo.Create(repository.CreatePostInput{
 		CategorySlug: category.Slug,
-		Title:        "第二篇帖子", Content: "用于排序", AuthorID: 8, AuthorUsername: "bob",
+		Title:        "CaseSensitiveTitle", Content: "用于排序", AuthorID: 8, AuthorUsername: "bob",
 		Attr: `{}`,
 	})
 	if err != nil {
@@ -198,5 +198,12 @@ func TestJetRepositories(t *testing.T) {
 	}
 	if len(commentedPosts) < 2 || commentedPosts[0].ID != post.ID {
 		t.Fatalf("unexpected comments order: %#v", commentedPosts)
+	}
+	searchTotal, searchedPosts, err := postRepo.List(repository.PostFilter{Search: "casesensitivetitle"}, 20, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if searchTotal != 1 || len(searchedPosts) != 1 || searchedPosts[0].ID != secondPost.ID {
+		t.Fatalf("unexpected case-insensitive search: total=%d items=%#v", searchTotal, searchedPosts)
 	}
 }
