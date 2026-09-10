@@ -49,7 +49,24 @@ async function save() {
   if (!props.post) return;
   saving.value = true;
   try {
-    await api.moderatePost(props.post.id, form);
+    const post = props.post;
+    const requests: Promise<string>[] = [];
+    if (form.status !== post.status) {
+      requests.push(api.setPostStatus(post.id, form.status));
+    }
+    if (form.commentsLocked !== post.commentsLocked) {
+      requests.push(
+        form.commentsLocked ? api.lockPost(post.id) : api.unlockPost(post.id),
+      );
+    }
+    if (form.pinOrder !== (post.pinOrder ?? null)) {
+      requests.push(
+        form.pinOrder == null
+          ? api.unpinPost(post.id)
+          : api.pinPost(post.id, form.pinOrder),
+      );
+    }
+    await Promise.all(requests);
     emit('success', `帖子「${props.post.title}」已更新`);
   } catch (error) {
     emit('error', error instanceof Error ? error.message : String(error));

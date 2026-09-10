@@ -80,12 +80,6 @@ interface PostListParams {
   category?: string;
 }
 
-interface PostModerationRequest {
-  status: number;
-  commentsLocked: boolean;
-  pinOrder: number | null;
-}
-
 function endpoint(path: string) {
   return new URL(path, new URL('/api/v1/', window.location.origin));
 }
@@ -136,10 +130,24 @@ export function createForumApi(authApi: AuthApi) {
         })
         .json<Page<Post>>();
     },
-    moderatePost(id: number, request: PostModerationRequest) {
+    setPostStatus(id: number, status: number) {
       return client
-        .patch(endpoint(`admin/post/${id}`), { json: request })
+        .put(endpoint(`admin/post/${id}/status`), { json: { status } })
         .text();
+    },
+    lockPost(id: number) {
+      return client.put(endpoint(`admin/post/${id}/lock`)).text();
+    },
+    unlockPost(id: number) {
+      return client.delete(endpoint(`admin/post/${id}/lock`)).text();
+    },
+    pinPost(id: number, pinOrder: number) {
+      return client
+        .put(endpoint(`admin/post/${id}/pin`), { json: { pinOrder } })
+        .text();
+    },
+    unpinPost(id: number) {
+      return client.delete(endpoint(`admin/post/${id}/pin`)).text();
     },
     getComments(postId: number, page: number, pageSize: number) {
       return client

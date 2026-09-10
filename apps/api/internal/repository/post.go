@@ -50,7 +50,8 @@ type PostRepository interface {
 	Create(input CreatePostInput) (*PostDetails, error)
 	Update(id int64, input UpdatePostInput) (*PostDetails, error)
 	SetStatus(id int64, status int16) error
-	SetModeration(id int64, status int16, commentsLocked bool, pinOrder *int32) error
+	SetCommentsLocked(id int64, locked bool) error
+	SetPinOrder(id int64, pinOrder *int32) error
 }
 
 type postRepository struct {
@@ -282,26 +283,26 @@ func (r *postRepository) Update(id int64, input UpdatePostInput) (*PostDetails, 
 func (r *postRepository) SetStatus(id int64, status int16) error {
 	stmt := table.Post.UPDATE(table.Post.Status, table.Post.UpdatedAt).
 		SET(Int16(status), TimestampzT(time.Now())).
-		WHERE(table.Post.ID.EQ(Int64(id)).AND(table.Post.Status.NOT_EQ(Int16(StatusDeleted))))
-	result, err := stmt.Exec(r.db)
-	if err != nil {
-		return err
-	}
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if affected == 0 {
-		return qrm.ErrNoRows
-	}
-	return nil
+		WHERE(table.Post.ID.EQ(Int64(id)))
+	return execPostUpdate(r.db, stmt)
 }
 
-func (r *postRepository) SetModeration(id int64, status int16, commentsLocked bool, pinOrder *int32) error {
-	stmt := table.Post.UPDATE(table.Post.Status, table.Post.CommentsLocked, table.Post.PinOrder, table.Post.UpdatedAt).
-		SET(Int16(status), Bool(commentsLocked), pinOrder, TimestampzT(time.Now())).
+func (r *postRepository) SetCommentsLocked(id int64, locked bool) error {
+	stmt := table.Post.UPDATE(table.Post.CommentsLocked, table.Post.UpdatedAt).
+		SET(Bool(locked), TimestampzT(time.Now())).
 		WHERE(table.Post.ID.EQ(Int64(id)))
-	result, err := stmt.Exec(r.db)
+	return execPostUpdate(r.db, stmt)
+}
+
+func (r *postRepository) SetPinOrder(id int64, pinOrder *int32) error {
+	stmt := table.Post.UPDATE(table.Post.PinOrder, table.Post.UpdatedAt).
+		SET(pinOrder, TimestampzT(time.Now())).
+		WHERE(table.Post.ID.EQ(Int64(id)))
+	return execPostUpdate(r.db, stmt)
+}
+
+func execPostUpdate(db qrm.DB, stmt UpdateStatement) error {
+	result, err := stmt.Exec(db)
 	if err != nil {
 		return err
 	}

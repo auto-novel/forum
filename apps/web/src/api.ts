@@ -161,11 +161,24 @@ export function deletePost(id: number) {
   return client.delete(`post/${id}/`);
 }
 
-export function moderatePost(
-  id: number,
-  input: { status: number; commentsLocked: boolean; pinOrder: number | null },
-) {
-  return client.patch(`admin/post/${id}`, { json: input });
+export function setPostStatus(id: number, status: number) {
+  return client.put(`admin/post/${id}/status`, { json: { status } });
+}
+
+export function lockPost(id: number) {
+  return client.put(`admin/post/${id}/lock`);
+}
+
+export function unlockPost(id: number) {
+  return client.delete(`admin/post/${id}/lock`);
+}
+
+export function pinPost(id: number, pinOrder: number) {
+  return client.put(`admin/post/${id}/pin`, { json: { pinOrder } });
+}
+
+export function unpinPost(id: number) {
+  return client.delete(`admin/post/${id}/pin`);
 }
 
 export function getPostComments(

@@ -148,7 +148,7 @@ func TestJetRepositories(t *testing.T) {
 		t.Fatalf("favorite total = %d", favoriteTotal)
 	}
 
-	if err := postRepo.SetModeration(post.ID, repository.StatusPublished, true, nil); err != nil {
+	if err := postRepo.SetCommentsLocked(post.ID, true); err != nil {
 		t.Fatal(err)
 	}
 	_, err = commentRepo.Create(repository.CreateCommentInput{
@@ -192,6 +192,33 @@ func TestJetRepositories(t *testing.T) {
 	}
 	if updated.Title != "更新标题" || updated.CommentsCount != 1 {
 		t.Fatalf("unexpected updated post: %#v", updated.Post)
+	}
+
+	if err := postRepo.SetStatus(post.ID, repository.StatusHidden); err != nil {
+		t.Fatal(err)
+	}
+	if err := postRepo.SetStatus(post.ID, repository.StatusPublished); err != nil {
+		t.Fatal(err)
+	}
+	if err := postRepo.SetCommentsLocked(post.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	pinOrder := int32(0)
+	if err := postRepo.SetPinOrder(post.ID, &pinOrder); err != nil {
+		t.Fatal(err)
+	}
+	moderated, err := postRepo.Find(post.ID, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !moderated.CommentsLocked || moderated.PinOrder == nil || *moderated.PinOrder != pinOrder {
+		t.Fatalf("unexpected post subresources: %#v", moderated.Post)
+	}
+	if err := postRepo.SetCommentsLocked(post.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := postRepo.SetPinOrder(post.ID, nil); err != nil {
+		t.Fatal(err)
 	}
 
 	secondPost, err := postRepo.Create(repository.CreatePostInput{

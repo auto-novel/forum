@@ -9,9 +9,13 @@ import { computed, ref, useTemplateRef, watch } from 'vue';
 import {
   authUser,
   deletePost,
-  moderatePost,
+  lockPost,
+  pinPost,
   setPostFavorite,
+  setPostStatus,
   type Post,
+  unlockPost,
+  unpinPost,
 } from '@/api';
 
 const props = defineProps<{ post: Post }>();
@@ -90,19 +94,12 @@ async function removePost() {
   }
 }
 
-async function updateModeration(
-  changes: Partial<Pick<Post, 'commentsLocked' | 'pinOrder' | 'status'>>,
-) {
+async function updateModeration(request: Promise<unknown>, nextPost: Post) {
   closeMenu();
   actionLoading.value = true;
   actionError.value = '';
-  const nextPost = { ...props.post, ...changes };
   try {
-    await moderatePost(props.post.id, {
-      status: nextPost.status,
-      commentsLocked: nextPost.commentsLocked,
-      pinOrder: nextPost.pinOrder ?? null,
-    });
+    await request;
     if (nextPost.status !== 0) emit('deleted');
     else emit('updated', nextPost);
   } catch (reason) {
@@ -114,7 +111,27 @@ async function updateModeration(
 
 function hidePost() {
   if (!window.confirm('确定隐藏这篇帖子吗？隐藏后可在管理端恢复。')) return;
-  void updateModeration({ status: 1 });
+  void updateModeration(setPostStatus(props.post.id, 1), {
+    ...props.post,
+    status: 1,
+  });
+}
+
+function togglePin() {
+  const pinOrder = props.post.pinOrder == null ? 0 : undefined;
+  const request =
+    pinOrder == null
+      ? unpinPost(props.post.id)
+      : pinPost(props.post.id, pinOrder);
+  void updateModeration(request, { ...props.post, pinOrder });
+}
+
+function toggleLock() {
+  const commentsLocked = !props.post.commentsLocked;
+  const request = commentsLocked
+    ? lockPost(props.post.id)
+    : unlockPost(props.post.id);
+  void updateModeration(request, { ...props.post, commentsLocked });
 }
 
 watch(
@@ -168,11 +185,7 @@ watch(
               type="button"
               class="post-menu-item"
               :disabled="actionLoading"
-              @click="
-                updateModeration({
-                  pinOrder: post.pinOrder == null ? 0 : undefined,
-                })
-              "
+              @click="togglePin"
             >
               {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
             </button>
@@ -180,9 +193,7 @@ watch(
               type="button"
               class="post-menu-item"
               :disabled="actionLoading"
-              @click="
-                updateModeration({ commentsLocked: !post.commentsLocked })
-              "
+              @click="toggleLock"
             >
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
             </button>
