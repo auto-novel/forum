@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-  DarkModeOutlined,
-  LightModeOutlined,
-  SmartToyOutlined,
-} from '@vicons/material';
+import { DarkModeOutlined, LightModeOutlined } from '@vicons/material';
 
 import type { Category } from '@/api';
 import { useTheme } from '@/theme';
@@ -31,12 +27,7 @@ const { isDark, toggleTheme } = useTheme();
     aria-label="论坛导航"
   >
     <div class="flex h-16 min-w-56 flex-none items-center px-4">
-      <span
-        class="grid size-8 place-items-center rounded-md bg-primary-soft text-primary"
-        aria-hidden="true"
-      >
-        <SmartToyOutlined class="size-5" />
-      </span>
+      <span class="brand-logo" aria-hidden="true" />
       <span
         class="sidebar-label ml-2.5 text-sm font-bold tracking-tight whitespace-nowrap text-ink"
         :class="collapsed ? 'opacity-0' : 'opacity-100'"
@@ -85,6 +76,15 @@ const { isDark, toggleTheme } = useTheme();
 <style scoped>
 .forum-sidebar {
   transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brand-logo {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  background-color: var(--color-primary);
+  -webkit-mask: url('../../assets/robot.svg') center / contain no-repeat;
+  mask: url('../../assets/robot.svg') center / contain no-repeat;
 }
 
 .sidebar-label {
