@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
 import PostListView from '@/views/post-list/PostListView.vue';
+import PostCreateView from '@/views/post-create/PostCreateView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,6 +13,12 @@ const router = createRouter({
       name: 'posts',
       component: PostListView,
       meta: { title: '讨论' },
+    },
+    {
+      path: '/posts/new',
+      name: 'post-create',
+      component: PostCreateView,
+      meta: { title: '发表帖子' },
     },
     {
       path: '/posts/:id',

@@ -47,6 +47,13 @@ export interface PostTag {
   color: number;
 }
 
+export interface CategoryTag extends PostTag {
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Post {
   id: number;
   categoryId: number;
@@ -95,6 +102,21 @@ export function getPosts(
 
 export function getPost(id: number, signal?: AbortSignal) {
   return client.get(`post/${id}/`, { signal }).json<Post>();
+}
+
+export function getCategoryTags(categoryId: number, signal?: AbortSignal) {
+  return client
+    .get(`category/${categoryId}/tag`, { signal })
+    .json<CategoryTag[]>();
+}
+
+export function createPost(input: {
+  category: string;
+  title: string;
+  content: string;
+  tagIds: number[];
+}) {
+  return client.post('post/', { json: input }).json<Post>();
 }
 
 export function getPostComments(
