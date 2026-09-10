@@ -198,7 +198,7 @@ function handlePostUpdated(value: Post) {
 function leaveDeletedPost() {
   void router.replace({
     name: 'posts',
-    query: category.value ? { category: category.value.slug } : undefined,
+    params: { slug: category.value?.slug ?? CATEGORIES[0].slug },
   });
 }
 
@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
       <RouterLink
         :to="{
           name: 'posts',
-          query: category ? { category: category.slug } : undefined,
+          params: { slug: category?.slug ?? CATEGORIES[0].slug },
         }"
         class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >

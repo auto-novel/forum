@@ -44,7 +44,7 @@ const isMobile = computed(() => viewportMode.value === 'mobile');
 const currentTitle = computed(() => String(route.meta.title ?? '社区'));
 const selectedCategory = computed(() => {
   if (route.name !== 'posts') return undefined;
-  const value = route.query.category;
+  const value = route.params.slug;
   return (
     CATEGORIES.find((category) => category.slug === value)?.slug ??
     CATEGORIES[0].slug
@@ -53,7 +53,7 @@ const selectedCategory = computed(() => {
 
 async function selectCategory(slug: string) {
   mobileMenuOpen.value = false;
-  await router.push({ name: 'posts', query: { category: slug } });
+  await router.push({ name: 'posts', params: { slug } });
   pageContent.value?.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

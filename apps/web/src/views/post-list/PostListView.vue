@@ -21,7 +21,7 @@ const postsError = ref('');
 let postsController: AbortController | undefined;
 
 const selectedCategory = computed(() => {
-  const value = route.query.category;
+  const value = route.params.slug;
   return (
     categories.find((category) => category.slug === value)?.slug ??
     categories[0].slug
@@ -100,8 +100,8 @@ function applyFilters(filters: {
 }) {
   void router.push({
     name: 'posts',
+    params: { slug: selectedCategory.value },
     query: {
-      category: selectedCategory.value,
       ...(filters.query ? { q: filters.query } : {}),
       ...(filters.tagId ? { tag: String(filters.tagId) } : {}),
       ...(filters.sort !== 'active' ? { sort: filters.sort } : {}),
@@ -112,8 +112,8 @@ function applyFilters(filters: {
 function changePage(nextPage: number) {
   void router.push({
     name: 'posts',
+    params: { slug: selectedCategory.value },
     query: {
-      category: selectedCategory.value,
       ...(searchQuery.value ? { q: searchQuery.value } : {}),
       ...(selectedTagId.value ? { tag: String(selectedTagId.value) } : {}),
       ...(selectedSort.value !== 'active' ? { sort: selectedSort.value } : {}),

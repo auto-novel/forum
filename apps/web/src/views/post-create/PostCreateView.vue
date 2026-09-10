@@ -191,7 +191,7 @@ onBeforeUnmount(() => tagsController?.abort());
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
       <RouterLink
-        :to="{ name: 'posts', query: { category: categorySlug } }"
+        :to="{ name: 'posts', params: { slug: categorySlug } }"
         class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >
         <ArrowBackOutlined class="size-4" aria-hidden="true" />

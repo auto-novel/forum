@@ -1,20 +1,30 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+import { CATEGORIES } from '@/api';
 import FavoritePostListView from '@/views/post-list/FavoritePostListView.vue';
 import MyPostListView from '@/views/post-list/MyPostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
 import PostCreateView from '@/views/post-create/PostCreateView.vue';
 import PostListView from '@/views/post-list/PostListView.vue';
 
+const defaultCategory = CATEGORIES[0].slug;
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', redirect: { name: 'posts' } },
     {
-      path: '/posts',
+      path: '/',
+      redirect: { name: 'posts', params: { slug: defaultCategory } },
+    },
+    {
+      path: '/c/:slug',
       name: 'posts',
       component: PostListView,
       meta: { title: '讨论' },
+      beforeEnter: (to) =>
+        CATEGORIES.some((category) => category.slug === to.params.slug)
+          ? true
+          : { name: 'posts', params: { slug: defaultCategory } },
     },
     {
       path: '/favorites',
@@ -35,12 +45,15 @@ const router = createRouter({
       meta: { title: '发表帖子' },
     },
     {
-      path: '/posts/:id',
+      path: '/p/:id',
       name: 'post-detail',
       component: PostDetailView,
       meta: { title: '帖子详情' },
     },
-    { path: '/:pathMatch(.*)*', redirect: { name: 'posts' } },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: { name: 'posts', params: { slug: defaultCategory } },
+    },
   ],
 });
 
