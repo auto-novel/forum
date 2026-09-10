@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  ChatBubbleOutlineOutlined,
+  StarBorderOutlined,
+  StarFilled,
+} from '@vicons/material';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import {
@@ -135,27 +140,13 @@ watch(
         :aria-pressed="favorited"
         @click="toggleFavorite"
       >
-        <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-          <path
-            d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76L12 4Z"
-            :fill="favorited ? 'currentColor' : 'none'"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <StarFilled v-if="favorited" class="size-4" aria-hidden="true" />
+        <StarBorderOutlined v-else class="size-4" aria-hidden="true" />
         {{ favoriteLoading ? '处理中…' : favorited ? '取消收藏' : '收藏' }}
       </button>
 
       <button type="button" class="post-action" @click="emit('comment')">
-        <svg viewBox="0 0 24 24" class="size-4" fill="none" aria-hidden="true">
-          <path
-            d="M5 6.5h14v9H11l-4.5 3v-3H5v-9Z"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
         评论
       </button>
 

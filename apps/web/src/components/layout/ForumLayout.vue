@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import {
+  ChevronLeftOutlined,
+  ChevronRightOutlined,
+  CloseOutlined,
+  MenuOutlined,
+} from '@vicons/material';
+import {
   computed,
   nextTick,
   onBeforeUnmount,
@@ -157,19 +163,7 @@ watch(mobileMenuOpen, (open) => {
             aria-label="关闭导航菜单"
             @click="mobileMenuOpen = false"
           >
-            <svg
-              viewBox="0 0 20 20"
-              class="size-5"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="m6 6 8 8m0-8-8 8"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </svg>
+            <CloseOutlined class="size-5" aria-hidden="true" />
           </button>
         </div>
       </Transition>
@@ -187,19 +181,7 @@ watch(mobileMenuOpen, (open) => {
           title="打开导航菜单"
           @click="openMobileMenu"
         >
-          <svg
-            viewBox="0 0 20 20"
-            class="size-5"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.5 5.5h13m-13 4.5h13m-13 4.5h13"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-            />
-          </svg>
+          <MenuOutlined class="size-5" aria-hidden="true" />
         </button>
         <button
           v-else
@@ -209,20 +191,12 @@ watch(mobileMenuOpen, (open) => {
           :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
           @click="sidebarCollapsed = !sidebarCollapsed"
         >
-          <svg
-            viewBox="0 0 20 20"
+          <ChevronRightOutlined
+            v-if="sidebarCollapsed"
             class="size-5"
-            fill="none"
             aria-hidden="true"
-          >
-            <path
-              :d="sidebarCollapsed ? 'm7.5 5 5 5-5 5' : 'm12.5 5-5 5 5 5'"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          />
+          <ChevronLeftOutlined v-else class="size-5" aria-hidden="true" />
         </button>
         <span class="ml-2 truncate text-sm font-semibold text-ink sm:text-base">
           {{ currentTitle }}

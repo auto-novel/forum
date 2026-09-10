@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArrowBackOutlined } from '@vicons/material';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
@@ -220,15 +221,7 @@ onBeforeUnmount(() => {
         }"
         class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >
-        <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
-          <path
-            d="m11.5 5-5 5 5 5"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <ArrowBackOutlined class="size-4" aria-hidden="true" />
         返回帖子列表
       </RouterLink>
 

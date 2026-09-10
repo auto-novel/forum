@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AddOutlined } from '@vicons/material';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
@@ -147,19 +148,7 @@ onBeforeUnmount(() => {
           }"
           class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-sm bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          <svg
-            viewBox="0 0 20 20"
-            class="size-4"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M10 4v12M4 10h12"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-            />
-          </svg>
+          <AddOutlined class="size-4" aria-hidden="true" />
           发表帖子
         </RouterLink>
       </div>

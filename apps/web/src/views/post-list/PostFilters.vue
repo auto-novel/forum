@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SearchOutlined } from '@vicons/material';
 import { onBeforeUnmount, ref, watch } from 'vue';
 
 import { getCategoryTags, type CategoryTag, type PostSort } from '@/api';
@@ -80,26 +81,10 @@ onBeforeUnmount(() => tagsController?.abort());
   >
     <label class="relative min-w-0">
       <span class="sr-only">搜索帖子</span>
-      <svg
-        viewBox="0 0 20 20"
+      <SearchOutlined
         class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
-        fill="none"
         aria-hidden="true"
-      >
-        <circle
-          cx="8.5"
-          cy="8.5"
-          r="4.5"
-          stroke="currentColor"
-          stroke-width="1.6"
-        />
-        <path
-          d="m12 12 3.5 3.5"
-          stroke="currentColor"
-          stroke-width="1.6"
-          stroke-linecap="round"
-        />
-      </svg>
+      />
       <input
         v-model="queryInput"
         type="search"

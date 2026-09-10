@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  ExploreOutlined,
+  ForumOutlined,
+  MenuBookOutlined,
+} from '@vicons/material';
+
 import type { Category } from '@/api';
 
 defineProps<{
@@ -35,54 +41,9 @@ const emit = defineEmits<{
         :class="selected === category.slug ? 'bg-surface' : ''"
         aria-hidden="true"
       >
-        <svg
-          v-if="category.slug === 'novel'"
-          viewBox="0 0 24 24"
-          class="size-4"
-          fill="none"
-        >
-          <path
-            d="M4.5 5.5c2.7-.7 5.2.1 7.5 2.2v11c-2.3-2.1-4.8-2.9-7.5-2.2v-11Zm15 0c-2.7-.7-5.2.1-7.5 2.2v11c2.3-2.1 4.8-2.9 7.5-2.2v-11Z"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <svg
-          v-else-if="category.slug === 'guide'"
-          viewBox="0 0 24 24"
-          class="size-4"
-          fill="none"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="8"
-            stroke="currentColor"
-            stroke-width="1.7"
-          />
-          <path
-            d="m14.8 9.2-1.5 4.1-4.1 1.5 1.5-4.1 4.1-1.5Z"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <svg v-else viewBox="0 0 24 24" class="size-4" fill="none">
-          <path
-            d="M5 6.5h14v9H11l-4.5 3v-3H5v-9Z"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M8.5 10h7M8.5 12.5h4"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-          />
-        </svg>
+        <MenuBookOutlined v-if="category.slug === 'novel'" class="size-4" />
+        <ExploreOutlined v-else-if="category.slug === 'guide'" class="size-4" />
+        <ForumOutlined v-else class="size-4" />
       </span>
       <span :class="collapsed ? 'hidden lg:block' : ''" class="truncate">
         {{ category.title }}

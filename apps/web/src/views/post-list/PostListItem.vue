@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import {
+  ChatBubbleOutlineOutlined,
+  VisibilityOutlined,
+} from '@vicons/material';
 import { RouterLink } from 'vue-router';
 
 import type { Post } from '@/api';
@@ -82,41 +86,11 @@ function formatDate(value: string) {
 
       <div class="flex items-center gap-4" aria-label="帖子数据">
         <span class="inline-flex items-center gap-1.5">
-          <svg
-            viewBox="0 0 24 24"
-            class="size-4"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.5 12s3.2-5 8.5-5 8.5 5 8.5 5-3.2 5-8.5 5-8.5-5-8.5-5Z"
-              stroke="currentColor"
-              stroke-width="1.6"
-            />
-            <circle
-              cx="12"
-              cy="12"
-              r="2"
-              stroke="currentColor"
-              stroke-width="1.6"
-            />
-          </svg>
+          <VisibilityOutlined class="size-4" aria-hidden="true" />
           {{ post.viewsCount }}
         </span>
         <span class="inline-flex items-center gap-1.5">
-          <svg
-            viewBox="0 0 24 24"
-            class="size-4"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 6.5h14v9H11l-4.5 3v-3H5v-9Z"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
           {{ post.commentsCount }}
         </span>
       </div>

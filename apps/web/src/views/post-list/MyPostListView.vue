@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArrowBackOutlined, ArticleOutlined } from '@vicons/material';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
@@ -78,15 +79,7 @@ onBeforeUnmount(() => postsController?.abort());
         :to="{ name: 'posts' }"
         class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >
-        <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
-          <path
-            d="m11.5 5-5 5 5 5"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <ArrowBackOutlined class="size-4" aria-hidden="true" />
         返回帖子列表
       </RouterLink>
 
@@ -103,15 +96,7 @@ onBeforeUnmount(() => postsController?.abort());
           class="mx-auto grid size-12 place-items-center rounded-full bg-primary-soft text-primary"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 24 24" class="size-6" fill="none">
-            <path
-              d="M6 5.5h12v13H6v-13Zm3 3h6m-6 3h6m-6 3h4"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <ArticleOutlined class="size-6" />
         </div>
         <h2 class="mt-4 text-lg font-semibold text-ink">登录后查看帖子</h2>
         <p class="mt-2 text-sm text-muted">

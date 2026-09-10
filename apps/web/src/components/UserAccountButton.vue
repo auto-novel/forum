@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import {
+  ArticleOutlined,
+  CloseOutlined,
+  KeyboardArrowDownOutlined,
+  ExitToAppOutlined,
+  StarBorderOutlined,
+} from '@vicons/material';
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue';
 import { RouterLink } from 'vue-router';
 
@@ -120,20 +127,7 @@ async function focusLoginFrame() {
       <span class="max-w-20 truncate sm:max-w-none">
         @{{ authUser.username }}
       </span>
-      <svg
-        viewBox="0 0 20 20"
-        class="size-4 flex-none"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="m6.5 8 3.5 3.5L13.5 8"
-          stroke="currentColor"
-          stroke-width="1.6"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      <KeyboardArrowDownOutlined class="size-4 flex-none" aria-hidden="true" />
     </button>
 
     <button v-else type="button" class="account-trigger" @click="openLogin">
@@ -152,20 +146,7 @@ async function focusLoginFrame() {
           role="menuitem"
           @click="menuOpen = false"
         >
-          <svg
-            viewBox="0 0 24 24"
-            class="size-4"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M6 5.5h12v13H6v-13Zm3 3h6m-6 3h6m-6 3h4"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <ArticleOutlined class="size-4" aria-hidden="true" />
           我的帖子
         </RouterLink>
         <RouterLink
@@ -174,19 +155,7 @@ async function focusLoginFrame() {
           role="menuitem"
           @click="menuOpen = false"
         >
-          <svg
-            viewBox="0 0 24 24"
-            class="size-4"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76L12 4Z"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <StarBorderOutlined class="size-4" aria-hidden="true" />
           我的收藏
         </RouterLink>
         <button
@@ -195,20 +164,7 @@ async function focusLoginFrame() {
           role="menuitem"
           @click="logout"
         >
-          <svg
-            viewBox="0 0 24 24"
-            class="size-4"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10m4-4 3-3-3-3m3 3H9"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <ExitToAppOutlined class="size-4" aria-hidden="true" />
           退出账号
         </button>
       </div>
@@ -234,19 +190,7 @@ async function focusLoginFrame() {
           aria-label="关闭登录窗口"
           @click="closeLogin"
         >
-          <svg
-            viewBox="0 0 20 20"
-            class="size-5"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="m6 6 8 8m0-8-8 8"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-          </svg>
+          <CloseOutlined class="size-5" aria-hidden="true" />
         </button>
 
         <iframe

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Inventory2Outlined } from '@vicons/material';
+
 import type { Post } from '@/api';
 
 import PostListItem from './PostListItem.vue';
@@ -65,15 +67,7 @@ const emit = defineEmits<{
           class="mx-auto grid size-12 place-items-center rounded-full bg-paper text-muted"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 24 24" class="size-6" fill="none">
-            <path
-              d="M5 7h14v11H5V7Zm3-3h8M9 12h6"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <Inventory2Outlined class="size-6" />
         </div>
         <h2 class="mt-4 text-lg font-semibold">
           {{ emptyTitle ?? '暂无帖子' }}

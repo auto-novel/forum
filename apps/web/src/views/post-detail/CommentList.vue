@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ChatBubbleOutlineOutlined } from '@vicons/material';
+
 import type { PostComment } from '@/api';
 
 import CommentListItem from './CommentListItem.vue';
@@ -68,14 +70,7 @@ const emit = defineEmits<{
           class="mx-auto grid size-11 place-items-center rounded-full bg-paper text-muted"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 24 24" class="size-5" fill="none">
-            <path
-              d="M5 6.5h14v9H11l-4.5 3v-3H5v-9Z"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <ChatBubbleOutlineOutlined class="size-5" />
         </div>
         <p class="mt-3 text-sm font-medium text-ink">还没有评论</p>
         <p class="mt-1 text-xs text-muted">这里暂时安安静静的。</p>
