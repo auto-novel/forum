@@ -87,6 +87,7 @@ func (h *postHandler) RegisterRoutes(router chi.Router) {
 		router.Get("/", httpx.EH(h.get))
 		router.With(httpx.RequireAccessToken).Patch("/", httpx.EH(h.update))
 		router.With(httpx.RequireAccessToken).Delete("/", httpx.EH(h.delete))
+		router.With(httpx.RequireAccessToken).Get("/favorite", httpx.EH(h.getFavorite))
 		router.With(httpx.RequireAccessToken).Put("/favorite", httpx.EH(h.favorite))
 		router.With(httpx.RequireAccessToken).Delete("/favorite", httpx.EH(h.unfavorite))
 		router.Get("/comment", httpx.EH(h.listComments))
@@ -255,6 +256,22 @@ func (h *postHandler) delete(w http.ResponseWriter, r *http.Request) error {
 		return repoError(err, "删除帖子失败")
 	}
 	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (h *postHandler) getFavorite(w http.ResponseWriter, r *http.Request) error {
+	postID, err := httpx.ParseParamPositiveInt(r, "id")
+	if err != nil {
+		return err
+	}
+	principal, _ := httpx.AuthenticatedPrincipal(r)
+	favorited, err := h.favoriteRepo.Has(postID, principal.UserID)
+	if err != nil {
+		return repoError(err, "查询收藏状态失败")
+	}
+	render.JSON(w, r, struct {
+		Favorited bool `json:"favorited"`
+	}{Favorited: favorited})
 	return nil
 }
 

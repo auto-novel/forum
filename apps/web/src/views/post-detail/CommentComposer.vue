@@ -7,10 +7,12 @@ import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 const props = defineProps<{
   postId: number;
   locked: boolean;
+  replyTo?: PostComment;
 }>();
 
 const emit = defineEmits<{
   created: [comment: PostComment];
+  cancelReply: [];
 }>();
 
 const content = ref('');
@@ -18,7 +20,7 @@ const submitting = ref(false);
 const submitError = ref('');
 const draftKey = computed(() =>
   authUser.value
-    ? `forum:comment-draft:${props.postId}:${authUser.value.id}`
+    ? `forum:comment-draft:${props.postId}:${authUser.value.id}:${props.replyTo?.rootId ?? props.replyTo?.id ?? 'root'}`
     : '',
 );
 
@@ -44,7 +46,9 @@ function saveDraft(key: string, value: string) {
 watch(
   draftKey,
   (key) => {
-    content.value = readDraft(key);
+    const draft = readDraft(key);
+    content.value =
+      draft || (props.replyTo ? `@${props.replyTo.authorUsername} ` : '');
   },
   { immediate: true },
 );
@@ -72,7 +76,10 @@ async function submitComment() {
   submitting.value = true;
   submitError.value = '';
   try {
-    const comment = await createPostComment(props.postId, { content: value });
+    const comment = await createPostComment(props.postId, {
+      content: value,
+      rootId: props.replyTo?.rootId ?? props.replyTo?.id,
+    });
     content.value = '';
     saveDraft(draftKey.value, '');
     emit('created', comment);
@@ -86,7 +93,19 @@ async function submitComment() {
 
 <template>
   <section class="mt-5 rounded-sm bg-surface px-4 py-5 sm:px-6">
-    <h2 class="font-semibold text-ink">发表评论</h2>
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="font-semibold text-ink">
+        {{ replyTo ? `回复 @${replyTo.authorUsername}` : '发表评论' }}
+      </h2>
+      <button
+        v-if="replyTo"
+        type="button"
+        class="text-xs font-medium text-muted hover:text-primary"
+        @click="emit('cancelReply')"
+      >
+        取消回复
+      </button>
+    </div>
 
     <div
       v-if="locked"
@@ -106,7 +125,11 @@ async function submitComment() {
       <MarkdownEditor
         v-model="content"
         mode="comment"
-        placeholder="友善交流，分享你的想法…"
+        :placeholder="
+          replyTo
+            ? `回复 @${replyTo.authorUsername}…`
+            : '友善交流，分享你的想法…'
+        "
         :disabled="submitting"
       />
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">

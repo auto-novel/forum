@@ -10,19 +10,20 @@ defineProps<{
   page: number;
   total: number;
   totalPages: number;
+  locked: boolean;
 }>();
 
 const emit = defineEmits<{
   retry: [];
   changePage: [page: number];
+  reply: [comment: PostComment];
+  updated: [comment: PostComment];
+  deleted: [id: number];
 }>();
 </script>
 
 <template>
-  <section
-    class="mt-5 overflow-hidden rounded-sm bg-surface"
-    aria-live="polite"
-  >
+  <section class="mt-5 rounded-sm bg-surface" aria-live="polite">
     <header class="border-b border-divider px-4 py-4 sm:px-6">
       <h2 class="font-semibold text-ink">
         评论
@@ -86,6 +87,10 @@ const emit = defineEmits<{
         v-for="comment in comments"
         :key="comment.id"
         :comment="comment"
+        :locked="locked"
+        @reply="emit('reply', $event)"
+        @updated="emit('updated', $event)"
+        @deleted="emit('deleted', $event)"
       />
     </div>
 

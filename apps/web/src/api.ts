@@ -119,6 +119,17 @@ export function getPost(id: number, signal?: AbortSignal) {
   return client.get(`post/${id}/`, { signal }).json<Post>();
 }
 
+export function getPostFavorite(id: number, signal?: AbortSignal) {
+  return client
+    .get(`post/${id}/favorite`, { signal })
+    .json<{ favorited: boolean }>();
+}
+
+export function setPostFavorite(id: number, favorited: boolean) {
+  const path = `post/${id}/favorite`;
+  return favorited ? client.put(path) : client.delete(path);
+}
+
 export function getCategoryTags(categoryId: number, signal?: AbortSignal) {
   return client
     .get(`category/${categoryId}/tag`, { signal })
@@ -132,6 +143,24 @@ export function createPost(input: {
   tagIds: number[];
 }) {
   return client.post('post/', { json: input }).json<Post>();
+}
+
+export function updatePost(
+  id: number,
+  input: { title: string; content: string; tagIds: number[] },
+) {
+  return client.patch(`post/${id}/`, { json: input }).json<Post>();
+}
+
+export function deletePost(id: number) {
+  return client.delete(`post/${id}/`);
+}
+
+export function moderatePost(
+  id: number,
+  input: { status: number; commentsLocked: boolean; pinOrder: number | null },
+) {
+  return client.patch(`admin/post/${id}`, { json: input });
 }
 
 export function getPostComments(
@@ -155,4 +184,21 @@ export function createPostComment(
   input: { content: string; rootId?: number },
 ) {
   return client.post(`post/${id}/comment`, { json: input }).json<PostComment>();
+}
+
+export function updatePostComment(id: number, content: string) {
+  return client
+    .patch(`comment/${id}`, { json: { content } })
+    .json<PostComment>();
+}
+
+export function deletePostComment(id: number) {
+  return client.delete(`comment/${id}`);
+}
+
+export function setPostCommentStatus(
+  id: number,
+  status: 'published' | 'hidden' | 'deleted',
+) {
+  return client.put(`admin/comment/${id}/status`, { json: { status } });
 }

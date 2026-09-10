@@ -119,6 +119,13 @@ func TestJetRepositories(t *testing.T) {
 	if err := favoriteRepo.Set(post.ID, 7, true); err != nil {
 		t.Fatal(err)
 	}
+	favorited, err := favoriteRepo.Has(post.ID, 7)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !favorited {
+		t.Fatal("favorite was not found after insertion")
+	}
 	favoriteTotal, _, err := postRepo.List(repository.PostFilter{FavoriteUserID: 7}, 20, 0)
 	if err != nil {
 		t.Fatal(err)

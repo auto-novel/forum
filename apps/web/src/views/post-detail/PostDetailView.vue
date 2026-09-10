@@ -12,7 +12,9 @@ import {
 
 import CommentComposer from './CommentComposer.vue';
 import CommentList from './CommentList.vue';
+import PostActions from './PostActions.vue';
 import PostContent from './PostContent.vue';
+import PostEditForm from './PostEditForm.vue';
 
 const COMMENT_PAGE_SIZE = 50;
 
@@ -25,6 +27,8 @@ const postLoading = ref(true);
 const commentsLoading = ref(true);
 const postError = ref('');
 const commentsError = ref('');
+const editingPost = ref(false);
+const replyTo = ref<PostComment>();
 let postController: AbortController | undefined;
 let commentsController: AbortController | undefined;
 
@@ -120,7 +124,16 @@ async function handleCommentCreated(comment: PostComment) {
   post.value = { ...post.value, commentsCount: nextTotal };
   commentsTotal.value = nextTotal;
 
-  if (commentPage.value === lastPage) {
+  if (comment.rootId != null) {
+    const lastReplyIndex = comments.value.reduce(
+      (result, item, index) =>
+        item.id === comment.rootId || item.rootId === comment.rootId
+          ? index
+          : result,
+      -1,
+    );
+    comments.value.splice(lastReplyIndex + 1, 0, comment);
+  } else if (commentPage.value === lastPage) {
     comments.value.push(comment);
   } else {
     await router.push({
@@ -129,8 +142,63 @@ async function handleCommentCreated(comment: PostComment) {
       query: { commentPage: String(lastPage) },
     });
   }
+  replyTo.value = undefined;
   await nextTick();
-  document.querySelector('#comments')?.scrollIntoView({ behavior: 'smooth' });
+  document
+    .querySelector(`#comment-${comment.id}`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function startReply(comment: PostComment) {
+  replyTo.value = comment;
+  void nextTick(() =>
+    document
+      .querySelector('#comment-composer')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+  );
+}
+
+function handleCommentUpdated(comment: PostComment) {
+  const index = comments.value.findIndex((item) => item.id === comment.id);
+  if (index >= 0) comments.value[index] = comment;
+}
+
+function handleCommentDeleted(id: number) {
+  comments.value = comments.value.filter((comment) => comment.id !== id);
+  commentsTotal.value = Math.max(0, commentsTotal.value - 1);
+  if (post.value) {
+    post.value = {
+      ...post.value,
+      commentsCount: Math.max(0, post.value.commentsCount - 1),
+    };
+  }
+  if (replyTo.value?.id === id) replyTo.value = undefined;
+  if (!comments.value.length && commentPage.value > 1) {
+    changeCommentPage(commentPage.value - 1);
+  }
+}
+
+function scrollToComposer() {
+  document
+    .querySelector('#comment-composer')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function handlePostSaved(value: Post) {
+  post.value = value;
+  editingPost.value = false;
+  document.title = `${value.title} | Novelia Forum`;
+}
+
+function handlePostUpdated(value: Post) {
+  post.value = value;
+}
+
+function leaveDeletedPost() {
+  void router.replace({
+    name: 'posts',
+    query: category.value ? { category: category.value.slug } : undefined,
+  });
 }
 
 watch(postId, loadPost, { immediate: true });
@@ -197,27 +265,51 @@ onBeforeUnmount(() => {
       </div>
 
       <template v-else-if="post">
+        <PostEditForm
+          v-if="editingPost"
+          :post="post"
+          @cancel="editingPost = false"
+          @saved="handlePostSaved"
+        />
         <PostContent
+          v-else
           :post="post"
           :category-name="category?.title ?? '未分类'"
         />
-        <CommentComposer
-          :post-id="post.id"
-          :locked="post.commentsLocked"
-          @created="handleCommentCreated"
+        <PostActions
+          v-if="!editingPost"
+          :post="post"
+          @edit="editingPost = true"
+          @deleted="leaveDeletedPost"
+          @updated="handlePostUpdated"
+          @comment="scrollToComposer"
         />
-        <div id="comments">
-          <CommentList
-            :comments="comments"
-            :loading="commentsLoading"
-            :error="commentsError"
-            :page="commentPage"
-            :total="commentsTotal"
-            :total-pages="commentTotalPages"
-            @retry="loadComments"
-            @change-page="changeCommentPage"
+        <template v-if="!editingPost">
+          <CommentComposer
+            id="comment-composer"
+            :post-id="post.id"
+            :locked="post.commentsLocked"
+            :reply-to="replyTo"
+            @created="handleCommentCreated"
+            @cancel-reply="replyTo = undefined"
           />
-        </div>
+          <div id="comments">
+            <CommentList
+              :comments="comments"
+              :loading="commentsLoading"
+              :error="commentsError"
+              :page="commentPage"
+              :total="commentsTotal"
+              :total-pages="commentTotalPages"
+              :locked="post.commentsLocked"
+              @retry="loadComments"
+              @change-page="changeCommentPage"
+              @reply="startReply"
+              @updated="handleCommentUpdated"
+              @deleted="handleCommentDeleted"
+            />
+          </div>
+        </template>
       </template>
     </div>
   </div>
