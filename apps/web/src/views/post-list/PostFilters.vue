@@ -103,8 +103,9 @@ onBeforeUnmount(() => tagsController?.abort());
       <input
         v-model="queryInput"
         type="search"
+        enterkeyhint="search"
         class="min-h-10 w-full rounded-sm border border-border bg-surface pr-3 pl-9 text-sm outline-none transition placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15"
-        placeholder="搜索标题或正文"
+        placeholder="搜索标题或正文，按 Enter 确认"
       />
     </label>
 
@@ -137,15 +138,11 @@ onBeforeUnmount(() => tagsController?.abort());
       </select>
     </label>
 
-    <div class="flex gap-2">
+    <div
+      v-if="queryInput || tagInput || sortInput !== 'active'"
+      class="flex gap-2"
+    >
       <button
-        type="submit"
-        class="min-h-10 flex-1 rounded-sm bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-      >
-        筛选
-      </button>
-      <button
-        v-if="queryInput || tagInput || sortInput !== 'active'"
         type="button"
         class="min-h-10 rounded-sm border border-border px-3 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-primary"
         @click="reset"
