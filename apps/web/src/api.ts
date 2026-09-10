@@ -1,24 +1,7 @@
-import { createAuthApi, type AuthUser } from '@novelia/auth-api';
-import { readonly, ref } from 'vue';
+import { webKit } from './web-kit';
 
-const authUrl = new URL(__AUTH_URL__, window.location.origin);
-
-export const authApi = createAuthApi({
-  app: 'f',
-  url: authUrl.toString(),
-  storage: {
-    key: 'f-session',
-    target: localStorage,
-  },
-});
-
-const user = ref<AuthUser>();
-
-authApi.watchUser((profile) => {
-  user.value = profile;
-});
-
-export const authUser = readonly(user);
+export const authApi = webKit.api;
+export const authUser = webKit.profile;
 
 const client = authApi.createClient(
   new URL('/api/v1/', window.location.origin).toString(),

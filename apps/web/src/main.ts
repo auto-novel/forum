@@ -1,14 +1,10 @@
 import { createApp } from 'vue';
 
 import App from './App.vue';
-import { authApi } from './api';
 import router from './router';
 import './styles.css';
-import { initializeTheme } from './theme';
-
-initializeTheme();
+import { webKit } from './web-kit';
 
 const app = createApp(App);
 
-app.onUnmount(authApi.dispose);
-app.use(router).mount('#app');
+app.use(webKit).use(router).mount('#app');

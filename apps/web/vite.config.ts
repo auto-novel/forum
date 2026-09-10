@@ -1,7 +1,17 @@
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
+
+const repositoryRoot = fileURLToPath(new URL('../..', import.meta.url));
+
+function readGitValue(args: string[]) {
+  return execFileSync('git', args, {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  }).trim();
+}
 
 function setupAuthProxy(config: UserConfig) {
   const authUrl = 'https://auth.novelia.cc';
@@ -54,6 +64,12 @@ export default defineConfig(({ command, mode }) => {
     'VITE_',
   );
   const isServe = command === 'serve';
+  const commitSha = isServe
+    ? readGitValue(['rev-parse', 'HEAD'])
+    : env.VITE_COMMIT_SHA || 'unknown';
+  const buildTime = isServe
+    ? readGitValue(['show', '-s', '--format=%cI', 'HEAD'])
+    : env.VITE_BUILD_TIME || new Date().toISOString();
   const apiMode = env.VITE_API_MODE;
   const apiUrl =
     apiMode === 'native'
@@ -64,13 +80,15 @@ export default defineConfig(({ command, mode }) => {
 
   const config: UserConfig = {
     define: {
+      __BUILD_TIME__: JSON.stringify(buildTime),
+      __COMMIT_SHA__: JSON.stringify(commitSha),
       __AUTH_URL__: JSON.stringify(
         isServe ? '/auth-proxy/' : 'https://auth.novelia.cc',
       ),
     },
     plugins: [vue(), tailwindcss()],
     optimizeDeps: {
-      exclude: ['@novelia/auth-api'],
+      exclude: ['@novelia/auth-api', '@novelia/web-kit'],
     },
     server: {
       port: 5173,
