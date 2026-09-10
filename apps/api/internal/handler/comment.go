@@ -36,7 +36,7 @@ type commentResponse struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
-func newCommentResponse(value repository.Comment) (commentResponse, error) {
+func newCommentResponse(r *http.Request, value repository.Comment) (commentResponse, error) {
 	postID, err := repository.PostIDFromSubjectKey(value.SubjectKey)
 	if err != nil {
 		return commentResponse{}, fmt.Errorf("comment %d: %w", value.ID, err)
@@ -45,13 +45,21 @@ func newCommentResponse(value repository.Comment) (commentResponse, error) {
 		ID:             value.ID,
 		PostID:         postID,
 		RootID:         value.RootID,
-		Content:        value.Content,
+		Content:        publicCommentContent(r, value),
 		AuthorID:       value.AuthorID,
 		AuthorUsername: value.AuthorUsername,
 		Status:         value.Status,
 		CreatedAt:      value.CreatedAt,
 		UpdatedAt:      value.UpdatedAt,
 	}, nil
+}
+
+func publicCommentContent(r *http.Request, value repository.Comment) string {
+	principal, err := httpx.AuthenticatedPrincipal(r)
+	if value.Status == repository.StatusPublished || (err == nil && principal.IsAdmin()) {
+		return value.Content
+	}
+	return ""
 }
 
 func (h *commentHandler) modifiableID(r *http.Request) (int64, error) {
@@ -94,7 +102,7 @@ func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return httpx.InternalError(err, "更新评论失败")
 	}
-	response, err := newCommentResponse(*comment)
+	response, err := newCommentResponse(r, *comment)
 	if err != nil {
 		return httpx.InternalError(err, "转换评论数据失败")
 	}

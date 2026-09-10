@@ -338,7 +338,7 @@ func (h *postHandler) listComments(w http.ResponseWriter, r *http.Request) error
 	}
 	response := make([]commentResponse, len(items))
 	for i, item := range items {
-		response[i], err = newCommentResponse(item)
+		response[i], err = newCommentResponse(r, item)
 		if err != nil {
 			return httpx.InternalError(err, "转换评论数据失败")
 		}
@@ -380,7 +380,7 @@ func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return httpx.InternalError(err, "创建评论失败")
 	}
-	response, err := newCommentResponse(*comment)
+	response, err := newCommentResponse(r, *comment)
 	if err != nil {
 		return httpx.InternalError(err, "转换评论数据失败")
 	}

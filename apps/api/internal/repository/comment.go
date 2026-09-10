@@ -42,8 +42,7 @@ func NewCommentRepository(db *sql.DB) CommentRepository { return &commentReposit
 
 func (r *commentRepository) List(subjectType int16, subjectKey string, limit, offset int64) (int64, []Comment, error) {
 	condition := table.Comment.SubjectType.EQ(Int16(subjectType)).
-		AND(table.Comment.SubjectKey.EQ(String(subjectKey))).
-		AND(table.Comment.Status.EQ(Int16(StatusPublished)))
+		AND(table.Comment.SubjectKey.EQ(String(subjectKey)))
 	countStmt := SELECT(COUNT(STAR)).FROM(table.Comment).WHERE(condition)
 	var count struct{ Count int64 }
 	if err := countStmt.Query(r.db, &count); err != nil {

@@ -37,12 +37,12 @@ type externalCommentResponse struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
-func newExternalCommentResponse(value repository.Comment) externalCommentResponse {
+func newExternalCommentResponse(r *http.Request, value repository.Comment) externalCommentResponse {
 	return externalCommentResponse{
 		ID:             value.ID,
 		SubjectKey:     value.SubjectKey,
 		RootID:         value.RootID,
-		Content:        value.Content,
+		Content:        publicCommentContent(r, value),
 		AuthorID:       value.AuthorID,
 		AuthorUsername: value.AuthorUsername,
 		Status:         value.Status,
@@ -91,7 +91,7 @@ func (h *externalCommentHandler) list(w http.ResponseWriter, r *http.Request) er
 	}
 	response := make([]externalCommentResponse, len(items))
 	for i, item := range items {
-		response[i] = newExternalCommentResponse(item)
+		response[i] = newExternalCommentResponse(r, item)
 	}
 	render.JSON(w, r, page[externalCommentResponse]{Total: total, Items: response})
 	return nil
@@ -127,7 +127,7 @@ func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) 
 		return httpx.InternalError(err, "创建附属资源评论失败")
 	}
 	render.Status(r, http.StatusCreated)
-	render.JSON(w, r, newExternalCommentResponse(*comment))
+	render.JSON(w, r, newExternalCommentResponse(r, *comment))
 	return nil
 }
 
@@ -175,7 +175,7 @@ func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return httpx.InternalError(err, "更新评论失败")
 	}
-	render.JSON(w, r, newExternalCommentResponse(*comment))
+	render.JSON(w, r, newExternalCommentResponse(r, *comment))
 	return nil
 }
 

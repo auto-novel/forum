@@ -59,6 +59,13 @@ func TestJetRepositories(t *testing.T) {
 	if err := commentRepo.SetStatus(otherSubjectType, otherSubjectComment.ID, repository.StatusDeleted); err != nil {
 		t.Fatal(err)
 	}
+	otherTotal, otherComments, err = commentRepo.List(otherSubjectType, "novel:chapter-1", 20, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if otherTotal != 1 || len(otherComments) != 1 || otherComments[0].Status != repository.StatusDeleted {
+		t.Fatalf("deleted external comment missing: total=%d items=%#v", otherTotal, otherComments)
+	}
 	if err := testDB.QueryRow("SELECT comments_count FROM post WHERE id = $1", post.ID).Scan(&commentsCount); err != nil {
 		t.Fatal(err)
 	}
@@ -155,8 +162,25 @@ func TestJetRepositories(t *testing.T) {
 	if !errors.Is(err, repository.ErrCommentsLocked) {
 		t.Fatalf("got %v, want ErrCommentsLocked", err)
 	}
-	if err := commentRepo.SetStatus(repository.CommentSubjectPost, root.ID, repository.StatusDeleted); err != nil {
-		t.Fatal(err)
+	for _, status := range []int16{repository.StatusHidden, repository.StatusDeleted} {
+		if err := commentRepo.SetStatus(repository.CommentSubjectPost, root.ID, status); err != nil {
+			t.Fatal(err)
+		}
+		for offset := int64(0); offset < 2; offset++ {
+			total, items, err := commentRepo.List(repository.CommentSubjectPost, repository.PostSubjectKey(post.ID), 1, offset)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if total != 2 || len(items) != 1 {
+				t.Fatalf("moderation changed pagination: total=%d items=%#v", total, items)
+			}
+			if offset == 0 && (items[0].ID != root.ID || items[0].Status != status || items[0].Content != root.Content) {
+				t.Fatalf("moderated root or stored content changed: %#v", items[0])
+			}
+			if offset == 1 && (items[0].RootID == nil || *items[0].RootID != root.ID || items[0].Status != repository.StatusPublished) {
+				t.Fatalf("reply relationship changed: %#v", items[0])
+			}
+		}
 	}
 	updated, err := postRepo.Update(post.ID, repository.UpdatePostInput{
 		Title:   "更新标题",
