@@ -16,6 +16,8 @@ func (h *categoryHandler) RegisterAdminRoutes(router chi.Router) {
 	router.Put("/{id}", httpx.EH(h.updateCategory))
 	router.Post("/{cid}/tag", httpx.EH(h.createTag))
 	router.Put("/{cid}/tag/{id}", httpx.EH(h.updateTag))
+	router.Put("/{cid}/tag/{id}/active", httpx.EH(h.activateTag))
+	router.Delete("/{cid}/tag/{id}/active", httpx.EH(h.deactivateTag))
 }
 
 type categoryInput struct {
@@ -84,7 +86,6 @@ func (h *categoryHandler) updateCategory(w http.ResponseWriter, r *http.Request)
 type tagInput struct {
 	Name      string `json:"name" validate:"required,max=64"`
 	Color     int16  `json:"color" validate:"gte=0"`
-	IsActive  bool   `json:"isActive"`
 	SortOrder int32  `json:"sortOrder"`
 }
 
@@ -144,7 +145,6 @@ func (h *categoryHandler) updateTag(w http.ResponseWriter, r *http.Request) erro
 		id,
 		strings.TrimSpace(input.Name),
 		input.Color,
-		input.IsActive,
 		input.SortOrder,
 	)
 	if repository.IsNotFound(err) {
@@ -162,5 +162,27 @@ func (h *categoryHandler) updateTag(w http.ResponseWriter, r *http.Request) erro
 		CreatedAt: tag.CreatedAt,
 		UpdatedAt: tag.UpdatedAt,
 	})
+	return nil
+}
+
+func (h *categoryHandler) activateTag(w http.ResponseWriter, r *http.Request) error {
+	return h.setTagActive(w, r, true)
+}
+
+func (h *categoryHandler) deactivateTag(w http.ResponseWriter, r *http.Request) error {
+	return h.setTagActive(w, r, false)
+}
+
+func (h *categoryHandler) setTagActive(w http.ResponseWriter, r *http.Request, active bool) error {
+	id, err := httpx.ParseParamPositiveInt(r, "id")
+	if err != nil {
+		return err
+	}
+	if err := h.tagRepo.SetActive(id, active); repository.IsNotFound(err) {
+		return httpx.NotFound("标签不存在")
+	} else if err != nil {
+		return httpx.InternalError(err, "设置标签启用状态失败")
+	}
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }

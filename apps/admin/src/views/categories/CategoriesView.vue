@@ -17,6 +17,7 @@ const selectedCategoryId = ref<number>();
 const loading = ref(true);
 const tagsLoading = ref(false);
 const saving = ref(false);
+const activeUpdatingTagId = ref<number>();
 const errorMessage = ref('');
 const successMessage = ref('');
 const categoryModalOpen = ref(false);
@@ -24,7 +25,7 @@ const tagModalOpen = ref(false);
 const editingCategoryId = ref<number>();
 const editingTagId = ref<number>();
 const categoryForm = reactive({ slug: '', bannerUrl: '' });
-const tagForm = reactive({ name: '', color: 0, isActive: true, sortOrder: 0 });
+const tagForm = reactive({ name: '', color: 0, sortOrder: 0 });
 
 const selectedCategory = computed(() =>
   categories.value.find((category) => category.id === selectedCategoryId.value),
@@ -105,7 +106,7 @@ async function saveCategory() {
 
 function openCreateTag() {
   editingTagId.value = undefined;
-  Object.assign(tagForm, { name: '', color: 0, isActive: true, sortOrder: 0 });
+  Object.assign(tagForm, { name: '', color: 0, sortOrder: 0 });
   tagModalOpen.value = true;
 }
 
@@ -114,7 +115,6 @@ function openEditTag(tag: Tag) {
   Object.assign(tagForm, {
     name: tag.name,
     color: tag.color,
-    isActive: tag.isActive,
     sortOrder: tag.sortOrder,
   });
   tagModalOpen.value = true;
@@ -125,7 +125,11 @@ async function saveTag() {
   saving.value = true;
   errorMessage.value = '';
   try {
-    const request = { ...tagForm, name: tagForm.name.trim() };
+    const request = {
+      name: tagForm.name.trim(),
+      color: tagForm.color,
+      sortOrder: tagForm.sortOrder,
+    };
     if (editingTagId.value) {
       await api.updateTag(
         selectedCategoryId.value,
@@ -142,6 +146,25 @@ async function saveTag() {
     errorMessage.value = error instanceof Error ? error.message : String(error);
   } finally {
     saving.value = false;
+  }
+}
+
+async function toggleTagActive(tag: Tag) {
+  if (selectedCategoryId.value == null) return;
+  activeUpdatingTagId.value = tag.id;
+  errorMessage.value = '';
+  try {
+    if (tag.isActive) {
+      await api.deactivateTag(selectedCategoryId.value, tag.id);
+    } else {
+      await api.activateTag(selectedCategoryId.value, tag.id);
+    }
+    successMessage.value = tag.isActive ? '标签已停用' : '标签已启用';
+    await loadTags(selectedCategoryId.value);
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : String(error);
+  } finally {
+    activeUpdatingTagId.value = undefined;
   }
 }
 
@@ -188,8 +211,10 @@ onMounted(loadCategories);
         :category="selectedCategory"
         :tags="tags"
         :loading="tagsLoading"
+        :active-updating-id="activeUpdatingTagId"
         @create="openCreateTag"
         @edit="openEditTag"
+        @toggle-active="toggleTagActive"
       />
     </div>
 
@@ -205,7 +230,6 @@ onMounted(loadCategories);
     <TagFormModal
       v-model:name="tagForm.name"
       v-model:color="tagForm.color"
-      v-model:active="tagForm.isActive"
       v-model:sort-order="tagForm.sortOrder"
       :show="tagModalOpen"
       :editing="editingTagId != null"

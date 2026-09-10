@@ -16,11 +16,13 @@ defineProps<{
   category?: Category;
   tags: Tag[];
   loading: boolean;
+  activeUpdatingId?: number;
 }>();
 
 const emit = defineEmits<{
   create: [];
   edit: [tag: Tag];
+  toggleActive: [tag: Tag];
 }>();
 </script>
 
@@ -70,9 +72,20 @@ const emit = defineEmits<{
             色号 {{ tag.color }} · 排序 {{ tag.sortOrder }}
           </n-text>
         </div>
-        <n-button size="small" quaternary @click="emit('edit', tag)">
-          编辑
-        </n-button>
+        <div class="tag-actions">
+          <n-button
+            size="small"
+            quaternary
+            :type="tag.isActive ? 'error' : 'success'"
+            :loading="activeUpdatingId === tag.id"
+            @click="emit('toggleActive', tag)"
+          >
+            {{ tag.isActive ? '停用' : '启用' }}
+          </n-button>
+          <n-button size="small" quaternary @click="emit('edit', tag)">
+            编辑
+          </n-button>
+        </div>
       </div>
     </div>
   </n-card>
@@ -136,6 +149,12 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.tag-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .skeleton-stack {

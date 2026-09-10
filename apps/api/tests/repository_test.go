@@ -18,6 +18,22 @@ func TestJetRepositories(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if !tag.IsActive {
+		t.Fatal("new tag is inactive")
+	}
+	if err := tagRepo.SetActive(tag.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	tag, err = tagRepo.Update(tag.ID, "公告", 2, 20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tag.IsActive || tag.Color != 2 || tag.SortOrder != 20 {
+		t.Fatalf("unexpected updated tag: %#v", tag)
+	}
+	if err := tagRepo.SetActive(tag.ID, true); err != nil {
+		t.Fatal(err)
+	}
 
 	post, err := postRepo.Create(repository.CreatePostInput{
 		CategorySlug: category.Slug,

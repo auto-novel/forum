@@ -69,7 +69,6 @@ interface CategoryRequest {
 interface TagRequest {
   name: string;
   color: number;
-  isActive: boolean;
   sortOrder: number;
 }
 
@@ -117,6 +116,16 @@ export function createForumApi(authApi: AuthApi) {
           json: request,
         })
         .json<Tag>();
+    },
+    activateTag(categoryId: number, id: number) {
+      return client
+        .put(endpoint(`admin/category/${categoryId}/tag/${id}/active`))
+        .text();
+    },
+    deactivateTag(categoryId: number, id: number) {
+      return client
+        .delete(endpoint(`admin/category/${categoryId}/tag/${id}/active`))
+        .text();
     },
     getPosts(params: PostListParams) {
       return client

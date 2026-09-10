@@ -7,6 +7,7 @@ import (
 	"time"
 
 	. "github.com/go-jet/jet/v2/postgres"
+	"github.com/go-jet/jet/v2/qrm"
 )
 
 type Tag = model.Tag
@@ -15,7 +16,8 @@ type TagRepository interface {
 	List(categoryID int64, activeOnly bool) ([]Tag, error)
 	ListForPost(postID int64) ([]Tag, error)
 	Create(categoryID int64, name string, color int16, sortOrder int32, attr string) (*Tag, error)
-	Update(id int64, name string, color int16, active bool, sortOrder int32) (*Tag, error)
+	Update(id int64, name string, color int16, sortOrder int32) (*Tag, error)
+	SetActive(id int64, active bool) error
 }
 
 type tagRepository struct{ db *sql.DB }
@@ -61,15 +63,14 @@ func (r *tagRepository) Create(categoryID int64, name string, color int16, sortO
 	return &dest, nil
 }
 
-func (r *tagRepository) Update(id int64, name string, color int16, active bool, sortOrder int32) (*Tag, error) {
+func (r *tagRepository) Update(id int64, name string, color int16, sortOrder int32) (*Tag, error) {
 	stmt := table.Tag.UPDATE(
 		table.Tag.Name,
 		table.Tag.Color,
-		table.Tag.IsActive,
 		table.Tag.SortOrder,
 		table.Tag.UpdatedAt,
 	).
-		SET(String(name), Int16(color), Bool(active), Int32(sortOrder), TimestampzT(time.Now())).
+		SET(String(name), Int16(color), Int32(sortOrder), TimestampzT(time.Now())).
 		WHERE(table.Tag.ID.EQ(Int64(id))).
 		RETURNING(table.Tag.AllColumns)
 	var dest Tag
@@ -77,4 +78,22 @@ func (r *tagRepository) Update(id int64, name string, color int16, active bool, 
 		return nil, err
 	}
 	return &dest, nil
+}
+
+func (r *tagRepository) SetActive(id int64, active bool) error {
+	stmt := table.Tag.UPDATE(table.Tag.IsActive, table.Tag.UpdatedAt).
+		SET(Bool(active), TimestampzT(time.Now())).
+		WHERE(table.Tag.ID.EQ(Int64(id)))
+	result, err := stmt.Exec(r.db)
+	if err != nil {
+		return err
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return qrm.ErrNoRows
+	}
+	return nil
 }

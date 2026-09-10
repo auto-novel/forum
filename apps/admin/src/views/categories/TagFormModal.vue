@@ -6,7 +6,6 @@ import {
   NInput,
   NInputNumber,
   NModal,
-  NSwitch,
 } from 'naive-ui';
 
 defineProps<{
@@ -22,7 +21,6 @@ const emit = defineEmits<{
 
 const name = defineModel<string>('name', { required: true });
 const color = defineModel<number>('color', { required: true });
-const active = defineModel<boolean>('active', { required: true });
 const sortOrder = defineModel<number>('sortOrder', { required: true });
 </script>
 
@@ -48,9 +46,6 @@ const sortOrder = defineModel<number>('sortOrder', { required: true });
           <n-input-number v-model:value="sortOrder" />
         </n-form-item>
       </div>
-      <n-form-item v-if="editing" label="允许新帖使用">
-        <n-switch v-model:value="active" />
-      </n-form-item>
     </n-form>
     <template #footer>
       <div class="modal-actions">
