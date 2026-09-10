@@ -128,6 +128,21 @@ export function getFavoritePosts(
     .json<Page<Post>>();
 }
 
+export function getMyPosts(
+  params: { page: number; pageSize: number },
+  signal?: AbortSignal,
+) {
+  return client
+    .get('me/post', {
+      searchParams: {
+        page: params.page,
+        page_size: params.pageSize,
+      },
+      signal,
+    })
+    .json<Page<Post>>();
+}
+
 export function getPost(id: number, signal?: AbortSignal) {
   return client.get(`post/${id}/`, { signal }).json<Post>();
 }

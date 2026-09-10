@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { authUser, getFavoritePosts, type Post } from '@/api';
-import PostList from '@/views/post-list/PostList.vue';
+import PostList from './PostList.vue';
 
 const PAGE_SIZE = 20;
 

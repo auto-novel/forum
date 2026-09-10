@@ -147,6 +147,28 @@ async function focusLoginFrame() {
       </div>
       <div class="border-t border-divider p-1">
         <RouterLink
+          :to="{ name: 'my-posts' }"
+          class="account-menu-item"
+          role="menuitem"
+          @click="menuOpen = false"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 5.5h12v13H6v-13Zm3 3h6m-6 3h6m-6 3h4"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          我的帖子
+        </RouterLink>
+        <RouterLink
           :to="{ name: 'favorites' }"
           class="account-menu-item"
           role="menuitem"
