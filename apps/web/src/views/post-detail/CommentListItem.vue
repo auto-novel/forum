@@ -13,6 +13,8 @@ import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import { notifyError, notifySuccess } from '@/notifications';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
   comment: PostComment;
@@ -28,7 +30,6 @@ const emit = defineEmits<{
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
-const actionError = ref('');
 const now = ref(Date.now());
 const confirmationAction = ref<'delete' | 'hide'>();
 const commentActionClass =
@@ -79,23 +80,8 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-async function errorMessage(reason: unknown, fallback: string) {
-  if (reason && typeof reason === 'object' && 'response' in reason) {
-    const response = (reason as { response?: Response }).response;
-    if (response) {
-      try {
-        return (await response.text()) || fallback;
-      } catch {
-        // Use the fallback below.
-      }
-    }
-  }
-  return reason instanceof Error ? reason.message : fallback;
-}
-
 function startEditing() {
   content.value = props.comment.content;
-  actionError.value = '';
   editing.value = true;
 }
 
@@ -103,13 +89,13 @@ async function saveEdit() {
   const value = content.value.trim();
   if (!value || submitting.value) return;
   submitting.value = true;
-  actionError.value = '';
   try {
     const comment = await updatePostComment(props.comment.id, value);
     editing.value = false;
+    notifySuccess('评论修改已保存');
     emit('updated', comment);
   } catch (reason) {
-    actionError.value = await errorMessage(reason, '更新评论失败');
+    notifyError(await getApiErrorMessage(reason, '更新评论失败'));
   } finally {
     submitting.value = false;
   }
@@ -117,13 +103,13 @@ async function saveEdit() {
 
 async function removeComment() {
   submitting.value = true;
-  actionError.value = '';
   try {
     if (isAdmin.value) await setPostCommentStatus(props.comment.id, 'deleted');
     else await deletePostComment(props.comment.id);
+    notifySuccess('评论已删除');
     emit('statusChanged', props.comment.id, 2);
   } catch (reason) {
-    actionError.value = await errorMessage(reason, '删除评论失败');
+    notifyError(await getApiErrorMessage(reason, '删除评论失败'));
   } finally {
     submitting.value = false;
   }
@@ -131,12 +117,12 @@ async function removeComment() {
 
 async function hideComment() {
   submitting.value = true;
-  actionError.value = '';
   try {
     await setPostCommentStatus(props.comment.id, 'hidden');
+    notifySuccess('评论已隐藏');
     emit('statusChanged', props.comment.id, 1);
   } catch (reason) {
-    actionError.value = await errorMessage(reason, '隐藏评论失败');
+    notifyError(await getApiErrorMessage(reason, '隐藏评论失败'));
   } finally {
     submitting.value = false;
   }
@@ -236,9 +222,6 @@ function handleConfirmationOpenChange(open: boolean) {
         </ActionMenuItem>
       </ActionMenu>
     </div>
-    <p v-if="actionError" class="mt-2 text-xs text-red-600" role="alert">
-      {{ actionError }}
-    </p>
     <ConfirmDialog
       :open="confirmationAction != null"
       :title="confirmation.title"

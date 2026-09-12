@@ -20,6 +20,8 @@ import {
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import { notifyError, notifySuccess } from '@/notifications';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{ post: Post }>();
 
@@ -33,7 +35,6 @@ const emit = defineEmits<{
 const favorited = ref(props.post.favorited);
 const favoriteLoading = ref(false);
 const actionLoading = ref(false);
-const actionError = ref('');
 const confirmationAction = ref<'delete' | 'hide'>();
 const postActionClass =
   'inline-flex min-h-9 items-center gap-[0.4rem] rounded-sm px-[0.7rem] text-[0.8125rem] font-semibold transition-colors duration-150 hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50';
@@ -58,31 +59,17 @@ const confirmation = computed(() =>
       },
 );
 
-async function errorMessage(reason: unknown, fallback: string) {
-  if (reason && typeof reason === 'object' && 'response' in reason) {
-    const response = (reason as { response?: Response }).response;
-    if (response) {
-      try {
-        return (await response.text()) || fallback;
-      } catch {
-        // Use the fallback below.
-      }
-    }
-  }
-  return reason instanceof Error ? reason.message : fallback;
-}
-
 async function toggleFavorite() {
   if (!authUser.value || favoriteLoading.value) return;
   favoriteLoading.value = true;
-  actionError.value = '';
   const nextValue = !favorited.value;
   try {
     await setPostFavorite(props.post.id, nextValue);
     favorited.value = nextValue;
     emit('updated', { ...props.post, favorited: nextValue });
+    notifySuccess(nextValue ? '帖子已收藏' : '已取消收藏');
   } catch (reason) {
-    actionError.value = await errorMessage(reason, '更新收藏失败');
+    notifyError(await getApiErrorMessage(reason, '更新收藏失败'));
   } finally {
     favoriteLoading.value = false;
   }
@@ -94,36 +81,46 @@ function editPost() {
 
 async function removePost() {
   actionLoading.value = true;
-  actionError.value = '';
   try {
     await deletePost(props.post.id);
+    notifySuccess('帖子已删除');
     emit('deleted');
   } catch (reason) {
-    actionError.value = await errorMessage(reason, '删除帖子失败');
+    notifyError(await getApiErrorMessage(reason, '删除帖子失败'));
   } finally {
     actionLoading.value = false;
   }
 }
 
-async function updateModeration(request: Promise<unknown>, nextPost: Post) {
+async function updateModeration(
+  request: Promise<unknown>,
+  nextPost: Post,
+  successMessage: string,
+  failureMessage: string,
+) {
   actionLoading.value = true;
-  actionError.value = '';
   try {
     await request;
+    notifySuccess(successMessage);
     if (nextPost.status !== 0) emit('deleted');
     else emit('updated', nextPost);
   } catch (reason) {
-    actionError.value = await errorMessage(reason, '管理帖子失败');
+    notifyError(await getApiErrorMessage(reason, failureMessage));
   } finally {
     actionLoading.value = false;
   }
 }
 
 function hidePost() {
-  void updateModeration(setPostStatus(props.post.id, 1), {
-    ...props.post,
-    status: 1,
-  });
+  void updateModeration(
+    setPostStatus(props.post.id, 1),
+    {
+      ...props.post,
+      status: 1,
+    },
+    '帖子已隐藏',
+    '隐藏帖子失败',
+  );
 }
 
 function confirmAction() {
@@ -143,7 +140,12 @@ function togglePin() {
     pinOrder == null
       ? unpinPost(props.post.id)
       : pinPost(props.post.id, pinOrder);
-  void updateModeration(request, { ...props.post, pinOrder });
+  void updateModeration(
+    request,
+    { ...props.post, pinOrder },
+    pinOrder == null ? '已取消置顶' : '帖子已置顶',
+    pinOrder == null ? '取消置顶失败' : '置顶帖子失败',
+  );
 }
 
 function toggleLock() {
@@ -151,7 +153,12 @@ function toggleLock() {
   const request = commentsLocked
     ? lockPost(props.post.id)
     : unlockPost(props.post.id);
-  void updateModeration(request, { ...props.post, commentsLocked });
+  void updateModeration(
+    request,
+    { ...props.post, commentsLocked },
+    commentsLocked ? '评论区已锁定' : '评论区已开放',
+    commentsLocked ? '锁定评论失败' : '开放评论失败',
+  );
 }
 
 watch(
@@ -219,9 +226,6 @@ watch(
         </ActionMenu>
       </div>
     </div>
-    <p v-if="actionError" class="mt-2 text-xs text-red-600" role="alert">
-      {{ actionError }}
-    </p>
     <ConfirmDialog
       :open="confirmationAction != null"
       :title="confirmation.title"

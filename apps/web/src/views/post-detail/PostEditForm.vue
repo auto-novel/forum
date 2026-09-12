@@ -3,7 +3,9 @@ import { computed, ref } from 'vue';
 
 import { updatePost, type Post } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{ post: Post }>();
 const emit = defineEmits<{ cancel: []; saved: [post: Post] }>();
@@ -19,40 +21,25 @@ const selectedTagIds = ref(
   props.post.tags.map((tag) => tag.id).filter((id) => validTagIds.has(id)),
 );
 const submitting = ref(false);
-const submitError = ref('');
 
 const canSubmit = computed(
   () =>
     Boolean(title.value.trim() && content.value.trim()) && !submitting.value,
 );
 
-async function errorMessage(reason: unknown) {
-  if (reason && typeof reason === 'object' && 'response' in reason) {
-    const response = (reason as { response?: Response }).response;
-    if (response) {
-      try {
-        return (await response.text()) || '更新帖子失败';
-      } catch {
-        // Use the fallback below.
-      }
-    }
-  }
-  return reason instanceof Error ? reason.message : '更新帖子失败';
-}
-
 async function save() {
   if (!canSubmit.value) return;
   submitting.value = true;
-  submitError.value = '';
   try {
     const post = await updatePost(props.post.id, {
       title: title.value.trim(),
       content: content.value,
       tagIds: selectedTagIds.value,
     });
+    notifySuccess('帖子修改已保存');
     emit('saved', post);
   } catch (reason) {
-    submitError.value = await errorMessage(reason);
+    notifyError(await getApiErrorMessage(reason, '更新帖子失败'));
   } finally {
     submitting.value = false;
   }
@@ -130,9 +117,6 @@ async function save() {
           {{ submitting ? '保存中…' : '保存修改' }}
         </button>
       </div>
-      <p v-if="submitError" class="text-sm text-red-600" role="alert">
-        {{ submitError }}
-      </p>
     </form>
   </section>
 </template>

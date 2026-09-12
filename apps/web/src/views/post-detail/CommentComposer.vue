@@ -3,6 +3,8 @@ import { computed, ref, watch } from 'vue';
 
 import { authUser, createPostComment, type PostComment } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import { notifyError, notifySuccess } from '@/notifications';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
   postId: number;
@@ -17,7 +19,6 @@ const emit = defineEmits<{
 
 const content = ref('');
 const submitting = ref(false);
-const submitError = ref('');
 const draftKey = computed(() =>
   authUser.value
     ? `forum:comment-draft:${props.postId}:${authUser.value.id}:${props.replyTo?.rootId ?? props.replyTo?.id ?? 'root'}`
@@ -55,26 +56,10 @@ watch(
 
 watch(content, (value) => saveDraft(draftKey.value, value));
 
-async function responseErrorMessage(error: unknown) {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const response = (error as { response?: Response }).response;
-    if (response) {
-      try {
-        const message = await response.text();
-        if (message) return message;
-      } catch {
-        // Fall back to the client error message when the body is unavailable.
-      }
-    }
-  }
-  return error instanceof Error ? error.message : '评论发布失败';
-}
-
 async function submitComment() {
   const value = content.value.trim();
   if (!value || submitting.value || props.locked) return;
   submitting.value = true;
-  submitError.value = '';
   try {
     const comment = await createPostComment(props.postId, {
       content: value,
@@ -82,9 +67,10 @@ async function submitComment() {
     });
     content.value = '';
     saveDraft(draftKey.value, '');
+    notifySuccess('评论已发表');
     emit('created', comment);
   } catch (error) {
-    submitError.value = await responseErrorMessage(error);
+    notifyError(await getApiErrorMessage(error, '评论发布失败'));
   } finally {
     submitting.value = false;
   }
@@ -142,9 +128,6 @@ async function submitComment() {
           {{ submitting ? '发布中…' : '发表评论' }}
         </button>
       </div>
-      <p v-if="submitError" class="mt-3 text-sm text-red-600" role="alert">
-        {{ submitError }}
-      </p>
     </form>
   </section>
 </template>

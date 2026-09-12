@@ -4,7 +4,9 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { authUser, createPost } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 interface PostDraft {
   title: string;
@@ -25,7 +27,6 @@ const categorySlug = ref(initialCategory);
 const selectedTagIds = ref<number[]>([]);
 const content = ref('');
 const submitting = ref(false);
-const submitError = ref('');
 
 const selectedCategory = computed(
   () =>
@@ -114,25 +115,9 @@ function changeCategory() {
   selectedTagIds.value = [];
 }
 
-async function responseErrorMessage(error: unknown) {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const response = (error as { response?: Response }).response;
-    if (response) {
-      try {
-        const message = await response.text();
-        if (message) return message;
-      } catch {
-        // Fall back to the client error message when the body is unavailable.
-      }
-    }
-  }
-  return error instanceof Error ? error.message : '帖子发布失败';
-}
-
 async function submitPost() {
   if (!canSubmit.value || !authUser.value) return;
   submitting.value = true;
-  submitError.value = '';
   try {
     const post = await createPost({
       category: categorySlug.value,
@@ -144,9 +129,10 @@ async function submitPost() {
     title.value = '';
     content.value = '';
     selectedTagIds.value = [];
+    notifySuccess('帖子已发布');
     await router.replace({ name: 'post-detail', params: { id: post.id } });
   } catch (error) {
-    submitError.value = await responseErrorMessage(error);
+    notifyError(await getApiErrorMessage(error, '帖子发布失败'));
   } finally {
     submitting.value = false;
   }
@@ -271,9 +257,6 @@ async function submitPost() {
               {{ submitting ? '发布中…' : '发布帖子' }}
             </button>
           </div>
-          <p v-if="submitError" class="text-sm text-red-600" role="alert">
-            {{ submitError }}
-          </p>
         </form>
       </section>
     </div>
