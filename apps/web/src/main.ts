@@ -10,5 +10,5 @@ import { webKit } from './web-kit';
 const app = createApp(App);
 
 app.use(webKit).use(pinia);
-await useCategoryStore().initialize();
 app.use(router).mount('#app');
+void useCategoryStore().initialize();

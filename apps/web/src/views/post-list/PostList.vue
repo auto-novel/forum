@@ -2,6 +2,7 @@
 import { Inventory2Outlined } from '@vicons/material';
 
 import type { Post } from '@/api';
+import PaginationControls from '@/components/PaginationControls.vue';
 
 import PostListItem from './PostListItem.vue';
 
@@ -82,27 +83,11 @@ const emit = defineEmits<{
       <PostListItem v-for="post in posts" :key="post.id" :post="post" />
     </div>
 
-    <div
+    <PaginationControls
       v-if="!loading && !error && totalPages > 1"
-      class="flex items-center justify-between border-t border-divider px-4 py-3 text-sm sm:px-5"
-    >
-      <button
-        type="button"
-        class="rounded-sm border border-border px-3 py-1.5 font-medium transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
-        :disabled="page <= 1"
-        @click="emit('changePage', page - 1)"
-      >
-        上一页
-      </button>
-      <span class="text-xs text-muted">{{ page }} / {{ totalPages }}</span>
-      <button
-        type="button"
-        class="rounded-sm border border-border px-3 py-1.5 font-medium transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
-        :disabled="page >= totalPages"
-        @click="emit('changePage', page + 1)"
-      >
-        下一页
-      </button>
-    </div>
+      :page="page"
+      :total-pages="totalPages"
+      @change="emit('changePage', $event)"
+    />
   </section>
 </template>
