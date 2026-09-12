@@ -23,6 +23,10 @@ const props = withDefaults(
 const value = defineModel<string>({ required: true });
 const textarea = useTemplateRef<HTMLTextAreaElement>('textarea');
 const activeTab = ref<'edit' | 'preview'>('edit');
+const editorTabClass =
+  'relative min-w-16 border-r border-border px-[0.9rem] py-[0.55rem] text-[0.8125rem] font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
+const editorToolClass =
+  'relative min-w-8 flex-none rounded-sm px-2 py-[0.35rem] text-xs text-ink transition-colors duration-150 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
 function handleBeforeUnload(event: BeforeUnloadEvent) {
   if (!value.value.trim()) return;
@@ -83,8 +87,10 @@ defineExpose({ focus });
       <div class="flex flex-none" role="tablist" aria-label="Markdown 编辑模式">
         <button
           type="button"
-          class="editor-tab"
-          :class="activeTab === 'edit' ? 'editor-tab--active' : ''"
+          :class="[
+            editorTabClass,
+            activeTab === 'edit' ? '-mb-px bg-surface text-ink' : 'text-muted',
+          ]"
           role="tab"
           :aria-selected="activeTab === 'edit'"
           @click="activeTab = 'edit'"
@@ -93,8 +99,12 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tab"
-          :class="activeTab === 'preview' ? 'editor-tab--active' : ''"
+          :class="[
+            editorTabClass,
+            activeTab === 'preview'
+              ? '-mb-px bg-surface text-ink'
+              : 'text-muted',
+          ]"
           role="tab"
           :aria-selected="activeTab === 'preview'"
           @click="activeTab = 'preview'"
@@ -110,7 +120,7 @@ defineExpose({ focus });
       >
         <button
           type="button"
-          class="editor-tool font-bold"
+          :class="[editorToolClass, 'font-bold']"
           title="粗体"
           aria-label="粗体"
           @mousedown.prevent="wrapSelection('**', '**', '粗体')"
@@ -119,7 +129,7 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tool italic"
+          :class="[editorToolClass, 'italic']"
           title="斜体"
           aria-label="斜体"
           @mousedown.prevent="wrapSelection('*', '*', '斜体')"
@@ -128,7 +138,7 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tool line-through"
+          :class="[editorToolClass, 'line-through']"
           title="删除线"
           aria-label="删除线"
           @mousedown.prevent="wrapSelection('~~', '~~', '删除线')"
@@ -137,7 +147,7 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tool"
+          :class="editorToolClass"
           title="链接"
           aria-label="链接"
           @mousedown.prevent="wrapSelection('[', '](https://)', '链接文字')"
@@ -146,7 +156,7 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tool"
+          :class="editorToolClass"
           title="剧透"
           aria-label="剧透"
           @mousedown.prevent="wrapSelection('!!', '!!', '剧透内容')"
@@ -155,7 +165,7 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tool"
+          :class="editorToolClass"
           title="评分"
           aria-label="评分"
           @mousedown.prevent="insertBlock('::: star 5\n', '\n:::', '')"
@@ -164,7 +174,7 @@ defineExpose({ focus });
         </button>
         <button
           type="button"
-          class="editor-tool"
+          :class="editorToolClass"
           title="折叠内容"
           aria-label="折叠内容"
           @mousedown.prevent="
@@ -200,41 +210,3 @@ defineExpose({ focus });
     </div>
   </div>
 </template>
-
-<style scoped>
-.editor-tab {
-  min-width: 4rem;
-  border-right: 1px solid var(--color-border);
-  padding: 0.55rem 0.9rem;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.editor-tab--active {
-  margin-bottom: -1px;
-  background: var(--color-surface);
-  color: var(--color-ink);
-}
-
-.editor-tab:focus-visible,
-.editor-tool:focus-visible {
-  position: relative;
-  outline: 2px solid var(--color-primary);
-  outline-offset: -2px;
-}
-
-.editor-tool {
-  min-width: 2rem;
-  flex: none;
-  border-radius: 0.25rem;
-  padding: 0.35rem 0.5rem;
-  color: var(--color-ink);
-  font-size: 0.75rem;
-  transition: background-color 150ms ease;
-}
-
-.editor-tool:hover {
-  background: var(--color-surface);
-}
-</style>

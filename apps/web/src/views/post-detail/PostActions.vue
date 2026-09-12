@@ -33,6 +33,8 @@ const favorited = ref(props.post.favorited);
 const favoriteLoading = ref(false);
 const actionLoading = ref(false);
 const actionError = ref('');
+const postActionClass =
+  'inline-flex min-h-9 items-center gap-[0.4rem] rounded-sm px-[0.7rem] text-[0.8125rem] font-semibold transition-colors duration-150 hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50';
 
 const isAdmin = computed(() => authUser.value?.role === 'admin');
 const canManage = computed(
@@ -145,8 +147,7 @@ watch(
       <button
         v-if="authUser"
         type="button"
-        class="post-action"
-        :class="favorited ? 'post-action--active' : ''"
+        :class="[postActionClass, favorited ? 'text-primary' : 'text-muted']"
         :disabled="favoriteLoading"
         :aria-pressed="favorited"
         @click="toggleFavorite"
@@ -156,7 +157,11 @@ watch(
         {{ favoriteLoading ? '处理中…' : favorited ? '取消收藏' : '收藏' }}
       </button>
 
-      <button type="button" class="post-action" @click="emit('comment')">
+      <button
+        type="button"
+        :class="[postActionClass, 'text-muted']"
+        @click="emit('comment')"
+      >
         <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
         评论
       </button>
@@ -192,39 +197,3 @@ watch(
     </p>
   </section>
 </template>
-
-<style scoped>
-.post-action {
-  display: inline-flex;
-  min-height: 2.25rem;
-  align-items: center;
-  gap: 0.4rem;
-  border-radius: 0.25rem;
-  padding-inline: 0.7rem;
-  color: var(--color-muted);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  transition:
-    color 150ms ease,
-    background-color 150ms ease;
-}
-
-.post-action:hover {
-  background: var(--color-paper);
-  color: var(--color-primary);
-}
-
-.post-action--active {
-  color: var(--color-primary);
-}
-
-.post-action:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.post-action:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: -2px;
-}
-</style>

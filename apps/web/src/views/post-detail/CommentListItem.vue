@@ -29,6 +29,8 @@ const content = ref(props.comment.content);
 const submitting = ref(false);
 const actionError = ref('');
 const now = ref(Date.now());
+const commentActionClass =
+  'inline-flex min-h-[1.875rem] items-center rounded-sm px-[0.55rem] text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
 const modificationDeadline =
   new Date(props.comment.createdAt).getTime() + 20 * 60_000;
@@ -158,7 +160,7 @@ async function hideComment() {
       <div class="mt-3 flex justify-end gap-2">
         <button
           type="button"
-          class="comment-action"
+          :class="commentActionClass"
           :disabled="submitting"
           @click="editing = false"
         >
@@ -184,7 +186,7 @@ async function hideComment() {
       <button
         v-if="authUser && !locked"
         type="button"
-        class="comment-action"
+        :class="commentActionClass"
         @click="emit('reply', comment)"
       >
         回复
@@ -192,7 +194,7 @@ async function hideComment() {
       <button
         v-if="canEdit"
         type="button"
-        class="comment-action"
+        :class="commentActionClass"
         @click="startEditing"
       >
         编辑
@@ -211,26 +213,3 @@ async function hideComment() {
     </p>
   </article>
 </template>
-
-<style scoped>
-.comment-action {
-  display: inline-flex;
-  min-height: 1.875rem;
-  align-items: center;
-  border-radius: 0.25rem;
-  padding-inline: 0.55rem;
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.comment-action:hover {
-  background: var(--color-paper);
-  color: var(--color-primary);
-}
-
-.comment-action:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: -2px;
-}
-</style>
