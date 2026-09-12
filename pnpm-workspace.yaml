@@ -4,6 +4,7 @@ packages:
 
 allowBuilds:
   esbuild: true
+  vue-demi: true
 blockExoticSubdeps: false
 minimumReleaseAgeExclude:
   - vite@8.2.2

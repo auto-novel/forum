@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, useTemplateRef } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 import {
   authUser,
@@ -10,6 +10,8 @@ import {
 } from '@/api';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import ActionMenu from '@/components/ActionMenu.vue';
+import ActionMenuItem from '@/components/ActionMenuItem.vue';
 
 const props = defineProps<{
   comment: PostComment;
@@ -22,7 +24,6 @@ const emit = defineEmits<{
   statusChanged: [id: number, status: number];
 }>();
 
-const menu = useTemplateRef<HTMLDetailsElement>('menu');
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
@@ -75,12 +76,7 @@ async function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback;
 }
 
-function closeMenu() {
-  if (menu.value) menu.value.open = false;
-}
-
 function startEditing() {
-  closeMenu();
   content.value = props.comment.content;
   actionError.value = '';
   editing.value = true;
@@ -103,7 +99,6 @@ async function saveEdit() {
 }
 
 async function removeComment() {
-  closeMenu();
   if (!window.confirm('确定删除这条评论吗？删除后无法恢复。')) return;
   submitting.value = true;
   actionError.value = '';
@@ -119,7 +114,6 @@ async function removeComment() {
 }
 
 async function hideComment() {
-  closeMenu();
   if (!window.confirm('确定隐藏这条评论吗？隐藏后可在管理端恢复。')) return;
   submitting.value = true;
   actionError.value = '';
@@ -203,31 +197,14 @@ async function hideComment() {
       >
         编辑
       </button>
-      <details v-if="hasMenu" ref="menu" class="relative">
-        <summary class="comment-action cursor-pointer list-none">
-          更多 ···
-        </summary>
-        <div
-          class="absolute bottom-[calc(100%+0.35rem)] left-0 z-20 w-32 rounded-md border border-border bg-surface p-1 shadow-xl"
-        >
-          <button
-            v-if="isAdmin"
-            type="button"
-            class="comment-menu-item"
-            @click="hideComment"
-          >
-            隐藏评论
-          </button>
-          <button
-            type="button"
-            class="comment-menu-item text-red-600"
-            :disabled="submitting"
-            @click="removeComment"
-          >
-            删除评论
-          </button>
-        </div>
-      </details>
+      <ActionMenu v-if="hasMenu" compact side="top" align="start">
+        <ActionMenuItem v-if="isAdmin" @activate="hideComment">
+          隐藏评论
+        </ActionMenuItem>
+        <ActionMenuItem danger :disabled="submitting" @activate="removeComment">
+          删除评论
+        </ActionMenuItem>
+      </ActionMenu>
     </div>
     <p v-if="actionError" class="mt-2 text-xs text-red-600" role="alert">
       {{ actionError }}
@@ -252,26 +229,8 @@ async function hideComment() {
   color: var(--color-primary);
 }
 
-.comment-menu-item {
-  display: block;
-  width: 100%;
-  border-radius: 0.25rem;
-  padding: 0.45rem 0.6rem;
-  font-size: 0.75rem;
-  text-align: left;
-}
-
-.comment-menu-item:hover {
-  background: var(--color-paper);
-}
-
-.comment-action:focus-visible,
-.comment-menu-item:focus-visible {
+.comment-action:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
-}
-
-summary::-webkit-details-marker {
-  display: none;
 }
 </style>

@@ -4,7 +4,7 @@ import {
   StarBorderOutlined,
   StarFilled,
 } from '@vicons/material';
-import { computed, ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import {
   authUser,
@@ -17,6 +17,8 @@ import {
   unlockPost,
   unpinPost,
 } from '@/api';
+import ActionMenu from '@/components/ActionMenu.vue';
+import ActionMenuItem from '@/components/ActionMenuItem.vue';
 
 const props = defineProps<{ post: Post }>();
 
@@ -27,7 +29,6 @@ const emit = defineEmits<{
   comment: [];
 }>();
 
-const menu = useTemplateRef<HTMLDetailsElement>('menu');
 const favorited = ref(props.post.favorited);
 const favoriteLoading = ref(false);
 const actionLoading = ref(false);
@@ -70,17 +71,11 @@ async function toggleFavorite() {
   }
 }
 
-function closeMenu() {
-  if (menu.value) menu.value.open = false;
-}
-
 function editPost() {
-  closeMenu();
   emit('edit');
 }
 
 async function removePost() {
-  closeMenu();
   if (!window.confirm('确定删除这篇帖子吗？删除后无法恢复。')) return;
   actionLoading.value = true;
   actionError.value = '';
@@ -95,7 +90,6 @@ async function removePost() {
 }
 
 async function updateModeration(request: Promise<unknown>, nextPost: Post) {
-  closeMenu();
   actionLoading.value = true;
   actionError.value = '';
   try {
@@ -167,55 +161,31 @@ watch(
         评论
       </button>
 
-      <details v-if="canManage" ref="menu" class="relative ml-auto">
-        <summary class="post-action cursor-pointer list-none">更多 ···</summary>
-        <div
-          class="absolute top-[calc(100%+0.4rem)] right-0 z-20 w-40 rounded-md border border-border bg-surface p-1 shadow-xl"
-        >
-          <button
-            type="button"
-            class="post-menu-item"
-            :disabled="actionLoading"
-            @click="editPost"
-          >
+      <div v-if="canManage" class="ml-auto">
+        <ActionMenu>
+          <ActionMenuItem :disabled="actionLoading" @activate="editPost">
             编辑帖子
-          </button>
+          </ActionMenuItem>
           <template v-if="isAdmin">
-            <button
-              type="button"
-              class="post-menu-item"
-              :disabled="actionLoading"
-              @click="togglePin"
-            >
+            <ActionMenuItem :disabled="actionLoading" @activate="togglePin">
               {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
-            </button>
-            <button
-              type="button"
-              class="post-menu-item"
-              :disabled="actionLoading"
-              @click="toggleLock"
-            >
+            </ActionMenuItem>
+            <ActionMenuItem :disabled="actionLoading" @activate="toggleLock">
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
-            </button>
-            <button
-              type="button"
-              class="post-menu-item"
-              :disabled="actionLoading"
-              @click="hidePost"
-            >
+            </ActionMenuItem>
+            <ActionMenuItem :disabled="actionLoading" @activate="hidePost">
               隐藏帖子
-            </button>
+            </ActionMenuItem>
           </template>
-          <button
-            type="button"
-            class="post-menu-item text-red-600"
+          <ActionMenuItem
+            danger
             :disabled="actionLoading"
-            @click="removePost"
+            @activate="removePost"
           >
             删除帖子
-          </button>
-        </div>
-      </details>
+          </ActionMenuItem>
+        </ActionMenu>
+      </div>
     </div>
     <p v-if="actionError" class="mt-2 text-xs text-red-600" role="alert">
       {{ actionError }}
@@ -253,31 +223,8 @@ watch(
   opacity: 0.5;
 }
 
-.post-action:focus-visible,
-.post-menu-item:focus-visible {
+.post-action:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
-}
-
-.post-menu-item {
-  display: block;
-  width: 100%;
-  border-radius: 0.25rem;
-  padding: 0.5rem 0.7rem;
-  font-size: 0.8125rem;
-  text-align: left;
-}
-
-.post-menu-item:hover {
-  background: var(--color-paper);
-}
-
-.post-menu-item:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-summary::-webkit-details-marker {
-  display: none;
 }
 </style>
