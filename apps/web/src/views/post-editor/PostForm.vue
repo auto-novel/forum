@@ -56,7 +56,7 @@ function submit() {
         v-model="title"
         type="text"
         maxlength="500"
-        class="block min-h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-paper"
+        class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="titlePlaceholder"
         :disabled="submitting"
         required

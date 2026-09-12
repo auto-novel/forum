@@ -56,10 +56,7 @@ watch([authUser, page], loadMyPosts, { immediate: true });
         <p class="mt-1 text-sm text-muted">查看你发表过的帖子。</p>
       </header>
 
-      <section
-        v-if="!authUser"
-        class="rounded-sm border border-divider bg-surface px-5 py-8 text-center"
-      >
+      <section v-if="!authUser" class="py-8 text-center">
         <div
           class="mx-auto grid size-12 place-items-center rounded-full bg-primary-soft text-primary"
           aria-hidden="true"

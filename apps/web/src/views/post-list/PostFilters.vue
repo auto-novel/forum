@@ -55,7 +55,7 @@ watch(
 
 <template>
   <form
-    class="grid gap-3 rounded-sm bg-surface p-3 sm:grid-cols-[minmax(0,1fr)_10rem_10rem_auto]"
+    class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_10rem_auto]"
     role="search"
     @submit.prevent="apply"
   >
@@ -69,7 +69,7 @@ watch(
         v-model="queryInput"
         type="search"
         enterkeyhint="search"
-        class="min-h-10 w-full rounded-sm border border-border bg-surface pr-3 pl-9 text-sm outline-none transition placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15"
+        class="min-h-10 w-full rounded-sm border border-border bg-transparent pr-3 pl-9 text-sm outline-none transition placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15"
         placeholder="搜索标题或正文，按 Enter 确认"
       />
     </label>
@@ -78,7 +78,7 @@ watch(
       <span class="sr-only">按标签过滤</span>
       <select
         v-model="tagInput"
-        class="min-h-10 w-full rounded-sm border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        class="min-h-10 w-full rounded-sm border border-border bg-transparent px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
         @change="apply"
       >
         <option value="">全部标签</option>
@@ -92,7 +92,7 @@ watch(
       <span class="sr-only">帖子排序</span>
       <select
         v-model="sortInput"
-        class="min-h-10 w-full rounded-sm border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        class="min-h-10 w-full rounded-sm border border-border bg-transparent px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
         @change="apply"
       >
         <option value="active">最近活跃</option>

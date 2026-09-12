@@ -163,11 +163,10 @@ watch([postId, commentPage], loadComments, { immediate: true });
         size="large"
         heading-tag="h1"
         error-title="帖子加载失败"
-        state-class="rounded-sm bg-surface"
         @retry="loadPost"
       >
         <template #loading>
-          <div class="rounded-sm bg-surface px-4 py-6 sm:px-6">
+          <div class="py-6">
             <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
             <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />
             <div class="mt-5 h-4 w-56 animate-pulse rounded-sm bg-divider" />

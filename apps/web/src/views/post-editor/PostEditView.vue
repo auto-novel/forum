@@ -99,11 +99,10 @@ watch(postId, loadPost, { immediate: true });
         size="large"
         heading-tag="h1"
         error-title="帖子加载失败"
-        state-class="rounded-sm bg-surface"
         @retry="loadPost"
       >
         <template #loading>
-          <div class="rounded-sm bg-surface px-4 py-6 sm:px-6">
+          <div class="py-6">
             <div class="h-7 w-32 animate-pulse rounded-sm bg-border" />
             <div class="mt-6 h-10 w-full animate-pulse rounded-sm bg-divider" />
             <div class="mt-5 h-10 w-full animate-pulse rounded-sm bg-divider" />
@@ -111,10 +110,7 @@ watch(postId, loadPost, { immediate: true });
           </div>
         </template>
 
-        <section
-          v-if="post && canEdit"
-          class="rounded-sm bg-surface px-4 py-5 sm:px-6 sm:py-7"
-        >
+        <section v-if="post && canEdit">
           <h1 class="text-xl font-bold text-ink">编辑帖子</h1>
           <PostForm
             v-model:title="title"
@@ -132,10 +128,7 @@ watch(postId, loadPost, { immediate: true });
           />
         </section>
 
-        <section
-          v-else-if="post"
-          class="rounded-sm bg-surface px-4 py-8 text-center sm:px-6"
-        >
+        <section v-else-if="post" class="py-8 text-center">
           <h1 class="text-xl font-bold text-ink">无法编辑帖子</h1>
           <p class="mt-2 text-sm text-muted">
             {{

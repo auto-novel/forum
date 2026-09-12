@@ -22,7 +22,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="overflow-hidden rounded-sm bg-surface" aria-live="polite">
+  <section aria-live="polite">
     <AsyncContent
       :loading="loading"
       :error="error"
@@ -34,7 +34,7 @@ const emit = defineEmits<{
     >
       <template #loading>
         <div class="divide-y divide-divider" aria-label="正在加载帖子">
-          <div v-for="index in 5" :key="index" class="px-5 py-5">
+          <div v-for="index in 5" :key="index" class="py-5">
             <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
             <div class="mt-3 h-5 w-3/4 animate-pulse rounded-sm bg-border" />
             <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />

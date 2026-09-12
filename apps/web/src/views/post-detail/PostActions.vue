@@ -170,10 +170,7 @@ watch(
 </script>
 
 <template>
-  <section
-    class="relative mt-px rounded-sm bg-surface px-4 py-3 sm:px-6"
-    aria-label="帖子操作"
-  >
+  <section class="relative border-t border-divider py-3" aria-label="帖子操作">
     <div class="flex flex-wrap items-center gap-2">
       <button
         v-if="authUser"

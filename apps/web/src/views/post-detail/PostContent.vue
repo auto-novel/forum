@@ -20,7 +20,7 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <article class="rounded-sm bg-surface px-4 py-5 sm:px-6 sm:py-7">
+  <article class="pb-6">
     <PostTagList
       :tags="post.tags"
       :pinned="post.pinOrder != null"

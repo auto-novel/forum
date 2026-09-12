@@ -26,7 +26,7 @@ const activeTab = ref<'edit' | 'preview'>('edit');
 const editorTabClass =
   'relative min-w-16 border-r border-border px-[0.9rem] py-[0.55rem] text-[0.8125rem] font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 const editorToolClass =
-  'relative min-w-8 flex-none rounded-sm px-2 py-[0.35rem] text-xs text-ink transition-colors duration-150 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
+  'relative min-w-8 flex-none rounded-sm px-2 py-[0.35rem] text-xs text-ink transition-colors duration-150 hover:bg-divider/40 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
 function handleBeforeUnload(event: BeforeUnloadEvent) {
   if (!value.value.trim()) return;
@@ -82,14 +82,14 @@ defineExpose({ focus });
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-md border border-border bg-surface">
-    <div class="flex flex-wrap items-stretch border-b border-border bg-paper">
+  <div class="overflow-hidden rounded-md border border-border">
+    <div class="flex flex-wrap items-stretch border-b border-border">
       <div class="flex flex-none" role="tablist" aria-label="Markdown 编辑模式">
         <button
           type="button"
           :class="[
             editorTabClass,
-            activeTab === 'edit' ? '-mb-px bg-surface text-ink' : 'text-muted',
+            activeTab === 'edit' ? '-mb-px text-ink' : 'text-muted',
           ]"
           role="tab"
           :aria-selected="activeTab === 'edit'"
@@ -101,9 +101,7 @@ defineExpose({ focus });
           type="button"
           :class="[
             editorTabClass,
-            activeTab === 'preview'
-              ? '-mb-px bg-surface text-ink'
-              : 'text-muted',
+            activeTab === 'preview' ? '-mb-px text-ink' : 'text-muted',
           ]"
           role="tab"
           :aria-selected="activeTab === 'preview'"
@@ -190,7 +188,7 @@ defineExpose({ focus });
       <textarea
         ref="textarea"
         v-model="value"
-        class="block min-h-40 w-full resize-y border-0 bg-surface px-3 py-3 text-sm leading-6 text-ink outline-none placeholder:text-muted/70 disabled:cursor-not-allowed disabled:bg-paper"
+        class="block min-h-40 w-full resize-y border-0 bg-transparent px-3 py-3 text-sm leading-6 text-ink outline-none placeholder:text-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
         :rows="rows"
         :maxlength="maxlength"
         :placeholder="placeholder"

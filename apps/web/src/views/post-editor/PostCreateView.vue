@@ -139,16 +139,13 @@ async function submitPost() {
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
-      <section class="rounded-sm bg-surface px-4 py-5 sm:px-6 sm:py-7">
+      <section>
         <h1 class="text-2xl font-bold tracking-tight text-ink">发表帖子</h1>
         <p class="mt-1 text-sm text-muted">
           分享内容前，请选择最合适的讨论分类。
         </p>
 
-        <div
-          v-if="!authUser"
-          class="mt-6 rounded-md border border-divider bg-paper px-4 py-4 text-sm text-muted"
-        >
+        <div v-if="!authUser" class="mt-6 py-4 text-sm text-muted">
           登录后才能发表帖子，请使用页面右上角的登录入口。
         </div>
 
@@ -178,7 +175,7 @@ async function submitPost() {
               <select
                 id="post-category"
                 v-model="categorySlug"
-                class="block min-h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-paper"
+                class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
                 :disabled="submitting"
                 @change="changeCategory"
               >

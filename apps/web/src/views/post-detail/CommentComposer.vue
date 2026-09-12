@@ -80,7 +80,7 @@ async function submitComment() {
 </script>
 
 <template>
-  <section class="mt-5 rounded-sm bg-surface px-4 py-5 sm:px-6">
+  <section class="mt-5 border-t border-divider pt-5">
     <div class="flex items-center justify-between gap-3">
       <h2 class="font-semibold text-ink">
         {{ replyTo ? `回复 @${replyTo.authorUsername}` : '发表评论' }}
@@ -95,17 +95,11 @@ async function submitComment() {
       </button>
     </div>
 
-    <div
-      v-if="locked"
-      class="mt-4 rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700"
-    >
+    <div v-if="locked" class="mt-4 py-2 text-sm text-orange-700">
       评论区已锁定，暂时无法发表新评论。
     </div>
 
-    <div
-      v-else-if="!authUser"
-      class="mt-4 rounded-md border border-divider bg-paper px-4 py-4 text-sm text-muted"
-    >
+    <div v-else-if="!authUser" class="mt-4 py-2 text-sm text-muted">
       登录后即可参与评论，请使用页面右上角的登录入口。
     </div>
 

@@ -136,7 +136,7 @@ function handleConfirmationOpenChange(open: boolean) {
 <template>
   <article
     :id="`comment-${comment.id}`"
-    class="px-4 py-5 sm:px-6"
+    class="py-5"
     :class="
       comment.rootId != null
         ? 'ml-6 border-l-2 border-primary-soft sm:ml-12'

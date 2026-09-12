@@ -29,9 +29,7 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <article
-    class="group relative px-4 py-4 transition-colors duration-300 hover:bg-paper sm:px-5"
-  >
+  <article class="group relative py-4 transition-colors duration-300">
     <PostTagList
       class="mb-2"
       :tags="post.tags"
