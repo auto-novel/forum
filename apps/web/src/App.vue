@@ -10,9 +10,10 @@ import { WebKitLayout, type WebKitMenuOption } from '@novelia/web-kit';
 import { computed, type Component } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 
-import { CATEGORIES } from '@/api';
+import { useCategoryStore } from '@/stores/category';
 
 const route = useRoute();
+const categoryStore = useCategoryStore();
 
 function categoryIcon(slug: string): Component {
   if (slug === 'novel') return MenuBookOutlined;
@@ -20,12 +21,14 @@ function categoryIcon(slug: string): Component {
   return ForumOutlined;
 }
 
-const navigationOptions: WebKitMenuOption[] = CATEGORIES.map((category) => ({
-  key: category.slug,
-  label: category.title,
-  icon: categoryIcon(category.slug),
-  to: { name: 'posts', params: { slug: category.slug } },
-}));
+const navigationOptions = computed<WebKitMenuOption[]>(() =>
+  categoryStore.categories.map((category) => ({
+    key: category.slug,
+    label: category.title,
+    icon: categoryIcon(category.slug),
+    to: { name: 'posts', params: { slug: category.slug } },
+  })),
+);
 
 const accountOptions: WebKitMenuOption[] = [
   {

@@ -12,18 +12,6 @@ export interface Page<T> {
   items: T[];
 }
 
-export interface Category {
-  id: number;
-  slug: string;
-  title: string;
-}
-
-export const CATEGORIES: Category[] = [
-  { id: 1, slug: 'novel', title: '小说讨论' },
-  { id: 2, slug: 'guide', title: '使用指南' },
-  { id: 3, slug: 'feedback', title: '意见反馈' },
-];
-
 export interface PostTag {
   id: number;
   name: string;
@@ -141,14 +129,6 @@ export function setPostFavorite(id: number, favorited: boolean) {
 
 export function getCategories(signal?: AbortSignal) {
   return client.get('category/', { signal }).json<CategoryListItem[]>();
-}
-
-export async function getCategoryTags(
-  categoryId: number,
-  signal?: AbortSignal,
-) {
-  const categories = await getCategories(signal);
-  return categories.find((category) => category.id === categoryId)?.tags ?? [];
 }
 
 export function createPost(input: {

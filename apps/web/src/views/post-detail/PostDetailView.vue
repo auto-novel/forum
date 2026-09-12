@@ -3,13 +3,8 @@ import { ArrowBackOutlined } from '@vicons/material';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import {
-  CATEGORIES,
-  getPost,
-  getPostComments,
-  type Post,
-  type PostComment,
-} from '@/api';
+import { getPost, getPostComments, type Post, type PostComment } from '@/api';
+import { useCategoryStore } from '@/stores/category';
 
 import CommentComposer from './CommentComposer.vue';
 import CommentList from './CommentList.vue';
@@ -21,6 +16,7 @@ const COMMENT_PAGE_SIZE = 50;
 
 const route = useRoute();
 const router = useRouter();
+const categoryStore = useCategoryStore();
 const post = ref<Post>();
 const comments = ref<PostComment[]>([]);
 const commentsTotal = ref(0);
@@ -48,7 +44,7 @@ const commentTotalPages = computed(() =>
 );
 
 const category = computed(() =>
-  CATEGORIES.find((item) => item.id === post.value?.categoryId),
+  categoryStore.categories.find((item) => item.id === post.value?.categoryId),
 );
 
 async function loadPost() {
@@ -198,7 +194,9 @@ function handlePostUpdated(value: Post) {
 function leaveDeletedPost() {
   void router.replace({
     name: 'posts',
-    params: { slug: category.value?.slug ?? CATEGORIES[0].slug },
+    params: {
+      slug: category.value?.slug ?? categoryStore.defaultCategory.slug,
+    },
   });
 }
 
@@ -217,7 +215,9 @@ onBeforeUnmount(() => {
       <RouterLink
         :to="{
           name: 'posts',
-          params: { slug: category?.slug ?? CATEGORIES[0].slug },
+          params: {
+            slug: category?.slug ?? categoryStore.defaultCategory.slug,
+          },
         }"
         class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >

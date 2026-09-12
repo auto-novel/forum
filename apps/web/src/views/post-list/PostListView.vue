@@ -3,7 +3,8 @@ import { AddOutlined } from '@vicons/material';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { CATEGORIES, getPosts, type Post, type PostSort } from '@/api';
+import { getPosts, type Post, type PostSort } from '@/api';
+import { useCategoryStore } from '@/stores/category';
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
 
@@ -12,8 +13,8 @@ const POST_SORTS = new Set<PostSort>(['active', 'newest', 'views', 'comments']);
 
 const route = useRoute();
 const router = useRouter();
+const categoryStore = useCategoryStore();
 
-const categories = CATEGORIES;
 const posts = ref<Post[]>([]);
 const total = ref(0);
 const postsLoading = ref(true);
@@ -23,15 +24,16 @@ let postsController: AbortController | undefined;
 const selectedCategory = computed(() => {
   const value = route.params.slug;
   return (
-    categories.find((category) => category.slug === value)?.slug ??
-    categories[0].slug
+    categoryStore.categories.find((category) => category.slug === value)
+      ?.slug ?? categoryStore.defaultCategory.slug
   );
 });
 
 const selectedCategoryItem = computed(
   () =>
-    categories.find((category) => category.slug === selectedCategory.value) ??
-    categories[0],
+    categoryStore.categories.find(
+      (category) => category.slug === selectedCategory.value,
+    ) ?? categoryStore.defaultCategory,
 );
 
 const searchQuery = computed(() => {

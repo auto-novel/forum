@@ -1,32 +1,29 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, ref } from 'vue';
 
-import {
-  getCategoryTags,
-  updatePost,
-  type CategoryTag,
-  type Post,
-} from '@/api';
+import { updatePost, type Post } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{ post: Post }>();
 const emit = defineEmits<{ cancel: []; saved: [post: Post] }>();
+const categoryStore = useCategoryStore();
 
 const title = ref(props.post.title);
 const content = ref(props.post.content);
-const selectedTagIds = ref(props.post.tags.map((tag) => tag.id));
-const tags = ref<CategoryTag[]>([]);
-const tagsLoading = ref(true);
-const tagsError = ref('');
+const tags = computed(() =>
+  categoryStore.tagsByCategoryId(props.post.categoryId),
+);
+const validTagIds = new Set(tags.value.map((tag) => tag.id));
+const selectedTagIds = ref(
+  props.post.tags.map((tag) => tag.id).filter((id) => validTagIds.has(id)),
+);
 const submitting = ref(false);
 const submitError = ref('');
-const controller = new AbortController();
 
 const canSubmit = computed(
   () =>
-    Boolean(title.value.trim() && content.value.trim()) &&
-    !tagsLoading.value &&
-    !submitting.value,
+    Boolean(title.value.trim() && content.value.trim()) && !submitting.value,
 );
 
 async function errorMessage(reason: unknown) {
@@ -41,20 +38,6 @@ async function errorMessage(reason: unknown) {
     }
   }
   return reason instanceof Error ? reason.message : '更新帖子失败';
-}
-
-async function loadTags() {
-  try {
-    tags.value = await getCategoryTags(
-      props.post.categoryId,
-      controller.signal,
-    );
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === 'AbortError') return;
-    tagsError.value = reason instanceof Error ? reason.message : '无法加载标签';
-  } finally {
-    tagsLoading.value = false;
-  }
 }
 
 async function save() {
@@ -74,9 +57,6 @@ async function save() {
     submitting.value = false;
   }
 }
-
-void loadTags();
-onBeforeUnmount(() => controller.abort());
 </script>
 
 <template>
@@ -99,14 +79,7 @@ onBeforeUnmount(() => controller.abort());
 
       <fieldset>
         <legend class="mb-2 text-sm font-semibold">标签</legend>
-        <div v-if="tagsLoading" class="flex gap-2" aria-label="正在加载标签">
-          <span class="h-7 w-20 animate-pulse rounded-sm bg-divider" />
-          <span class="h-7 w-20 animate-pulse rounded-sm bg-divider" />
-        </div>
-        <p v-else-if="tagsError" class="text-sm text-red-600">
-          {{ tagsError }}
-        </p>
-        <div v-else-if="tags.length" class="flex flex-wrap gap-2">
+        <div v-if="tags.length" class="flex flex-wrap gap-2">
           <label
             v-for="tag in tags"
             :key="tag.id"

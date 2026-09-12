@@ -1,30 +1,42 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import { CATEGORIES } from '@/api';
+import { useCategoryStore } from '@/stores/category';
 import FavoritePostListView from '@/views/post-list/FavoritePostListView.vue';
 import MyPostListView from '@/views/post-list/MyPostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
 import PostCreateView from '@/views/post-create/PostCreateView.vue';
 import PostListView from '@/views/post-list/PostListView.vue';
 
-const defaultCategory = CATEGORIES[0].slug;
+function defaultCategorySlug() {
+  return useCategoryStore().defaultCategory.slug;
+}
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      redirect: { name: 'posts', params: { slug: defaultCategory } },
+      redirect: () => ({
+        name: 'posts',
+        params: { slug: defaultCategorySlug() },
+      }),
     },
     {
       path: '/c/:slug',
       name: 'posts',
       component: PostListView,
       meta: { title: '讨论' },
-      beforeEnter: (to) =>
-        CATEGORIES.some((category) => category.slug === to.params.slug)
+      beforeEnter: (to) => {
+        const categoryStore = useCategoryStore();
+        return categoryStore.categories.some(
+          (category) => category.slug === to.params.slug,
+        )
           ? true
-          : { name: 'posts', params: { slug: defaultCategory } },
+          : {
+              name: 'posts',
+              params: { slug: categoryStore.defaultCategory.slug },
+            };
+      },
     },
     {
       path: '/favorites',
@@ -52,7 +64,10 @@ const router = createRouter({
     },
     {
       path: '/:pathMatch(.*)*',
-      redirect: { name: 'posts', params: { slug: defaultCategory } },
+      redirect: () => ({
+        name: 'posts',
+        params: { slug: defaultCategorySlug() },
+      }),
     },
   ],
 });

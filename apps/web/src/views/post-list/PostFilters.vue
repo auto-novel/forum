@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { SearchOutlined } from '@vicons/material';
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
-import { getCategoryTags, type CategoryTag, type PostSort } from '@/api';
+import { type PostSort } from '@/api';
+import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{
   categoryId: number;
@@ -14,33 +15,17 @@ const props = defineProps<{
 const emit = defineEmits<{
   apply: [filters: { query: string; tagId?: number; sort: PostSort }];
 }>();
+const categoryStore = useCategoryStore();
 
 const queryInput = ref(props.query);
 const tagInput = ref(props.tagId ? String(props.tagId) : '');
 const sortInput = ref<PostSort>(props.sort);
-const tags = ref<CategoryTag[]>([]);
-const tagsLoading = ref(false);
-let tagsController: AbortController | undefined;
+const tags = computed(() => categoryStore.tagsByCategoryId(props.categoryId));
 
 function syncInputs() {
   queryInput.value = props.query;
   tagInput.value = props.tagId ? String(props.tagId) : '';
   sortInput.value = props.sort;
-}
-
-async function loadTags() {
-  tagsController?.abort();
-  const controller = new AbortController();
-  tagsController = controller;
-  tagsLoading.value = true;
-  try {
-    tags.value = await getCategoryTags(props.categoryId, controller.signal);
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === 'AbortError') return;
-    tags.value = [];
-  } finally {
-    if (tagsController === controller) tagsLoading.value = false;
-  }
 }
 
 function apply() {
@@ -64,12 +49,8 @@ watch(
   () => props.categoryId,
   (_categoryId, previousCategoryId) => {
     if (previousCategoryId != null) tagInput.value = '';
-    void loadTags();
   },
-  { immediate: true },
 );
-
-onBeforeUnmount(() => tagsController?.abort());
 </script>
 
 <template>
@@ -98,10 +79,9 @@ onBeforeUnmount(() => tagsController?.abort());
       <select
         v-model="tagInput"
         class="min-h-10 w-full rounded-sm border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-        :disabled="tagsLoading"
         @change="apply"
       >
-        <option value="">{{ tagsLoading ? '加载标签中…' : '全部标签' }}</option>
+        <option value="">全部标签</option>
         <option v-for="tag in tags" :key="tag.id" :value="String(tag.id)">
           {{ tag.name }}
         </option>

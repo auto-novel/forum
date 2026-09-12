@@ -3,13 +3,15 @@ import { ArrowBackOutlined, ArticleOutlined } from '@vicons/material';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { authUser, CATEGORIES, getMyPosts, type Post } from '@/api';
+import { authUser, getMyPosts, type Post } from '@/api';
+import { useCategoryStore } from '@/stores/category';
 import PostList from './PostList.vue';
 
 const PAGE_SIZE = 20;
 
 const route = useRoute();
 const router = useRouter();
+const categoryStore = useCategoryStore();
 
 const posts = ref<Post[]>([]);
 const total = ref(0);
@@ -76,7 +78,10 @@ onBeforeUnmount(() => postsController?.abort());
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
       <RouterLink
-        :to="{ name: 'posts', params: { slug: CATEGORIES[0].slug } }"
+        :to="{
+          name: 'posts',
+          params: { slug: categoryStore.defaultCategory.slug },
+        }"
         class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       >
         <ArrowBackOutlined class="size-4" aria-hidden="true" />

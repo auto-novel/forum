@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { ArrowBackOutlined } from '@vicons/material';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import {
-  authUser,
-  CATEGORIES,
-  createPost,
-  getCategoryTags,
-  type CategoryTag,
-} from '@/api';
+import { authUser, createPost } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import { useCategoryStore } from '@/stores/category';
 
 interface PostDraft {
   title: string;
@@ -21,33 +16,31 @@ interface PostDraft {
 
 const route = useRoute();
 const router = useRouter();
+const categoryStore = useCategoryStore();
 const initialCategory =
-  CATEGORIES.find((category) => category.slug === route.query.category)?.slug ??
-  CATEGORIES[0].slug;
+  categoryStore.categories.find(
+    (category) => category.slug === route.query.category,
+  )?.slug ?? categoryStore.defaultCategory.slug;
 const title = ref('');
 const categorySlug = ref(initialCategory);
 const selectedTagIds = ref<number[]>([]);
 const content = ref('');
-const tags = ref<CategoryTag[]>([]);
-const tagsLoading = ref(false);
-const tagsError = ref('');
 const submitting = ref(false);
 const submitError = ref('');
-let tagsController: AbortController | undefined;
 
 const selectedCategory = computed(
   () =>
-    CATEGORIES.find((category) => category.slug === categorySlug.value) ??
-    CATEGORIES[0],
+    categoryStore.categories.find(
+      (category) => category.slug === categorySlug.value,
+    ) ?? categoryStore.defaultCategory,
 );
+const tags = computed(() => selectedCategory.value.tags);
 const draftKey = computed(() =>
   authUser.value ? `forum:post-draft:${authUser.value.id}` : '',
 );
 const canSubmit = computed(
   () =>
-    Boolean(title.value.trim() && content.value.trim()) &&
-    !tagsLoading.value &&
-    !submitting.value,
+    Boolean(title.value.trim() && content.value.trim()) && !submitting.value,
 );
 
 function readDraft(key: string): PostDraft | undefined {
@@ -62,12 +55,15 @@ function readDraft(key: string): PostDraft | undefined {
       typeof value.content !== 'string'
     )
       return;
-    const category = CATEGORIES.some((item) => item.slug === value.category)
-      ? String(value.category)
-      : initialCategory;
+    const categoryItem =
+      categoryStore.categories.find((item) => item.slug === value.category) ??
+      categoryStore.defaultCategory;
+    const category = categoryItem.slug;
+    const validIds = new Set(categoryItem.tags.map((tag) => tag.id));
     const tagIds = Array.isArray(value.tagIds)
       ? value.tagIds.filter(
-          (id): id is number => Number.isSafeInteger(id) && id > 0,
+          (id): id is number =>
+            Number.isSafeInteger(id) && id > 0 && validIds.has(id),
         )
       : [];
     return { title: value.title, category, tagIds, content: value.content };
@@ -115,30 +111,6 @@ watch(
   { deep: true },
 );
 
-async function loadTags() {
-  tagsController?.abort();
-  const controller = new AbortController();
-  tagsController = controller;
-  tagsLoading.value = true;
-  tagsError.value = '';
-  try {
-    tags.value = await getCategoryTags(
-      selectedCategory.value.id,
-      controller.signal,
-    );
-    const validIds = new Set(tags.value.map((tag) => tag.id));
-    selectedTagIds.value = selectedTagIds.value.filter((id) =>
-      validIds.has(id),
-    );
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') return;
-    tags.value = [];
-    tagsError.value = error instanceof Error ? error.message : '无法加载标签';
-  } finally {
-    if (tagsController === controller) tagsLoading.value = false;
-  }
-}
-
 function changeCategory() {
   selectedTagIds.value = [];
 }
@@ -167,7 +139,7 @@ async function submitPost() {
       category: categorySlug.value,
       title: title.value.trim(),
       content: content.value,
-      tagIds: tagsError.value ? [] : selectedTagIds.value,
+      tagIds: selectedTagIds.value,
     });
     writeDraft(draftKey.value);
     title.value = '';
@@ -180,10 +152,6 @@ async function submitPost() {
     submitting.value = false;
   }
 }
-
-watch(categorySlug, loadTags, { immediate: true });
-
-onBeforeUnmount(() => tagsController?.abort());
 </script>
 
 <template>
@@ -248,7 +216,7 @@ onBeforeUnmount(() => tagsController?.abort());
               @change="changeCategory"
             >
               <option
-                v-for="category in CATEGORIES"
+                v-for="category in categoryStore.categories"
                 :key="category.id"
                 :value="category.slug"
               >
@@ -261,31 +229,7 @@ onBeforeUnmount(() => tagsController?.abort());
             <legend class="mb-2 text-sm font-semibold text-ink">
               标签（可选）
             </legend>
-            <div
-              v-if="tagsLoading"
-              class="flex gap-2"
-              aria-label="正在加载标签"
-            >
-              <span
-                v-for="index in 3"
-                :key="index"
-                class="h-7 w-20 animate-pulse rounded-sm bg-divider"
-              />
-            </div>
-            <div
-              v-else-if="tagsError"
-              class="flex items-center gap-3 text-sm text-red-600"
-            >
-              <span>{{ tagsError }}</span>
-              <button
-                type="button"
-                class="font-medium text-primary hover:text-primary-hover"
-                @click="loadTags"
-              >
-                重试
-              </button>
-            </div>
-            <div v-else-if="tags.length" class="flex flex-wrap gap-2">
+            <div v-if="tags.length" class="flex flex-wrap gap-2">
               <label
                 v-for="tag in tags"
                 :key="tag.id"
