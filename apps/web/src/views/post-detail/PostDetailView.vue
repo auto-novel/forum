@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { getPost, getPostComments, type Post, type PostComment } from '@/api';
+import { getPostComments, type Post, type PostComment } from '@/api';
 import AsyncContent from '@/components/AsyncContent.vue';
 import { useCategoryStore } from '@/stores/category';
+import { usePostStore } from '@/stores/post';
 
 import CommentComposer from './CommentComposer.vue';
 import CommentList from './CommentList.vue';
@@ -17,16 +19,18 @@ const COMMENT_PAGE_SIZE = 50;
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
-const post = ref<Post>();
+const postStore = usePostStore();
+const {
+  currentPost: post,
+  detailLoading: postLoading,
+  detailError: postError,
+} = storeToRefs(postStore);
 const comments = ref<PostComment[]>([]);
 const commentsTotal = ref(0);
-const postLoading = ref(true);
 const commentsLoading = ref(true);
-const postError = ref('');
 const commentsError = ref('');
 const editingPost = ref(false);
 const replyTo = ref<PostComment>();
-let postController: AbortController | undefined;
 let commentsController: AbortController | undefined;
 
 const postId = computed(() => {
@@ -48,27 +52,8 @@ const category = computed(() =>
 );
 
 async function loadPost() {
-  postController?.abort();
-  post.value = undefined;
-  postError.value = '';
-  if (!postId.value) {
-    postLoading.value = false;
-    postError.value = '帖子地址无效';
-    return;
-  }
-
-  const controller = new AbortController();
-  postController = controller;
-  postLoading.value = true;
-  try {
-    post.value = await getPost(postId.value, controller.signal);
-    document.title = `${post.value.title} | Novelia Forum`;
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') return;
-    postError.value = error instanceof Error ? error.message : '无法加载帖子';
-  } finally {
-    if (postController === controller) postLoading.value = false;
-  }
+  const loadedPost = await postStore.loadPost(postId.value);
+  if (loadedPost) document.title = `${loadedPost.title} | Novelia Forum`;
 }
 
 async function loadComments() {
@@ -118,7 +103,10 @@ async function handleCommentCreated(comment: PostComment) {
   commentsError.value = '';
   const nextTotal = commentsTotal.value + 1;
   const lastPage = Math.max(1, Math.ceil(nextTotal / COMMENT_PAGE_SIZE));
-  post.value = { ...post.value, commentsCount: post.value.commentsCount + 1 };
+  postStore.setPost({
+    ...post.value,
+    commentsCount: post.value.commentsCount + 1,
+  });
   commentsTotal.value = nextTotal;
 
   if (comment.rootId != null) {
@@ -167,10 +155,10 @@ function handleCommentStatusChanged(id: number, status: number) {
   comment.status = status;
   comment.content = '';
   if (post.value && wasPublished) {
-    post.value = {
+    postStore.setPost({
       ...post.value,
       commentsCount: Math.max(0, post.value.commentsCount - 1),
-    };
+    });
   }
   if (replyTo.value?.id === id) replyTo.value = undefined;
 }
@@ -182,13 +170,13 @@ function scrollToComposer() {
 }
 
 function handlePostSaved(value: Post) {
-  post.value = value;
+  postStore.setPost(value);
   editingPost.value = false;
   document.title = `${value.title} | Novelia Forum`;
 }
 
 function handlePostUpdated(value: Post) {
-  post.value = value;
+  postStore.setPost(value);
 }
 
 function leaveDeletedPost() {
@@ -204,7 +192,6 @@ watch(postId, loadPost, { immediate: true });
 watch([postId, commentPage], loadComments, { immediate: true });
 
 onBeforeUnmount(() => {
-  postController?.abort();
   commentsController?.abort();
 });
 </script>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { AddOutlined } from '@vicons/material';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { getPosts, type Post, type PostSort } from '@/api';
+import { type PostSort } from '@/api';
 import { useCategoryStore } from '@/stores/category';
+import { usePostStore } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
 
@@ -14,12 +16,13 @@ const POST_SORTS = new Set<PostSort>(['active', 'newest', 'views', 'comments']);
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
-
-const posts = ref<Post[]>([]);
-const total = ref(0);
-const postsLoading = ref(true);
-const postsError = ref('');
-let postsController: AbortController | undefined;
+const postStore = usePostStore();
+const {
+  listPosts: posts,
+  listTotal: total,
+  listLoading: postsLoading,
+  listError: postsError,
+} = storeToRefs(postStore);
 
 const selectedCategory = computed(() => {
   const value = route.params.slug;
@@ -66,33 +69,14 @@ const hasFilters = computed(() =>
 );
 
 async function loadPosts() {
-  postsController?.abort();
-  const controller = new AbortController();
-  postsController = controller;
-  postsLoading.value = true;
-  postsError.value = '';
-  try {
-    const result = await getPosts(
-      {
-        page: page.value,
-        pageSize: PAGE_SIZE,
-        category: selectedCategory.value,
-        query: searchQuery.value || undefined,
-        tagIds: selectedTagId.value ? [selectedTagId.value] : undefined,
-        sort: selectedSort.value,
-      },
-      controller.signal,
-    );
-    posts.value = result.items;
-    total.value = result.total;
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') return;
-    postsError.value = error instanceof Error ? error.message : '无法加载帖子';
-    posts.value = [];
-    total.value = 0;
-  } finally {
-    if (postsController === controller) postsLoading.value = false;
-  }
+  await postStore.loadCategoryPosts({
+    page: page.value,
+    pageSize: PAGE_SIZE,
+    category: selectedCategory.value,
+    query: searchQuery.value || undefined,
+    tagIds: selectedTagId.value ? [selectedTagId.value] : undefined,
+    sort: selectedSort.value,
+  });
 }
 
 function applyFilters(filters: {
@@ -128,15 +112,8 @@ function changePage(nextPage: number) {
 watch(
   [selectedCategory, searchQuery, selectedTagId, selectedSort, page],
   loadPosts,
+  { immediate: true },
 );
-
-onMounted(() => {
-  void loadPosts();
-});
-
-onBeforeUnmount(() => {
-  postsController?.abort();
-});
 </script>
 
 <template>

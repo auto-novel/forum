@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ErrorOutlineOutlined, Inventory2Outlined } from '@vicons/material';
+import { Inventory2Outlined } from '@vicons/material';
 import { computed } from 'vue';
 
 const props = withDefaults(
@@ -14,6 +14,7 @@ const props = withDefaults(
     size?: 'compact' | 'default' | 'large';
     headingTag?: 'h1' | 'h2' | 'p';
     stateClass?: string;
+    errorIcon?: boolean;
   }>(),
   {
     error: '',
@@ -24,6 +25,7 @@ const props = withDefaults(
     size: 'default',
     headingTag: 'h2',
     stateClass: '',
+    errorIcon: true,
   },
 );
 
@@ -37,6 +39,20 @@ const minHeightClass = computed(
       large: 'min-h-96',
     })[props.size],
 );
+const statePaddingClass = computed(() =>
+  props.size === 'compact' ? 'p-6' : 'p-8',
+);
+const headingClass = computed(() =>
+  props.size === 'compact'
+    ? 'mt-3 text-sm font-medium text-ink'
+    : 'mt-4 text-lg font-semibold text-ink',
+);
+const descriptionClass = computed(() =>
+  props.size === 'compact'
+    ? 'mt-1 text-xs text-muted'
+    : 'mt-2 text-sm text-muted',
+);
+const retryClass = computed(() => (props.size === 'compact' ? 'mt-4' : 'mt-5'));
 </script>
 
 <template>
@@ -45,25 +61,31 @@ const minHeightClass = computed(
 
     <div
       v-else-if="error"
-      class="grid place-items-center p-8 text-center"
-      :class="[minHeightClass, stateClass]"
+      class="grid place-items-center text-center"
+      :class="[minHeightClass, statePaddingClass, stateClass]"
     >
       <div>
-        <slot name="error-icon">
+        <slot v-if="errorIcon" name="error-icon">
           <div
             class="mx-auto grid size-12 place-items-center rounded-full bg-red-50 text-red-500"
             aria-hidden="true"
           >
-            <ErrorOutlineOutlined class="size-6" />
+            !
           </div>
         </slot>
-        <component :is="headingTag" class="mt-4 text-lg font-semibold text-ink">
+        <component v-if="errorTitle" :is="headingTag" :class="headingClass">
           {{ errorTitle }}
         </component>
-        <p class="mt-2 text-sm text-muted">{{ error }}</p>
+        <p
+          class="text-sm text-muted"
+          :class="errorIcon || errorTitle ? 'mt-2' : ''"
+        >
+          {{ error }}
+        </p>
         <button
           type="button"
-          class="mt-5 rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+          class="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+          :class="retryClass"
           @click="$emit('retry')"
         >
           {{ retryLabel }}
@@ -73,8 +95,8 @@ const minHeightClass = computed(
 
     <div
       v-else-if="empty"
-      class="grid place-items-center p-8 text-center"
-      :class="[minHeightClass, stateClass]"
+      class="grid place-items-center text-center"
+      :class="[minHeightClass, statePaddingClass, stateClass]"
     >
       <div>
         <slot name="empty-icon">
@@ -85,10 +107,10 @@ const minHeightClass = computed(
             <Inventory2Outlined class="size-6" />
           </div>
         </slot>
-        <component :is="headingTag" class="mt-4 text-lg font-semibold text-ink">
+        <component :is="headingTag" :class="headingClass">
           {{ emptyTitle }}
         </component>
-        <p v-if="emptyDescription" class="mt-2 text-sm text-muted">
+        <p v-if="emptyDescription" :class="descriptionClass">
           {{ emptyDescription }}
         </p>
       </div>

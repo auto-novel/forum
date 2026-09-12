@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { ArticleOutlined } from '@vicons/material';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { authUser, getMyPosts, type Post } from '@/api';
+import { authUser } from '@/api';
+import { usePostStore } from '@/stores/post';
 import PostList from './PostList.vue';
 
 const PAGE_SIZE = 20;
 
 const route = useRoute();
 const router = useRouter();
-
-const posts = ref<Post[]>([]);
-const total = ref(0);
-const loading = ref(false);
-const error = ref('');
-let postsController: AbortController | undefined;
+const postStore = usePostStore();
+const {
+  listPosts: posts,
+  listTotal: total,
+  listLoading: loading,
+  listError: error,
+} = storeToRefs(postStore);
 
 const page = computed(() => {
   const value = Number(route.query.page);
@@ -27,36 +30,11 @@ const totalPages = computed(() =>
 );
 
 async function loadMyPosts() {
-  postsController?.abort();
-  postsController = undefined;
-  error.value = '';
-
   if (!authUser.value) {
-    posts.value = [];
-    total.value = 0;
-    loading.value = false;
+    postStore.clearList();
     return;
   }
-
-  const controller = new AbortController();
-  postsController = controller;
-  loading.value = true;
-
-  try {
-    const result = await getMyPosts(
-      { page: page.value, pageSize: PAGE_SIZE },
-      controller.signal,
-    );
-    posts.value = result.items;
-    total.value = result.total;
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === 'AbortError') return;
-    error.value = reason instanceof Error ? reason.message : '无法加载我的帖子';
-    posts.value = [];
-    total.value = 0;
-  } finally {
-    if (postsController === controller) loading.value = false;
-  }
+  await postStore.loadMyPosts({ page: page.value, pageSize: PAGE_SIZE });
 }
 
 function changePage(nextPage: number) {
@@ -68,8 +46,6 @@ function changePage(nextPage: number) {
 }
 
 watch([authUser, page], loadMyPosts, { immediate: true });
-
-onBeforeUnmount(() => postsController?.abort());
 </script>
 
 <template>
