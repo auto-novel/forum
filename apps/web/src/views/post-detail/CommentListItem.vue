@@ -12,6 +12,7 @@ import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
 
 const props = defineProps<{
   comment: PostComment;
@@ -29,6 +30,7 @@ const content = ref(props.comment.content);
 const submitting = ref(false);
 const actionError = ref('');
 const now = ref(Date.now());
+const confirmationAction = ref<'delete' | 'hide'>();
 const commentActionClass =
   'inline-flex min-h-[1.875rem] items-center rounded-sm px-[0.55rem] text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
@@ -51,6 +53,19 @@ const canEdit = computed(
   () => (isOwner.value || isAdmin.value) && withinModificationWindow.value,
 );
 const hasMenu = computed(() => canEdit.value || isAdmin.value);
+const confirmation = computed(() =>
+  confirmationAction.value === 'delete'
+    ? {
+        title: '删除评论',
+        description: '确定删除这条评论吗？删除后无法恢复。',
+        confirmLabel: '删除评论',
+      }
+    : {
+        title: '隐藏评论',
+        description: '确定隐藏这条评论吗？隐藏后可在管理端恢复。',
+        confirmLabel: '隐藏评论',
+      },
+);
 
 onBeforeUnmount(() => window.clearTimeout(expiryTimer));
 
@@ -101,7 +116,6 @@ async function saveEdit() {
 }
 
 async function removeComment() {
-  if (!window.confirm('确定删除这条评论吗？删除后无法恢复。')) return;
   submitting.value = true;
   actionError.value = '';
   try {
@@ -116,7 +130,6 @@ async function removeComment() {
 }
 
 async function hideComment() {
-  if (!window.confirm('确定隐藏这条评论吗？隐藏后可在管理端恢复。')) return;
   submitting.value = true;
   actionError.value = '';
   try {
@@ -127,6 +140,17 @@ async function hideComment() {
   } finally {
     submitting.value = false;
   }
+}
+
+function confirmAction() {
+  const action = confirmationAction.value;
+  confirmationAction.value = undefined;
+  if (action === 'delete') void removeComment();
+  else if (action === 'hide') void hideComment();
+}
+
+function handleConfirmationOpenChange(open: boolean) {
+  if (!open) confirmationAction.value = undefined;
 }
 </script>
 
@@ -200,10 +224,14 @@ async function hideComment() {
         编辑
       </button>
       <ActionMenu v-if="hasMenu" compact side="top" align="start">
-        <ActionMenuItem v-if="isAdmin" @activate="hideComment">
+        <ActionMenuItem v-if="isAdmin" @activate="confirmationAction = 'hide'">
           隐藏评论
         </ActionMenuItem>
-        <ActionMenuItem danger :disabled="submitting" @activate="removeComment">
+        <ActionMenuItem
+          danger
+          :disabled="submitting"
+          @activate="confirmationAction = 'delete'"
+        >
           删除评论
         </ActionMenuItem>
       </ActionMenu>
@@ -211,5 +239,15 @@ async function hideComment() {
     <p v-if="actionError" class="mt-2 text-xs text-red-600" role="alert">
       {{ actionError }}
     </p>
+    <ConfirmDialog
+      :open="confirmationAction != null"
+      :title="confirmation.title"
+      :description="confirmation.description"
+      :confirm-label="confirmation.confirmLabel"
+      :loading="submitting"
+      danger
+      @update:open="handleConfirmationOpenChange"
+      @confirm="confirmAction"
+    />
   </article>
 </template>

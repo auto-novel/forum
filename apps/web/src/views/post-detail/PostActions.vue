@@ -19,6 +19,7 @@ import {
 } from '@/api';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
 
 const props = defineProps<{ post: Post }>();
 
@@ -33,6 +34,7 @@ const favorited = ref(props.post.favorited);
 const favoriteLoading = ref(false);
 const actionLoading = ref(false);
 const actionError = ref('');
+const confirmationAction = ref<'delete' | 'hide'>();
 const postActionClass =
   'inline-flex min-h-9 items-center gap-[0.4rem] rounded-sm px-[0.7rem] text-[0.8125rem] font-semibold transition-colors duration-150 hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50';
 
@@ -41,6 +43,19 @@ const canManage = computed(
   () =>
     authUser.value?.id === props.post.authorId ||
     authUser.value?.role === 'admin',
+);
+const confirmation = computed(() =>
+  confirmationAction.value === 'delete'
+    ? {
+        title: '删除帖子',
+        description: '确定删除这篇帖子吗？删除后无法恢复。',
+        confirmLabel: '删除帖子',
+      }
+    : {
+        title: '隐藏帖子',
+        description: '确定隐藏这篇帖子吗？隐藏后可在管理端恢复。',
+        confirmLabel: '隐藏帖子',
+      },
 );
 
 async function errorMessage(reason: unknown, fallback: string) {
@@ -78,7 +93,6 @@ function editPost() {
 }
 
 async function removePost() {
-  if (!window.confirm('确定删除这篇帖子吗？删除后无法恢复。')) return;
   actionLoading.value = true;
   actionError.value = '';
   try {
@@ -106,11 +120,21 @@ async function updateModeration(request: Promise<unknown>, nextPost: Post) {
 }
 
 function hidePost() {
-  if (!window.confirm('确定隐藏这篇帖子吗？隐藏后可在管理端恢复。')) return;
   void updateModeration(setPostStatus(props.post.id, 1), {
     ...props.post,
     status: 1,
   });
+}
+
+function confirmAction() {
+  const action = confirmationAction.value;
+  confirmationAction.value = undefined;
+  if (action === 'delete') void removePost();
+  else if (action === 'hide') hidePost();
+}
+
+function handleConfirmationOpenChange(open: boolean) {
+  if (!open) confirmationAction.value = undefined;
 }
 
 function togglePin() {
@@ -178,14 +202,17 @@ watch(
             <ActionMenuItem :disabled="actionLoading" @activate="toggleLock">
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
             </ActionMenuItem>
-            <ActionMenuItem :disabled="actionLoading" @activate="hidePost">
+            <ActionMenuItem
+              :disabled="actionLoading"
+              @activate="confirmationAction = 'hide'"
+            >
               隐藏帖子
             </ActionMenuItem>
           </template>
           <ActionMenuItem
             danger
             :disabled="actionLoading"
-            @activate="removePost"
+            @activate="confirmationAction = 'delete'"
           >
             删除帖子
           </ActionMenuItem>
@@ -195,5 +222,15 @@ watch(
     <p v-if="actionError" class="mt-2 text-xs text-red-600" role="alert">
       {{ actionError }}
     </p>
+    <ConfirmDialog
+      :open="confirmationAction != null"
+      :title="confirmation.title"
+      :description="confirmation.description"
+      :confirm-label="confirmation.confirmLabel"
+      :loading="actionLoading"
+      danger
+      @update:open="handleConfirmationOpenChange"
+      @confirm="confirmAction"
+    />
   </section>
 </template>
