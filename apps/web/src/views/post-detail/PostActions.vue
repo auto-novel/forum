@@ -194,7 +194,7 @@ watch(
         评论
       </button>
 
-      <div v-if="canManage" class="ml-auto">
+      <div v-if="canManage">
         <ActionMenu>
           <ActionMenuItem :disabled="actionLoading" @activate="editPost">
             编辑帖子

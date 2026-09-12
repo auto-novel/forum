@@ -80,7 +80,7 @@ async function submitComment() {
 </script>
 
 <template>
-  <section class="mt-5 border-t border-divider pt-5">
+  <section :class="replyTo ? 'mt-3' : 'mt-5 border-t border-divider pt-5'">
     <h2 v-if="!replyTo" class="font-semibold text-ink">发表评论</h2>
 
     <div v-if="locked" class="mt-4 py-2 text-sm text-orange-700">

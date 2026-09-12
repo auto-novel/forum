@@ -111,6 +111,10 @@ async function handleCommentCreated(comment: PostComment) {
 }
 
 function startReply(comment: PostComment) {
+  if (replyTo.value?.id === comment.id) {
+    replyTo.value = undefined;
+    return;
+  }
   composingComment.value = false;
   replyTo.value = comment;
   void nextTick(() =>

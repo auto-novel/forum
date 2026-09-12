@@ -143,10 +143,10 @@ function handleConfirmationOpenChange(open: boolean) {
 <template>
   <article
     :id="`comment-${comment.id}`"
-    class="py-5"
+    class="py-4"
     :class="
       comment.rootId != null
-        ? 'ml-6 border-l-2 border-primary-soft sm:ml-12'
+        ? 'ml-6 border-l-2 border-primary-soft pl-4 sm:ml-10 sm:pl-5'
         : ''
     "
   >
@@ -197,6 +197,7 @@ function handleConfirmationOpenChange(open: boolean) {
         v-if="authUser && !locked"
         type="button"
         :class="commentActionClass"
+        :aria-expanded="replying"
         @click="emit('reply', comment)"
       >
         回复
