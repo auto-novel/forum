@@ -84,15 +84,15 @@ func NewPostHandler(
 
 func (h *postHandler) RegisterRoutes(router chi.Router) {
 	router.Get("/", httpx.EH(h.list))
-	router.With(httpx.RequireAccessToken).Post("/", httpx.EH(h.create))
+	router.With(httpx.RequireMember).Post("/", httpx.EH(h.create))
 	router.Route("/{id}", func(router chi.Router) {
 		router.Get("/", httpx.EH(h.get))
-		router.With(httpx.RequireAccessToken).Patch("/", httpx.EH(h.update))
+		router.With(httpx.RequireMember).Patch("/", httpx.EH(h.update))
 		router.With(httpx.RequireAccessToken).Delete("/", httpx.EH(h.delete))
 		router.With(httpx.RequireAccessToken).Put("/favorite", httpx.EH(h.favorite))
 		router.With(httpx.RequireAccessToken).Delete("/favorite", httpx.EH(h.unfavorite))
 		router.Get("/comment", httpx.EH(h.listComments))
-		router.With(httpx.RequireAccessToken).Post("/comment", httpx.EH(h.createComment))
+		router.With(httpx.RequireMember).Post("/comment", httpx.EH(h.createComment))
 	})
 }
 

@@ -19,9 +19,8 @@ func NewCommentHandler(repo repository.CommentRepository) *commentHandler {
 }
 
 func (h *commentHandler) RegisterRoutes(router chi.Router) {
-	router.Use(httpx.RequireAccessToken)
-	router.Patch("/{id}", httpx.EH(h.update))
-	router.Delete("/{id}", httpx.EH(h.delete))
+	router.With(httpx.RequireMember).Patch("/{id}", httpx.EH(h.update))
+	router.With(httpx.RequireAccessToken).Delete("/{id}", httpx.EH(h.delete))
 }
 
 type commentResponse struct {

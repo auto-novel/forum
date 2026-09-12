@@ -19,8 +19,8 @@ func NewExternalCommentHandler(repo repository.CommentRepository) *externalComme
 
 func (h *externalCommentHandler) RegisterRoutes(router chi.Router) {
 	router.Get("/{type}/{subjectKey}", httpx.EH(h.list))
-	router.With(httpx.RequireAccessToken).Post("/{type}/{subjectKey}", httpx.EH(h.create))
-	router.With(httpx.RequireAccessToken).Patch("/{type}/{commentId}", httpx.EH(h.update))
+	router.With(httpx.RequireMember).Post("/{type}/{subjectKey}", httpx.EH(h.create))
+	router.With(httpx.RequireMember).Patch("/{type}/{commentId}", httpx.EH(h.update))
 	router.With(httpx.RequireAccessToken).Delete("/{type}/{commentId}", httpx.EH(h.delete))
 	router.With(httpx.RequireAdmin).Put("/{type}/{commentId}/status", httpx.EH(h.setStatus))
 }
