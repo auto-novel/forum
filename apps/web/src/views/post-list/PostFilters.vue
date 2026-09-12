@@ -34,8 +34,7 @@ async function loadTags() {
   tagsController = controller;
   tagsLoading.value = true;
   try {
-    const result = await getCategoryTags(props.categoryId, controller.signal);
-    tags.value = result.filter((tag) => tag.isActive);
+    tags.value = await getCategoryTags(props.categoryId, controller.signal);
   } catch (reason) {
     if (reason instanceof DOMException && reason.name === 'AbortError') return;
     tags.value = [];

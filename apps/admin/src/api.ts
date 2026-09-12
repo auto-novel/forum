@@ -15,6 +15,17 @@ export interface Category {
   bannerUrl?: string;
 }
 
+export interface CategoryTag {
+  id: number;
+  name: string;
+  color: number;
+  sortOrder: number;
+}
+
+export interface CategoryListItem extends Category {
+  tags: CategoryTag[];
+}
+
 export interface Tag {
   id: number;
   name: string;
@@ -90,7 +101,7 @@ export function createForumApi(authApi: AuthApi) {
 
   return {
     getCategories() {
-      return client.get(endpoint('category/')).json<Category[]>();
+      return client.get(endpoint('category/')).json<CategoryListItem[]>();
     },
     createCategory(request: CategoryRequest) {
       return client
@@ -103,7 +114,9 @@ export function createForumApi(authApi: AuthApi) {
         .json<Category>();
     },
     getTags(categoryId: number) {
-      return client.get(endpoint(`category/${categoryId}/tag`)).json<Tag[]>();
+      return client
+        .get(endpoint(`admin/category/${categoryId}/tag`))
+        .json<Tag[]>();
     },
     createTag(categoryId: number, request: TagRequest) {
       return client

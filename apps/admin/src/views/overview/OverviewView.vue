@@ -62,11 +62,11 @@ async function loadOverview() {
       api.getCategories(),
       api.getPosts({ page: 1, pageSize: 6 }),
     ]);
-    const tagGroups = await Promise.all(
-      categories.map((category) => api.getTags(category.id)),
-    );
     categoryCount.value = categories.length;
-    tagCount.value = tagGroups.flat().filter((tag) => tag.isActive).length;
+    tagCount.value = categories.reduce(
+      (count, category) => count + category.tags.length,
+      0,
+    );
     postCount.value = posts.total;
     recentPosts.value = posts.items;
   } catch (error) {

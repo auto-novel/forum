@@ -40,7 +40,6 @@ const selectedCategory = computed(
     CATEGORIES.find((category) => category.slug === categorySlug.value) ??
     CATEGORIES[0],
 );
-const activeTags = computed(() => tags.value.filter((tag) => tag.isActive));
 const draftKey = computed(() =>
   authUser.value ? `forum:post-draft:${authUser.value.id}` : '',
 );
@@ -127,7 +126,7 @@ async function loadTags() {
       selectedCategory.value.id,
       controller.signal,
     );
-    const validIds = new Set(activeTags.value.map((tag) => tag.id));
+    const validIds = new Set(tags.value.map((tag) => tag.id));
     selectedTagIds.value = selectedTagIds.value.filter((id) =>
       validIds.has(id),
     );
@@ -286,9 +285,9 @@ onBeforeUnmount(() => tagsController?.abort());
                 重试
               </button>
             </div>
-            <div v-else-if="activeTags.length" class="flex flex-wrap gap-2">
+            <div v-else-if="tags.length" class="flex flex-wrap gap-2">
               <label
-                v-for="tag in activeTags"
+                v-for="tag in tags"
                 :key="tag.id"
                 class="cursor-pointer rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors"
                 :class="

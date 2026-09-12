@@ -22,11 +22,6 @@ const submitting = ref(false);
 const submitError = ref('');
 const controller = new AbortController();
 
-const availableTags = computed(() => {
-  const selected = new Set(selectedTagIds.value);
-  return tags.value.filter((tag) => tag.isActive || selected.has(tag.id));
-});
-
 const canSubmit = computed(
   () =>
     Boolean(title.value.trim() && content.value.trim()) &&
@@ -111,9 +106,9 @@ onBeforeUnmount(() => controller.abort());
         <p v-else-if="tagsError" class="text-sm text-red-600">
           {{ tagsError }}
         </p>
-        <div v-else-if="availableTags.length" class="flex flex-wrap gap-2">
+        <div v-else-if="tags.length" class="flex flex-wrap gap-2">
           <label
-            v-for="tag in availableTags"
+            v-for="tag in tags"
             :key="tag.id"
             class="cursor-pointer rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors"
             :class="

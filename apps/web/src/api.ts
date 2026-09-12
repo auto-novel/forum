@@ -31,10 +31,14 @@ export interface PostTag {
 }
 
 export interface CategoryTag extends PostTag {
-  isActive: boolean;
   sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface CategoryListItem {
+  id: number;
+  slug: string;
+  bannerUrl?: string;
+  tags: CategoryTag[];
 }
 
 export interface Post {
@@ -135,10 +139,16 @@ export function setPostFavorite(id: number, favorited: boolean) {
   return favorited ? client.put(path) : client.delete(path);
 }
 
-export function getCategoryTags(categoryId: number, signal?: AbortSignal) {
-  return client
-    .get(`category/${categoryId}/tag`, { signal })
-    .json<CategoryTag[]>();
+export function getCategories(signal?: AbortSignal) {
+  return client.get('category/', { signal }).json<CategoryListItem[]>();
+}
+
+export async function getCategoryTags(
+  categoryId: number,
+  signal?: AbortSignal,
+) {
+  const categories = await getCategories(signal);
+  return categories.find((category) => category.id === categoryId)?.tags ?? [];
 }
 
 export function createPost(input: {
