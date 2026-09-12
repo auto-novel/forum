@@ -15,12 +15,16 @@ defineProps<{
   total: number;
   totalPages: number;
   locked: boolean;
+  postId: number;
+  replyToId?: number;
 }>();
 
 const emit = defineEmits<{
   retry: [];
   changePage: [page: number];
   reply: [comment: PostComment];
+  cancelReply: [];
+  created: [comment: PostComment];
   statusChanged: [id: number, status: number];
 }>();
 </script>
@@ -71,7 +75,11 @@ const emit = defineEmits<{
           :key="comment.id"
           :comment="comment"
           :locked="locked"
+          :post-id="postId"
+          :replying="replyToId === comment.id"
           @reply="emit('reply', $event)"
+          @cancel-reply="emit('cancelReply')"
+          @created="emit('created', $event)"
           @status-changed="(id, status) => emit('statusChanged', id, status)"
         />
       </div>

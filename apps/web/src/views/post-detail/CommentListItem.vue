@@ -11,13 +11,19 @@ import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
 
+import CommentComposer from './CommentComposer.vue';
+
 const props = defineProps<{
   comment: PostComment;
   locked: boolean;
+  postId: number;
+  replying: boolean;
 }>();
 
 const emit = defineEmits<{
   reply: [comment: PostComment];
+  cancelReply: [];
+  created: [comment: PostComment];
   statusChanged: [id: number, status: number];
 }>();
 
@@ -76,6 +82,7 @@ function formatDate(value: string) {
 }
 
 function startEditing() {
+  if (props.replying) emit('cancelReply');
   content.value = props.comment.content;
   editing.value = true;
 }
@@ -215,6 +222,15 @@ function handleConfirmationOpenChange(open: boolean) {
         </ActionMenuItem>
       </ActionMenu>
     </div>
+    <CommentComposer
+      v-if="replying"
+      :id="`comment-reply-composer-${comment.id}`"
+      :post-id="postId"
+      :locked="locked"
+      :reply-to="comment"
+      @created="emit('created', $event)"
+      @cancel-reply="emit('cancelReply')"
+    />
     <ConfirmDialog
       :open="confirmationAction != null"
       :title="confirmation.title"

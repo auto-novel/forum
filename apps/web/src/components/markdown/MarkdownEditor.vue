@@ -188,7 +188,7 @@ defineExpose({ focus });
       <textarea
         ref="textarea"
         v-model="value"
-        class="block min-h-40 w-full resize-y border-0 bg-transparent px-3 py-3 text-sm leading-6 text-ink outline-none placeholder:text-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+        class="block min-h-24 w-full resize-y border-0 bg-transparent px-3 py-3 text-sm leading-6 text-ink outline-none placeholder:text-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
         :rows="rows"
         :maxlength="maxlength"
         :placeholder="placeholder"

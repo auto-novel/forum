@@ -26,6 +26,7 @@ const {
   detailLoading: postLoading,
   detailError: postError,
 } = storeToRefs(postStore);
+const composingComment = ref(false);
 const replyTo = ref<PostComment>();
 
 const postId = computed(() => {
@@ -101,6 +102,7 @@ async function handleCommentCreated(comment: PostComment) {
       query: { commentPage: String(lastPage) },
     });
   }
+  composingComment.value = false;
   replyTo.value = undefined;
   await nextTick();
   document
@@ -109,10 +111,11 @@ async function handleCommentCreated(comment: PostComment) {
 }
 
 function startReply(comment: PostComment) {
+  composingComment.value = false;
   replyTo.value = comment;
   void nextTick(() =>
     document
-      .querySelector('#comment-composer')
+      .querySelector(`#comment-reply-composer-${comment.id}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
   );
 }
@@ -127,10 +130,14 @@ function handleCommentStatusChanged(id: number) {
   if (replyTo.value?.id === id) replyTo.value = undefined;
 }
 
-function scrollToComposer() {
-  document
-    .querySelector('#comment-composer')
-    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+function startComment() {
+  replyTo.value = undefined;
+  composingComment.value = true;
+  void nextTick(() =>
+    document
+      .querySelector('#comment-composer')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+  );
 }
 
 function editPost() {
@@ -187,15 +194,14 @@ watch([postId, commentPage], loadComments, { immediate: true });
             @edit="editPost"
             @deleted="leaveDeletedPost"
             @updated="handlePostUpdated"
-            @comment="scrollToComposer"
+            @comment="startComment"
           />
           <CommentComposer
+            v-if="composingComment"
             id="comment-composer"
             :post-id="post.id"
             :locked="post.commentsLocked"
-            :reply-to="replyTo"
             @created="handleCommentCreated"
-            @cancel-reply="replyTo = undefined"
           />
           <div id="comments">
             <CommentList
@@ -206,9 +212,13 @@ watch([postId, commentPage], loadComments, { immediate: true });
               :total="commentsTotal"
               :total-pages="commentTotalPages"
               :locked="post.commentsLocked"
+              :post-id="post.id"
+              :reply-to-id="replyTo?.id"
               @retry="loadComments"
               @change-page="changeCommentPage"
               @reply="startReply"
+              @cancel-reply="replyTo = undefined"
+              @created="handleCommentCreated"
               @status-changed="handleCommentStatusChanged"
             />
           </div>

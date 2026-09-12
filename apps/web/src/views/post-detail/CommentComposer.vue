@@ -81,19 +81,7 @@ async function submitComment() {
 
 <template>
   <section class="mt-5 border-t border-divider pt-5">
-    <div class="flex items-center justify-between gap-3">
-      <h2 class="font-semibold text-ink">
-        {{ replyTo ? `回复 @${replyTo.authorUsername}` : '发表评论' }}
-      </h2>
-      <button
-        v-if="replyTo"
-        type="button"
-        class="text-xs font-medium text-muted hover:text-primary"
-        @click="emit('cancelReply')"
-      >
-        取消回复
-      </button>
-    </div>
+    <h2 v-if="!replyTo" class="font-semibold text-ink">发表评论</h2>
 
     <div v-if="locked" class="mt-4 py-2 text-sm text-orange-700">
       评论区已锁定，暂时无法发表新评论。
@@ -103,10 +91,11 @@ async function submitComment() {
       登录后即可参与评论，请使用页面右上角的登录入口。
     </div>
 
-    <form v-else class="mt-4" @submit.prevent="submitComment">
+    <form v-else :class="{ 'mt-4': !replyTo }" @submit.prevent="submitComment">
       <MarkdownEditor
         v-model="content"
         mode="comment"
+        :rows="3"
         :placeholder="
           replyTo
             ? `回复 @${replyTo.authorUsername}…`
@@ -116,13 +105,24 @@ async function submitComment() {
       />
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-muted">支持 Markdown，草稿会自动保存在本机。</p>
-        <button
-          type="submit"
-          class="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="!content.trim() || submitting"
-        >
-          {{ submitting ? '发布中…' : '发表评论' }}
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            v-if="replyTo"
+            type="button"
+            class="rounded-sm border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="submitting"
+            @click="emit('cancelReply')"
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            class="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="!content.trim() || submitting"
+          >
+            {{ submitting ? '发表中…' : '发表' }}
+          </button>
+        </div>
       </div>
     </form>
   </section>
