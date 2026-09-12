@@ -34,6 +34,27 @@ func TestJetRepositories(t *testing.T) {
 	if err := tagRepo.SetActive(tag.ID, true); err != nil {
 		t.Fatal(err)
 	}
+	inactiveTag, err := tagRepo.Create(category.ID, "停用标签", 3, 30, `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := tagRepo.SetActive(inactiveTag.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	activeTags, err := tagRepo.ListActive()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(activeTags) != 1 || activeTags[0].ID != tag.ID {
+		t.Fatalf("unexpected active tags: %#v", activeTags)
+	}
+	categoryTags, err := tagRepo.ListByCategory(category.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(categoryTags) != 2 || categoryTags[0].ID != tag.ID || categoryTags[1].ID != inactiveTag.ID {
+		t.Fatalf("unexpected category tags: %#v", categoryTags)
+	}
 
 	post, err := postRepo.Create(repository.CreatePostInput{
 		CategorySlug: category.Slug,

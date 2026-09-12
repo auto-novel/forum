@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"auth/internal/httpx"
 	"auth/internal/repository"
@@ -12,12 +13,54 @@ import (
 )
 
 func (h *categoryHandler) RegisterAdminRoutes(router chi.Router) {
+	router.Get("/{cid}/tag", httpx.EH(h.listTags))
 	router.Post("/", httpx.EH(h.createCategory))
 	router.Put("/{id}", httpx.EH(h.updateCategory))
 	router.Post("/{cid}/tag", httpx.EH(h.createTag))
 	router.Put("/{cid}/tag/{id}", httpx.EH(h.updateTag))
 	router.Put("/{cid}/tag/{id}/active", httpx.EH(h.activateTag))
 	router.Delete("/{cid}/tag/{id}/active", httpx.EH(h.deactivateTag))
+}
+
+type categoryResponse struct {
+	ID        int64   `json:"id"`
+	Slug      string  `json:"slug"`
+	BannerURL *string `json:"bannerUrl,omitempty"`
+}
+
+type tagResponse struct {
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Color     int16     `json:"color"`
+	IsActive  bool      `json:"isActive"`
+	SortOrder int32     `json:"sortOrder"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+func (h *categoryHandler) listTags(w http.ResponseWriter, r *http.Request) error {
+	categoryID, err := httpx.ParseParamPositiveInt(r, "cid")
+	if err != nil {
+		return err
+	}
+	items, err := h.tagRepo.ListByCategory(categoryID)
+	if err != nil {
+		return httpx.InternalError(err, "查询标签失败")
+	}
+	response := make([]tagResponse, len(items))
+	for i, item := range items {
+		response[i] = tagResponse{
+			ID:        item.ID,
+			Name:      item.Name,
+			Color:     item.Color,
+			IsActive:  item.IsActive,
+			SortOrder: item.SortOrder,
+			CreatedAt: item.CreatedAt,
+			UpdatedAt: item.UpdatedAt,
+		}
+	}
+	render.JSON(w, r, response)
+	return nil
 }
 
 type categoryInput struct {

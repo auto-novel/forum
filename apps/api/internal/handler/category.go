@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"auth/internal/httpx"
 	"auth/internal/repository"
@@ -28,23 +27,20 @@ func NewCategoryHandler(
 
 func (h *categoryHandler) RegisterRoutes(router chi.Router) {
 	router.Get("/", httpx.EH(h.list))
-	router.Get("/{id}/tag", httpx.EH(h.listTags))
 }
 
-type categoryResponse struct {
-	ID        int64   `json:"id"`
-	Slug      string  `json:"slug"`
-	BannerURL *string `json:"bannerUrl,omitempty"`
+type categoryListResponse struct {
+	ID        int64                 `json:"id"`
+	Slug      string                `json:"slug"`
+	BannerURL *string               `json:"bannerUrl,omitempty"`
+	Tags      []categoryTagResponse `json:"tags"`
 }
 
-type tagResponse struct {
-	ID        int64     `json:"id"`
-	Name      string    `json:"name"`
-	Color     int16     `json:"color"`
-	IsActive  bool      `json:"isActive"`
-	SortOrder int32     `json:"sortOrder"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+type categoryTagResponse struct {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Color     int16  `json:"color"`
+	SortOrder int32  `json:"sortOrder"`
 }
 
 func (h *categoryHandler) list(w http.ResponseWriter, r *http.Request) error {
@@ -52,39 +48,36 @@ func (h *categoryHandler) list(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return httpx.InternalError(err, "查询分类失败")
 	}
-	response := make([]categoryResponse, len(items))
-	for i, item := range items {
-		response[i] = categoryResponse{
-			ID:        item.ID,
-			Slug:      item.Slug,
-			BannerURL: item.BannerURL,
-		}
-	}
-	render.JSON(w, r, response)
-	return nil
-}
-
-func (h *categoryHandler) listTags(w http.ResponseWriter, r *http.Request) error {
-	categoryID, err := httpx.ParseParamPositiveInt(r, "id")
-	if err != nil {
-		return err
-	}
-	items, err := h.tagRepo.List(categoryID, false)
+	tags, err := h.tagRepo.ListActive()
 	if err != nil {
 		return httpx.InternalError(err, "查询标签失败")
 	}
-	response := make([]tagResponse, len(items))
+	render.JSON(w, r, newCategoryResponses(items, tags))
+	return nil
+}
+
+func newCategoryResponses(items []repository.Category, tags []repository.Tag) []categoryListResponse {
+	tagsByCategory := make(map[int64][]categoryTagResponse, len(items))
+	for _, tag := range tags {
+		tagsByCategory[tag.CategoryID] = append(tagsByCategory[tag.CategoryID], categoryTagResponse{
+			ID:        tag.ID,
+			Name:      tag.Name,
+			Color:     tag.Color,
+			SortOrder: tag.SortOrder,
+		})
+	}
+	response := make([]categoryListResponse, len(items))
 	for i, item := range items {
-		response[i] = tagResponse{
+		categoryTags := tagsByCategory[item.ID]
+		if categoryTags == nil {
+			categoryTags = []categoryTagResponse{}
+		}
+		response[i] = categoryListResponse{
 			ID:        item.ID,
-			Name:      item.Name,
-			Color:     item.Color,
-			IsActive:  item.IsActive,
-			SortOrder: item.SortOrder,
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
+			Slug:      item.Slug,
+			BannerURL: item.BannerURL,
+			Tags:      categoryTags,
 		}
 	}
-	render.JSON(w, r, response)
-	return nil
+	return response
 }
