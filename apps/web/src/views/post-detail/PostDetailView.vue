@@ -13,7 +13,6 @@ import CommentComposer from './CommentComposer.vue';
 import CommentList from './CommentList.vue';
 import PostActions from './PostActions.vue';
 import PostContent from './PostContent.vue';
-import PostEditForm from './PostEditForm.vue';
 
 const COMMENT_PAGE_SIZE = 50;
 
@@ -27,7 +26,6 @@ const {
   detailLoading: postLoading,
   detailError: postError,
 } = storeToRefs(postStore);
-const editingPost = ref(false);
 const replyTo = ref<PostComment>();
 
 const postId = computed(() => {
@@ -135,10 +133,8 @@ function scrollToComposer() {
     ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function handlePostSaved(value: Post) {
-  postStore.setPost(value);
-  editingPost.value = false;
-  document.title = `${value.title} | Novelia Forum`;
+function editPost() {
+  void router.push({ name: 'post-edit', params: { id: postId.value } });
 }
 
 function handlePostUpdated(value: Post) {
@@ -183,50 +179,40 @@ watch([postId, commentPage], loadComments, { immediate: true });
         </template>
 
         <template v-if="post">
-          <PostEditForm
-            v-if="editingPost"
-            :post="post"
-            @cancel="editingPost = false"
-            @saved="handlePostSaved"
-          />
           <PostContent
-            v-else
             :post="post"
             :category-name="category?.title ?? '未分类'"
           />
           <PostActions
-            v-if="!editingPost"
             :post="post"
-            @edit="editingPost = true"
+            @edit="editPost"
             @deleted="leaveDeletedPost"
             @updated="handlePostUpdated"
             @comment="scrollToComposer"
           />
-          <template v-if="!editingPost">
-            <CommentComposer
-              id="comment-composer"
-              :post-id="post.id"
+          <CommentComposer
+            id="comment-composer"
+            :post-id="post.id"
+            :locked="post.commentsLocked"
+            :reply-to="replyTo"
+            @created="handleCommentCreated"
+            @cancel-reply="replyTo = undefined"
+          />
+          <div id="comments">
+            <CommentList
+              :comments="comments"
+              :loading="commentsLoading"
+              :error="commentsError"
+              :page="commentPage"
+              :total="commentsTotal"
+              :total-pages="commentTotalPages"
               :locked="post.commentsLocked"
-              :reply-to="replyTo"
-              @created="handleCommentCreated"
-              @cancel-reply="replyTo = undefined"
+              @retry="loadComments"
+              @change-page="changeCommentPage"
+              @reply="startReply"
+              @status-changed="handleCommentStatusChanged"
             />
-            <div id="comments">
-              <CommentList
-                :comments="comments"
-                :loading="commentsLoading"
-                :error="commentsError"
-                :page="commentPage"
-                :total="commentsTotal"
-                :total-pages="commentTotalPages"
-                :locked="post.commentsLocked"
-                @retry="loadComments"
-                @change-page="changeCommentPage"
-                @reply="startReply"
-                @status-changed="handleCommentStatusChanged"
-              />
-            </div>
-          </template>
+          </div>
         </template>
       </AsyncContent>
     </div>

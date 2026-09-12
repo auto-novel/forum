@@ -4,7 +4,8 @@ import { useCategoryStore } from '@/stores/category';
 import FavoritePostListView from '@/views/post-list/FavoritePostListView.vue';
 import MyPostListView from '@/views/post-list/MyPostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
-import PostCreateView from '@/views/post-create/PostCreateView.vue';
+import PostCreateView from '@/views/post-editor/PostCreateView.vue';
+import PostEditView from '@/views/post-editor/PostEditView.vue';
 import PostListView from '@/views/post-list/PostListView.vue';
 
 function defaultCategorySlug() {
@@ -55,6 +56,12 @@ const router = createRouter({
       name: 'post-create',
       component: PostCreateView,
       meta: { title: '发表帖子' },
+    },
+    {
+      path: '/p/:id/edit',
+      name: 'post-edit',
+      component: PostEditView,
+      meta: { title: '编辑帖子' },
     },
     {
       path: '/p/:id',

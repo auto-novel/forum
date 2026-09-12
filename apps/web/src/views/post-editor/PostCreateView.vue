@@ -3,11 +3,11 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { authUser, createPost } from '@/api';
-import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-import TagSelector from '@/components/TagSelector.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
 import { getApiErrorMessage } from '@/utils/apiError';
+
+import PostForm from './PostForm.vue';
 
 interface PostDraft {
   title: string;
@@ -38,10 +38,6 @@ const selectedCategory = computed(
 const tags = computed(() => selectedCategory.value.tags);
 const draftKey = computed(() =>
   authUser.value ? `forum:post-draft:${authUser.value.id}` : '',
-);
-const canSubmit = computed(
-  () =>
-    Boolean(title.value.trim() && content.value.trim()) && !submitting.value,
 );
 
 function readDraft(key: string): PostDraft | undefined {
@@ -117,7 +113,7 @@ function changeCategory() {
 }
 
 async function submitPost() {
-  if (!canSubmit.value || !authUser.value) return;
+  if (!authUser.value || submitting.value) return;
   submitting.value = true;
   try {
     const post = await createPost({
@@ -156,87 +152,53 @@ async function submitPost() {
           登录后才能发表帖子，请使用页面右上角的登录入口。
         </div>
 
-        <form v-else class="mt-6 space-y-5" @submit.prevent="submitPost">
-          <div>
-            <label
-              for="post-title"
-              class="mb-2 block text-sm font-semibold text-ink"
-            >
-              标题
-            </label>
-            <input
-              id="post-title"
-              v-model="title"
-              type="text"
-              maxlength="500"
-              class="block min-h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-paper"
-              placeholder="用一句话概括你想讨论的内容"
-              :disabled="submitting"
-              required
-            />
-            <p class="mt-1 text-right text-xs text-muted">
-              {{ title.length }} / 500
-            </p>
-          </div>
-
-          <div>
-            <label
-              for="post-category"
-              class="mb-2 block text-sm font-semibold text-ink"
-            >
-              分类
-            </label>
-            <select
-              id="post-category"
-              v-model="categorySlug"
-              class="block min-h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-paper"
-              :disabled="submitting"
-              @change="changeCategory"
-            >
-              <option
-                v-for="category in categoryStore.categories"
-                :key="category.id"
-                :value="category.slug"
+        <PostForm
+          v-else
+          v-model:title="title"
+          v-model:content="content"
+          v-model:tag-ids="selectedTagIds"
+          class="mt-6"
+          :tags="tags"
+          :submitting="submitting"
+          submit-label="发布帖子"
+          submitting-label="发布中…"
+          title-placeholder="用一句话概括你想讨论的内容"
+          content-placeholder="详细说明你想分享或讨论的内容…"
+          show-title-count
+          @submit="submitPost"
+        >
+          <template #category>
+            <div>
+              <label
+                for="post-category"
+                class="mb-2 block text-sm font-semibold text-ink"
               >
-                {{ category.title }}
-              </option>
-            </select>
-          </div>
+                分类
+              </label>
+              <select
+                id="post-category"
+                v-model="categorySlug"
+                class="block min-h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-paper"
+                :disabled="submitting"
+                @change="changeCategory"
+              >
+                <option
+                  v-for="category in categoryStore.categories"
+                  :key="category.id"
+                  :value="category.slug"
+                >
+                  {{ category.title }}
+                </option>
+              </select>
+            </div>
+          </template>
 
-          <TagSelector
-            v-model="selectedTagIds"
-            :tags="tags"
-            :disabled="submitting"
-          />
-
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-ink">
-              正文
-            </label>
-            <MarkdownEditor
-              v-model="content"
-              mode="article"
-              placeholder="详细说明你想分享或讨论的内容…"
-              :rows="14"
-              :disabled="submitting"
-            />
-          </div>
-
-          <div
-            class="flex flex-wrap items-center justify-between gap-3 border-t border-divider pt-5"
-          >
+          <template #hint>
             <p class="text-xs text-muted">
               内容支持 Markdown，草稿会自动保存在本机。
             </p>
-            <button
-              type="submit"
-              class="rounded-sm bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-              :disabled="!canSubmit"
-            >
-              {{ submitting ? '发布中…' : '发布帖子' }}
-            </button>
-          </div>
-        </form>
+          </template>
+        </PostForm>
       </section>
     </div>
   </div>
