@@ -6,22 +6,11 @@ import {
 import { RouterLink } from 'vue-router';
 
 import type { Post } from '@/api';
+import PostTagList from '@/components/PostTagList.vue';
 
 defineProps<{
   post: Post;
 }>();
-
-const tagColors = [
-  'bg-primary-soft text-primary',
-  'bg-blue-50 text-blue-600',
-  'bg-orange-50 text-orange-600',
-  'bg-purple-50 text-purple-600',
-  'bg-red-50 text-red-600',
-];
-
-function tagClass(color: number) {
-  return tagColors[Math.abs(color) % tagColors.length];
-}
 
 function excerpt(content: string) {
   return content.replace(/\s+/g, ' ').trim().slice(0, 180);
@@ -43,25 +32,11 @@ function formatDate(value: string) {
   <article
     class="group relative px-4 py-4 transition-colors duration-300 hover:bg-paper sm:px-5"
   >
-    <div
-      v-if="post.pinOrder != null || post.tags.length"
-      class="mb-2 flex flex-wrap items-center gap-1.5 text-xs"
-    >
-      <span
-        v-if="post.pinOrder != null"
-        class="rounded-sm bg-orange-50 px-2 py-0.5 font-medium text-orange-600"
-      >
-        置顶
-      </span>
-      <span
-        v-for="tag in post.tags"
-        :key="tag.id"
-        class="rounded-sm px-2 py-0.5 font-medium"
-        :class="tagClass(tag.color)"
-      >
-        {{ tag.name }}
-      </span>
-    </div>
+    <PostTagList
+      class="mb-2"
+      :tags="post.tags"
+      :pinned="post.pinOrder != null"
+    />
 
     <h2 class="text-[17px] leading-snug font-semibold">
       <RouterLink

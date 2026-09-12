@@ -2,6 +2,7 @@
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
 import type { PostComment } from '@/api';
+import AsyncContent from '@/components/AsyncContent.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
 
 import CommentListItem from './CommentListItem.vue';
@@ -34,61 +35,48 @@ const emit = defineEmits<{
       </h2>
     </header>
 
-    <div
-      v-if="loading"
-      class="divide-y divide-divider"
-      aria-label="正在加载评论"
+    <AsyncContent
+      :loading="loading"
+      :error="error"
+      :empty="!comments.length"
+      size="compact"
+      error-title="评论加载失败"
+      retry-label="重新加载评论"
+      empty-title="还没有评论"
+      empty-description="这里暂时安安静静的。"
+      @retry="emit('retry')"
     >
-      <div v-for="index in 3" :key="index" class="px-4 py-5 sm:px-6">
-        <div class="h-3 w-28 animate-pulse rounded-sm bg-border" />
-        <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
-        <div class="mt-2 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
-      </div>
-    </div>
+      <template #loading>
+        <div class="divide-y divide-divider" aria-label="正在加载评论">
+          <div v-for="index in 3" :key="index" class="px-4 py-5 sm:px-6">
+            <div class="h-3 w-28 animate-pulse rounded-sm bg-border" />
+            <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
+            <div class="mt-2 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
+          </div>
+        </div>
+      </template>
 
-    <div
-      v-else-if="error"
-      class="grid min-h-52 place-items-center p-6 text-center"
-    >
-      <div>
-        <p class="text-sm text-muted">{{ error }}</p>
-        <button
-          type="button"
-          class="mt-4 rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-          @click="emit('retry')"
-        >
-          重新加载评论
-        </button>
-      </div>
-    </div>
-
-    <div
-      v-else-if="!comments.length"
-      class="grid min-h-52 place-items-center p-6 text-center"
-    >
-      <div>
+      <template #empty-icon>
         <div
           class="mx-auto grid size-11 place-items-center rounded-full bg-paper text-muted"
           aria-hidden="true"
         >
           <ChatBubbleOutlineOutlined class="size-5" />
         </div>
-        <p class="mt-3 text-sm font-medium text-ink">还没有评论</p>
-        <p class="mt-1 text-xs text-muted">这里暂时安安静静的。</p>
-      </div>
-    </div>
+      </template>
 
-    <div v-else class="divide-y divide-divider">
-      <CommentListItem
-        v-for="comment in comments"
-        :key="comment.id"
-        :comment="comment"
-        :locked="locked"
-        @reply="emit('reply', $event)"
-        @updated="emit('updated', $event)"
-        @status-changed="(id, status) => emit('statusChanged', id, status)"
-      />
-    </div>
+      <div class="divide-y divide-divider">
+        <CommentListItem
+          v-for="comment in comments"
+          :key="comment.id"
+          :comment="comment"
+          :locked="locked"
+          @reply="emit('reply', $event)"
+          @updated="emit('updated', $event)"
+          @status-changed="(id, status) => emit('statusChanged', id, status)"
+        />
+      </div>
+    </AsyncContent>
 
     <PaginationControls
       v-if="!loading && !error && totalPages > 1"

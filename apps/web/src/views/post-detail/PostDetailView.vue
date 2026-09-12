@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { getPost, getPostComments, type Post, type PostComment } from '@/api';
+import AsyncContent from '@/components/AsyncContent.vue';
 import { useCategoryStore } from '@/stores/category';
 
 import CommentComposer from './CommentComposer.vue';
@@ -211,85 +212,75 @@ onBeforeUnmount(() => {
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
-      <div v-if="postLoading" class="rounded-sm bg-surface px-4 py-6 sm:px-6">
-        <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
-        <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />
-        <div class="mt-5 h-4 w-56 animate-pulse rounded-sm bg-divider" />
-        <div class="my-6 h-px bg-divider" />
-        <div class="h-4 w-full animate-pulse rounded-sm bg-divider" />
-        <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
-        <div class="mt-3 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
-      </div>
-
-      <div
-        v-else-if="postError"
-        class="grid min-h-96 place-items-center rounded-sm bg-surface p-8 text-center"
+      <AsyncContent
+        :loading="postLoading"
+        :error="postError"
+        size="large"
+        heading-tag="h1"
+        error-title="帖子加载失败"
+        state-class="rounded-sm bg-surface"
+        @retry="loadPost"
       >
-        <div>
-          <div
-            class="mx-auto grid size-12 place-items-center rounded-full bg-red-50 text-red-500"
-          >
-            !
-          </div>
-          <h1 class="mt-4 text-lg font-semibold">帖子加载失败</h1>
-          <p class="mt-2 text-sm text-muted">{{ postError }}</p>
-          <button
-            type="button"
-            class="mt-5 rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-            @click="loadPost"
-          >
-            再试一次
-          </button>
-        </div>
-      </div>
-
-      <template v-else-if="post">
-        <PostEditForm
-          v-if="editingPost"
-          :post="post"
-          @cancel="editingPost = false"
-          @saved="handlePostSaved"
-        />
-        <PostContent
-          v-else
-          :post="post"
-          :category-name="category?.title ?? '未分类'"
-        />
-        <PostActions
-          v-if="!editingPost"
-          :post="post"
-          @edit="editingPost = true"
-          @deleted="leaveDeletedPost"
-          @updated="handlePostUpdated"
-          @comment="scrollToComposer"
-        />
-        <template v-if="!editingPost">
-          <CommentComposer
-            id="comment-composer"
-            :post-id="post.id"
-            :locked="post.commentsLocked"
-            :reply-to="replyTo"
-            @created="handleCommentCreated"
-            @cancel-reply="replyTo = undefined"
-          />
-          <div id="comments">
-            <CommentList
-              :comments="comments"
-              :loading="commentsLoading"
-              :error="commentsError"
-              :page="commentPage"
-              :total="commentsTotal"
-              :total-pages="commentTotalPages"
-              :locked="post.commentsLocked"
-              @retry="loadComments"
-              @change-page="changeCommentPage"
-              @reply="startReply"
-              @updated="handleCommentUpdated"
-              @status-changed="handleCommentStatusChanged"
-            />
+        <template #loading>
+          <div class="rounded-sm bg-surface px-4 py-6 sm:px-6">
+            <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
+            <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />
+            <div class="mt-5 h-4 w-56 animate-pulse rounded-sm bg-divider" />
+            <div class="my-6 h-px bg-divider" />
+            <div class="h-4 w-full animate-pulse rounded-sm bg-divider" />
+            <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
+            <div class="mt-3 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
           </div>
         </template>
-      </template>
+
+        <template v-if="post">
+          <PostEditForm
+            v-if="editingPost"
+            :post="post"
+            @cancel="editingPost = false"
+            @saved="handlePostSaved"
+          />
+          <PostContent
+            v-else
+            :post="post"
+            :category-name="category?.title ?? '未分类'"
+          />
+          <PostActions
+            v-if="!editingPost"
+            :post="post"
+            @edit="editingPost = true"
+            @deleted="leaveDeletedPost"
+            @updated="handlePostUpdated"
+            @comment="scrollToComposer"
+          />
+          <template v-if="!editingPost">
+            <CommentComposer
+              id="comment-composer"
+              :post-id="post.id"
+              :locked="post.commentsLocked"
+              :reply-to="replyTo"
+              @created="handleCommentCreated"
+              @cancel-reply="replyTo = undefined"
+            />
+            <div id="comments">
+              <CommentList
+                :comments="comments"
+                :loading="commentsLoading"
+                :error="commentsError"
+                :page="commentPage"
+                :total="commentsTotal"
+                :total-pages="commentTotalPages"
+                :locked="post.commentsLocked"
+                @retry="loadComments"
+                @change-page="changeCommentPage"
+                @reply="startReply"
+                @updated="handleCommentUpdated"
+                @status-changed="handleCommentStatusChanged"
+              />
+            </div>
+          </template>
+        </template>
+      </AsyncContent>
     </div>
   </div>
 </template>

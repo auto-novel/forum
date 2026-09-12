@@ -1,23 +1,12 @@
 <script setup lang="ts">
 import type { Post } from '@/api';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
+import PostTagList from '@/components/PostTagList.vue';
 
 defineProps<{
   post: Post;
   categoryName: string;
 }>();
-
-const tagColors = [
-  'bg-primary-soft text-primary',
-  'bg-blue-50 text-blue-600',
-  'bg-orange-50 text-orange-600',
-  'bg-purple-50 text-purple-600',
-  'bg-red-50 text-red-600',
-];
-
-function tagClass(color: number) {
-  return tagColors[Math.abs(color) % tagColors.length];
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -32,23 +21,11 @@ function formatDate(value: string) {
 
 <template>
   <article class="rounded-sm bg-surface px-4 py-5 sm:px-6 sm:py-7">
-    <div class="flex flex-wrap items-center gap-1.5 text-xs">
-      <span class="font-medium text-primary">{{ categoryName }}</span>
-      <span
-        v-if="post.pinOrder != null"
-        class="rounded-sm bg-orange-50 px-2 py-0.5 font-medium text-orange-600"
-      >
-        置顶
-      </span>
-      <span
-        v-for="tag in post.tags"
-        :key="tag.id"
-        class="rounded-sm px-2 py-0.5 font-medium"
-        :class="tagClass(tag.color)"
-      >
-        {{ tag.name }}
-      </span>
-    </div>
+    <PostTagList
+      :tags="post.tags"
+      :pinned="post.pinOrder != null"
+      :category-name="categoryName"
+    />
 
     <h1
       class="mt-3 text-2xl leading-tight font-bold tracking-tight text-ink sm:text-3xl"

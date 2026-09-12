@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { authUser, createPost } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import TagSelector from '@/components/TagSelector.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
 import { getApiErrorMessage } from '@/utils/apiError';
@@ -202,33 +203,11 @@ async function submitPost() {
             </select>
           </div>
 
-          <fieldset>
-            <legend class="mb-2 text-sm font-semibold text-ink">
-              标签（可选）
-            </legend>
-            <div v-if="tags.length" class="flex flex-wrap gap-2">
-              <label
-                v-for="tag in tags"
-                :key="tag.id"
-                class="cursor-pointer rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors"
-                :class="
-                  selectedTagIds.includes(tag.id)
-                    ? 'border-primary bg-primary-soft text-primary'
-                    : 'border-border text-muted hover:border-primary hover:text-primary'
-                "
-              >
-                <input
-                  v-model="selectedTagIds"
-                  type="checkbox"
-                  class="sr-only"
-                  :value="tag.id"
-                  :disabled="submitting"
-                />
-                {{ tag.name }}
-              </label>
-            </div>
-            <p v-else class="text-sm text-muted">这个分类暂时没有可用标签。</p>
-          </fieldset>
+          <TagSelector
+            v-model="selectedTagIds"
+            :tags="tags"
+            :disabled="submitting"
+          />
 
           <div>
             <label class="mb-2 block text-sm font-semibold text-ink">
