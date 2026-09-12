@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ArrowBackOutlined } from '@vicons/material';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { getPost, getPostComments, type Post, type PostComment } from '@/api';
 import { useCategoryStore } from '@/stores/category';
@@ -212,19 +211,6 @@ onBeforeUnmount(() => {
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
-      <RouterLink
-        :to="{
-          name: 'posts',
-          params: {
-            slug: category?.slug ?? categoryStore.defaultCategory.slug,
-          },
-        }"
-        class="mb-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      >
-        <ArrowBackOutlined class="size-4" aria-hidden="true" />
-        返回帖子列表
-      </RouterLink>
-
       <div v-if="postLoading" class="rounded-sm bg-surface px-4 py-6 sm:px-6">
         <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
         <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />
