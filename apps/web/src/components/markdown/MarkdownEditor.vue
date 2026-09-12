@@ -1,5 +1,18 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import {
+  LinkOutlined,
+  StarBorderOutlined,
+  UnfoldMoreOutlined,
+  VisibilityOffOutlined,
+} from '@vicons/material';
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue';
 
 import type { MarkdownMode } from './renderMarkdown';
 import MarkdownContent from './MarkdownContent.vue';
@@ -23,6 +36,8 @@ const props = withDefaults(
 const value = defineModel<string>({ required: true });
 const textarea = useTemplateRef<HTMLTextAreaElement>('textarea');
 const activeTab = ref<'edit' | 'preview'>('edit');
+const previewMinHeight = ref(`${props.rows * 1.5 + 1.5}rem`);
+let resizeObserver: ResizeObserver | undefined;
 const editorTabClass =
   'relative min-w-16 border-r border-border px-[0.9rem] py-[0.55rem] text-[0.8125rem] font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 const editorToolClass =
@@ -33,10 +48,33 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   event.preventDefault();
 }
 
-onMounted(() => window.addEventListener('beforeunload', handleBeforeUnload));
-onBeforeUnmount(() =>
-  window.removeEventListener('beforeunload', handleBeforeUnload),
-);
+function resizeCommentEditor() {
+  const element = textarea.value;
+  if (!element || props.mode !== 'comment') return;
+  element.style.height = 'auto';
+  element.style.height = `${element.scrollHeight}px`;
+}
+
+onMounted(async () => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  await nextTick();
+  resizeCommentEditor();
+  if (!textarea.value) return;
+  resizeObserver = new ResizeObserver(() => {
+    if (textarea.value)
+      previewMinHeight.value = `${textarea.value.offsetHeight}px`;
+  });
+  resizeObserver.observe(textarea.value);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  resizeObserver?.disconnect();
+});
+
+watch(value, () => void nextTick(resizeCommentEditor));
+watch(activeTab, (tab) => {
+  if (tab === 'edit') void nextTick(resizeCommentEditor);
+});
 
 async function restoreSelection(start: number, end: number) {
   await nextTick();
@@ -150,7 +188,7 @@ defineExpose({ focus });
           aria-label="链接"
           @mousedown.prevent="wrapSelection('[', '](https://)', '链接文字')"
         >
-          链接
+          <LinkOutlined class="mx-auto size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -159,7 +197,7 @@ defineExpose({ focus });
           aria-label="剧透"
           @mousedown.prevent="wrapSelection('!!', '!!', '剧透内容')"
         >
-          剧透
+          <VisibilityOffOutlined class="mx-auto size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -168,7 +206,7 @@ defineExpose({ focus });
           aria-label="评分"
           @mousedown.prevent="insertBlock('::: star 5\n', '\n:::', '')"
         >
-          评分
+          <StarBorderOutlined class="mx-auto size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -179,7 +217,7 @@ defineExpose({ focus });
             insertBlock('::: details 点击展开\n', '\n:::', '折叠内容')
           "
         >
-          折叠
+          <UnfoldMoreOutlined class="mx-auto size-4" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -188,21 +226,22 @@ defineExpose({ focus });
       <textarea
         ref="textarea"
         v-model="value"
-        class="block min-h-24 w-full resize-y border-0 bg-transparent px-3 py-3 text-sm leading-6 text-ink outline-none placeholder:text-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+        class="block min-h-24 w-full border-0 bg-transparent px-3 py-3 text-sm leading-6 text-ink outline-none placeholder:text-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+        :class="mode === 'comment' ? 'resize-none overflow-hidden' : 'resize-y'"
         :rows="rows"
         :maxlength="maxlength"
         :placeholder="placeholder"
         :disabled="disabled"
         spellcheck="false"
       />
-      <div
-        class="border-t border-divider px-3 py-1.5 text-right text-xs text-muted"
-      >
-        {{ value.length }} / {{ maxlength }}
-      </div>
     </div>
 
-    <div v-show="activeTab === 'preview'" class="min-h-48 p-4" role="tabpanel">
+    <div
+      v-show="activeTab === 'preview'"
+      class="p-4"
+      role="tabpanel"
+      :style="{ minHeight: previewMinHeight }"
+    >
       <MarkdownContent v-if="value.trim()" :mode="mode" :source="value" />
       <p v-else class="text-sm text-muted">没有可预览的内容</p>
     </div>
