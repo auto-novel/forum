@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 
-import { authUser, createPostComment, type PostComment } from '@/api';
+import { authUser, type PostComment } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { notifyError, notifySuccess } from '@/notifications';
+import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
@@ -17,6 +18,7 @@ const emit = defineEmits<{
   cancelReply: [];
 }>();
 
+const commentStore = useCommentStore();
 const content = ref('');
 const submitting = ref(false);
 const draftKey = computed(() =>
@@ -61,7 +63,7 @@ async function submitComment() {
   if (!value || submitting.value || props.locked) return;
   submitting.value = true;
   try {
-    const comment = await createPostComment(props.postId, {
+    const comment = await commentStore.createComment(props.postId, {
       content: value,
       rootId: props.replyTo?.rootId ?? props.replyTo?.id,
     });

@@ -21,7 +21,6 @@ const emit = defineEmits<{
   retry: [];
   changePage: [page: number];
   reply: [comment: PostComment];
-  updated: [comment: PostComment];
   statusChanged: [id: number, status: number];
 }>();
 </script>
@@ -73,7 +72,6 @@ const emit = defineEmits<{
           :comment="comment"
           :locked="locked"
           @reply="emit('reply', $event)"
-          @updated="emit('updated', $event)"
           @status-changed="(id, status) => emit('statusChanged', id, status)"
         />
       </div>

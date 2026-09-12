@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { getPostComments, type Post, type PostComment } from '@/api';
+import { type Post, type PostComment } from '@/api';
 import AsyncContent from '@/components/AsyncContent.vue';
 import { useCategoryStore } from '@/stores/category';
+import { useCommentStore } from '@/stores/comment';
 import { usePostStore } from '@/stores/post';
 
 import CommentComposer from './CommentComposer.vue';
@@ -19,19 +20,15 @@ const COMMENT_PAGE_SIZE = 50;
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
+const commentStore = useCommentStore();
 const postStore = usePostStore();
 const {
   currentPost: post,
   detailLoading: postLoading,
   detailError: postError,
 } = storeToRefs(postStore);
-const comments = ref<PostComment[]>([]);
-const commentsTotal = ref(0);
-const commentsLoading = ref(true);
-const commentsError = ref('');
 const editingPost = ref(false);
 const replyTo = ref<PostComment>();
-let commentsController: AbortController | undefined;
 
 const postId = computed(() => {
   const value = Number(route.params.id);
@@ -42,6 +39,20 @@ const commentPage = computed(() => {
   const value = Number(route.query.commentPage);
   return Number.isInteger(value) && value > 0 ? value : 1;
 });
+
+const commentState = computed(() =>
+  commentStore.getPageState(postId.value, commentPage.value, COMMENT_PAGE_SIZE),
+);
+const comments = computed(() =>
+  commentStore.getPageComments(
+    postId.value,
+    commentPage.value,
+    COMMENT_PAGE_SIZE,
+  ),
+);
+const commentsTotal = computed(() => commentState.value.total);
+const commentsLoading = computed(() => commentState.value.loading);
+const commentsError = computed(() => commentState.value.error);
 
 const commentTotalPages = computed(() =>
   Math.max(1, Math.ceil(commentsTotal.value / COMMENT_PAGE_SIZE)),
@@ -57,33 +68,11 @@ async function loadPost() {
 }
 
 async function loadComments() {
-  commentsController?.abort();
-  comments.value = [];
-  commentsTotal.value = 0;
-  commentsError.value = '';
-  if (!postId.value) {
-    commentsLoading.value = false;
-    return;
-  }
-
-  const controller = new AbortController();
-  commentsController = controller;
-  commentsLoading.value = true;
-  try {
-    const result = await getPostComments(
-      postId.value,
-      { page: commentPage.value, pageSize: COMMENT_PAGE_SIZE },
-      controller.signal,
-    );
-    comments.value = result.items;
-    commentsTotal.value = result.total;
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') return;
-    commentsError.value =
-      error instanceof Error ? error.message : '无法加载评论';
-  } finally {
-    if (commentsController === controller) commentsLoading.value = false;
-  }
+  await commentStore.loadPage(
+    postId.value,
+    commentPage.value,
+    COMMENT_PAGE_SIZE,
+  );
 }
 
 function changeCommentPage(nextPage: number) {
@@ -97,30 +86,17 @@ function changeCommentPage(nextPage: number) {
 
 async function handleCommentCreated(comment: PostComment) {
   if (!post.value) return;
-  commentsController?.abort();
-  commentsController = undefined;
-  commentsLoading.value = false;
-  commentsError.value = '';
-  const nextTotal = commentsTotal.value + 1;
-  const lastPage = Math.max(1, Math.ceil(nextTotal / COMMENT_PAGE_SIZE));
+  const lastPage = commentStore.registerCreatedComment(
+    comment,
+    commentPage.value,
+    COMMENT_PAGE_SIZE,
+  );
   postStore.setPost({
     ...post.value,
     commentsCount: post.value.commentsCount + 1,
   });
-  commentsTotal.value = nextTotal;
 
-  if (comment.rootId != null) {
-    const lastReplyIndex = comments.value.reduce(
-      (result, item, index) =>
-        item.id === comment.rootId || item.rootId === comment.rootId
-          ? index
-          : result,
-      -1,
-    );
-    comments.value.splice(lastReplyIndex + 1, 0, comment);
-  } else if (commentPage.value === lastPage) {
-    comments.value.push(comment);
-  } else {
+  if (comment.rootId == null && commentPage.value !== lastPage) {
     await router.push({
       name: 'post-detail',
       params: { id: postId.value },
@@ -143,18 +119,8 @@ function startReply(comment: PostComment) {
   );
 }
 
-function handleCommentUpdated(comment: PostComment) {
-  const index = comments.value.findIndex((item) => item.id === comment.id);
-  if (index >= 0) comments.value[index] = comment;
-}
-
-function handleCommentStatusChanged(id: number, status: number) {
-  const comment = comments.value.find((item) => item.id === id);
-  if (!comment) return;
-  const wasPublished = comment.status === 0;
-  comment.status = status;
-  comment.content = '';
-  if (post.value && wasPublished) {
+function handleCommentStatusChanged(id: number) {
+  if (post.value) {
     postStore.setPost({
       ...post.value,
       commentsCount: Math.max(0, post.value.commentsCount - 1),
@@ -190,10 +156,6 @@ function leaveDeletedPost() {
 
 watch(postId, loadPost, { immediate: true });
 watch([postId, commentPage], loadComments, { immediate: true });
-
-onBeforeUnmount(() => {
-  commentsController?.abort();
-});
 </script>
 
 <template>
@@ -261,7 +223,6 @@ onBeforeUnmount(() => {
                 @retry="loadComments"
                 @change-page="changeCommentPage"
                 @reply="startReply"
-                @updated="handleCommentUpdated"
                 @status-changed="handleCommentStatusChanged"
               />
             </div>

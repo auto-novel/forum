@@ -1,19 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
 
-import {
-  authUser,
-  deletePostComment,
-  setPostCommentStatus,
-  updatePostComment,
-  type PostComment,
-} from '@/api';
+import { authUser, type PostComment } from '@/api';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
+import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
@@ -23,10 +18,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   reply: [comment: PostComment];
-  updated: [comment: PostComment];
   statusChanged: [id: number, status: number];
 }>();
 
+const commentStore = useCommentStore();
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
@@ -90,10 +85,9 @@ async function saveEdit() {
   if (!value || submitting.value) return;
   submitting.value = true;
   try {
-    const comment = await updatePostComment(props.comment.id, value);
+    await commentStore.updateComment(props.comment.id, value);
     editing.value = false;
     notifySuccess('评论修改已保存');
-    emit('updated', comment);
   } catch (reason) {
     notifyError(await getApiErrorMessage(reason, '更新评论失败'));
   } finally {
@@ -104,8 +98,7 @@ async function saveEdit() {
 async function removeComment() {
   submitting.value = true;
   try {
-    if (isAdmin.value) await setPostCommentStatus(props.comment.id, 'deleted');
-    else await deletePostComment(props.comment.id);
+    await commentStore.deleteComment(props.comment.id, isAdmin.value);
     notifySuccess('评论已删除');
     emit('statusChanged', props.comment.id, 2);
   } catch (reason) {
@@ -118,7 +111,7 @@ async function removeComment() {
 async function hideComment() {
   submitting.value = true;
   try {
-    await setPostCommentStatus(props.comment.id, 'hidden');
+    await commentStore.hideComment(props.comment.id);
     notifySuccess('评论已隐藏');
     emit('statusChanged', props.comment.id, 1);
   } catch (reason) {
