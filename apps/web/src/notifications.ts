@@ -3,33 +3,27 @@ import { ref } from 'vue';
 export interface AppNotification {
   id: number;
   type: 'success' | 'error';
-  title: string;
-  description: string;
+  message: string;
 }
 
 export const notifications = ref<AppNotification[]>([]);
 
 let nextNotificationId = 0;
 
-function addNotification(
-  type: AppNotification['type'],
-  title: string,
-  description: string,
-) {
+function addNotification(type: AppNotification['type'], message: string) {
   notifications.value.unshift({
     id: ++nextNotificationId,
     type,
-    title,
-    description,
+    message,
   });
 }
 
-export function notifySuccess(description: string) {
-  addNotification('success', '操作成功', description);
+export function notifySuccess(message: string) {
+  addNotification('success', message);
 }
 
-export function notifyError(description: string) {
-  addNotification('error', '操作失败', description);
+export function notifyError(message: string) {
+  addNotification('error', message);
 }
 
 export function dismissNotification(id: number) {
