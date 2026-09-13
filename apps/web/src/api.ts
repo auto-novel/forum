@@ -132,7 +132,7 @@ export function getCategories(signal?: AbortSignal) {
 }
 
 export function createPost(input: {
-  category: string;
+  categoryId: number;
   title: string;
   content: string;
   tagIds: number[];
@@ -142,7 +142,12 @@ export function createPost(input: {
 
 export function updatePost(
   id: number,
-  input: { title: string; content: string; tagIds: number[] },
+  input: {
+    categoryId: number;
+    title: string;
+    content: string;
+    tagIds: number[];
+  },
 ) {
   return client.patch(`post/${id}/`, { json: input }).json<Post>();
 }

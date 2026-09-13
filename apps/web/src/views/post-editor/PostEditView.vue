@@ -24,6 +24,7 @@ const {
 } = storeToRefs(postStore);
 const title = ref('');
 const content = ref('');
+const categorySlug = ref('');
 const selectedTagIds = ref<number[]>([]);
 const submitting = ref(false);
 const savedSnapshot = ref('');
@@ -38,9 +39,13 @@ const canEdit = computed(
     (authUser.value?.id === post.value.authorId ||
       authUser.value?.role === 'admin'),
 );
-const tags = computed(() =>
-  post.value ? categoryStore.tagsByCategoryId(post.value.categoryId) : [],
+const selectedCategory = computed(
+  () =>
+    categoryStore.categories.find(
+      (category) => category.slug === categorySlug.value,
+    ) ?? categoryStore.defaultCategory,
 );
+const tags = computed(() => selectedCategory.value.tags);
 const detailRoute = computed(() => ({
   name: 'post-detail' as const,
   params: { id: postId.value },
@@ -55,6 +60,7 @@ function formSnapshot() {
   return JSON.stringify([
     title.value,
     content.value,
+    categorySlug.value,
     [...selectedTagIds.value].sort((left, right) => left - right),
   ]);
 }
@@ -62,9 +68,11 @@ function formSnapshot() {
 function applyPost(value: Post) {
   title.value = value.title;
   content.value = value.content;
-  const validTagIds = new Set(
-    categoryStore.tagsByCategoryId(value.categoryId).map((tag) => tag.id),
-  );
+  const category =
+    categoryStore.categories.find((item) => item.id === value.categoryId) ??
+    categoryStore.defaultCategory;
+  categorySlug.value = category.slug;
+  const validTagIds = new Set(category.tags.map((tag) => tag.id));
   selectedTagIds.value = value.tags
     .map((tag) => tag.id)
     .filter((id) => validTagIds.has(id));
@@ -72,7 +80,12 @@ function applyPost(value: Post) {
 }
 
 async function loadPost() {
+  await categoryStore.initialize();
   await postStore.loadPost(postId.value);
+}
+
+function changeCategory() {
+  selectedTagIds.value = [];
 }
 
 async function save() {
@@ -80,6 +93,7 @@ async function save() {
   submitting.value = true;
   try {
     const updatedPost = await updatePost(post.value.id, {
+      categoryId: selectedCategory.value.id,
       title: title.value.trim(),
       content: content.value,
       tagIds: selectedTagIds.value,
@@ -148,7 +162,34 @@ watch(postId, loadPost, { immediate: true });
             show-cancel
             @submit="save"
             @cancel="cancel"
-          />
+          >
+            <template #category>
+              <div>
+                <label
+                  for="post-category"
+                  class="mb-2 block text-sm font-semibold text-ink"
+                >
+                  分类
+                </label>
+                <select
+                  id="post-category"
+                  v-model="categorySlug"
+                  class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+                  :disabled="submitting"
+                  required
+                  @change="changeCategory"
+                >
+                  <option
+                    v-for="category in categoryStore.categories"
+                    :key="category.id"
+                    :value="category.slug"
+                  >
+                    {{ category.title }}
+                  </option>
+                </select>
+              </div>
+            </template>
+          </PostForm>
         </section>
 
         <section v-else-if="post" class="py-8 text-center">

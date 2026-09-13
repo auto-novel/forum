@@ -74,7 +74,7 @@ async function submitPost() {
   submitting.value = true;
   try {
     const post = await createPost({
-      category: categorySlug.value,
+      categoryId: selectedCategory.value.id,
       title: title.value.trim(),
       content: content.value,
       tagIds: selectedTagIds.value,
