@@ -151,45 +151,23 @@ watch(postId, loadPost, { immediate: true });
           <h1 class="text-xl font-bold text-ink">编辑帖子</h1>
           <PostForm
             v-model:title="title"
+            v-model:category="categorySlug"
             v-model:content="content"
             v-model:tag-ids="selectedTagIds"
-            class="mt-5"
+            class="mt-6"
+            :categories="categoryStore.categories"
             :tags="tags"
             :submitting="submitting"
             submit-label="保存修改"
             submitting-label="保存中…"
-            tag-label="标签"
+            title-placeholder="用一句话概括你想讨论的内容"
+            content-placeholder="详细说明你想分享或讨论的内容…"
+            show-title-count
             show-cancel
+            @category-change="changeCategory"
             @submit="save"
             @cancel="cancel"
-          >
-            <template #category>
-              <div>
-                <label
-                  for="post-category"
-                  class="mb-2 block text-sm font-semibold text-ink"
-                >
-                  分类
-                </label>
-                <select
-                  id="post-category"
-                  v-model="categorySlug"
-                  class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
-                  :disabled="submitting"
-                  required
-                  @change="changeCategory"
-                >
-                  <option
-                    v-for="category in categoryStore.categories"
-                    :key="category.id"
-                    :value="category.slug"
-                  >
-                    {{ category.title }}
-                  </option>
-                </select>
-              </div>
-            </template>
-          </PostForm>
+          />
         </section>
 
         <section v-else-if="post" class="py-8 text-center">

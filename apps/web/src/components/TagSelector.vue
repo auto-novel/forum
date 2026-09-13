@@ -10,7 +10,7 @@ withDefaults(
   }>(),
   {
     tags: () => [],
-    label: '标签（可选）',
+    label: '标签',
     emptyText: '这个分类暂时没有可用标签。',
     disabled: false,
   },

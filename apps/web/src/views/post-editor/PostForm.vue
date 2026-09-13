@@ -11,6 +11,7 @@ const MarkdownHelpDialog = defineAsyncComponent(
 
 const props = withDefaults(
   defineProps<{
+    categories: { id: number; slug: string; title: string }[];
     tags: PostTag[];
     submitting: boolean;
     submitLabel: string;
@@ -24,7 +25,7 @@ const props = withDefaults(
   {
     titlePlaceholder: '',
     contentPlaceholder: '使用 Markdown 输入内容…',
-    tagLabel: '标签（可选）',
+    tagLabel: '标签',
     showTitleCount: false,
     showCancel: false,
   },
@@ -33,8 +34,10 @@ const props = withDefaults(
 const emit = defineEmits<{
   submit: [];
   cancel: [];
+  categoryChange: [];
 }>();
 const title = defineModel<string>('title', { required: true });
+const category = defineModel<string>('category', { required: true });
 const content = defineModel<string>('content', { required: true });
 const tagIds = defineModel<number[]>('tagIds', { required: true });
 const canSubmit = computed(
@@ -68,7 +71,30 @@ function submit() {
       </p>
     </div>
 
-    <slot name="category" />
+    <div>
+      <label
+        for="post-category"
+        class="mb-2 block text-sm font-semibold text-ink"
+      >
+        分类
+      </label>
+      <select
+        id="post-category"
+        v-model="category"
+        class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="submitting"
+        required
+        @change="emit('categoryChange')"
+      >
+        <option
+          v-for="categoryOption in categories"
+          :key="categoryOption.id"
+          :value="categoryOption.slug"
+        >
+          {{ categoryOption.title }}
+        </option>
+      </select>
+    </div>
 
     <TagSelector
       v-model="tagIds"

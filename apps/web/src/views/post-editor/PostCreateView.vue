@@ -98,9 +98,6 @@ async function submitPost() {
     <div class="mx-auto max-w-4xl">
       <section>
         <h1 class="text-xl font-bold text-ink">发表帖子</h1>
-        <p class="mt-1 text-sm text-muted">
-          分享内容前，请选择最合适的讨论分类。
-        </p>
 
         <div v-if="!authUser" class="mt-6 py-4 text-sm text-muted">
           登录后才能发表帖子，请使用页面右上角的登录入口。
@@ -109,9 +106,11 @@ async function submitPost() {
         <PostForm
           v-else
           v-model:title="title"
+          v-model:category="categorySlug"
           v-model:content="content"
           v-model:tag-ids="selectedTagIds"
           class="mt-6"
+          :categories="categoryStore.categories"
           :tags="tags"
           :submitting="submitting"
           submit-label="发布帖子"
@@ -119,34 +118,9 @@ async function submitPost() {
           title-placeholder="用一句话概括你想讨论的内容"
           content-placeholder="详细说明你想分享或讨论的内容…"
           show-title-count
+          @category-change="changeCategory"
           @submit="submitPost"
-        >
-          <template #category>
-            <div>
-              <label
-                for="post-category"
-                class="mb-2 block text-sm font-semibold text-ink"
-              >
-                分类
-              </label>
-              <select
-                id="post-category"
-                v-model="categorySlug"
-                class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="submitting"
-                @change="changeCategory"
-              >
-                <option
-                  v-for="category in categoryStore.categories"
-                  :key="category.id"
-                  :value="category.slug"
-                >
-                  {{ category.title }}
-                </option>
-              </select>
-            </div>
-          </template>
-        </PostForm>
+        />
       </section>
     </div>
   </div>
