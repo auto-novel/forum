@@ -17,10 +17,30 @@ function renderIcon(icon: Component) {
 }
 
 const menuOptions: MenuOption[] = [
-  { label: '概览', key: '/overview', icon: renderIcon(DashboardOutlined) },
-  { label: '分类管理', key: '/categories', icon: renderIcon(CategoryOutlined) },
-  { label: '帖子管理', key: '/posts', icon: renderIcon(ArticleOutlined) },
-  { label: '评论审核', key: '/comments', icon: renderIcon(CommentOutlined) },
+  {
+    label: '概览',
+    key: '/overview',
+    to: '/overview',
+    icon: renderIcon(DashboardOutlined),
+  },
+  {
+    label: '分类管理',
+    key: '/categories',
+    to: '/categories',
+    icon: renderIcon(CategoryOutlined),
+  },
+  {
+    label: '帖子管理',
+    key: '/posts',
+    to: '/posts',
+    icon: renderIcon(ArticleOutlined),
+  },
+  {
+    label: '评论审核',
+    key: '/comments',
+    to: '/comments',
+    icon: renderIcon(CommentOutlined),
+  },
 ];
 </script>
 
