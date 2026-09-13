@@ -189,15 +189,15 @@ func (h *postHandler) get(w http.ResponseWriter, r *http.Request) error {
 }
 
 type postInput struct {
-	Category string  `json:"category"`
-	Title    string  `json:"title"`
-	Content  string  `json:"content"`
-	TagIDs   []int64 `json:"tagIds"`
+	CategoryID int64   `json:"categoryId"`
+	Title      string  `json:"title"`
+	Content    string  `json:"content"`
+	TagIDs     []int64 `json:"tagIds"`
 }
 
-func validatePost(input postInput, creating bool) error {
-	if creating && !validText(input.Category, 1, 255) {
-		return httpx.BadRequest("category 长度必须为 1 到 255")
+func validatePost(input postInput) error {
+	if input.CategoryID <= 0 {
+		return httpx.BadRequest("categoryId 必须为正整数")
 	}
 	if !validText(input.Title, 1, 500) {
 		return httpx.BadRequest("title 长度必须为 1 到 500")
@@ -216,12 +216,12 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := validatePost(input, true); err != nil {
+	if err := validatePost(input); err != nil {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
 	post, err := h.postRepo.Create(repository.CreatePostInput{
-		CategorySlug:   strings.TrimSpace(input.Category),
+		CategoryID:     input.CategoryID,
 		Title:          strings.TrimSpace(input.Title),
 		Content:        input.Content,
 		TagIDs:         input.TagIDs,
@@ -262,13 +262,14 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := validatePost(input, false); err != nil {
+	if err := validatePost(input); err != nil {
 		return err
 	}
 	post, err := h.postRepo.Update(id, repository.UpdatePostInput{
-		Title:   strings.TrimSpace(input.Title),
-		Content: input.Content,
-		TagIDs:  input.TagIDs,
+		CategoryID: input.CategoryID,
+		Title:      strings.TrimSpace(input.Title),
+		Content:    input.Content,
+		TagIDs:     input.TagIDs,
 	})
 	if err != nil {
 		return repoError(err, "更新帖子失败")

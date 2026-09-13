@@ -57,8 +57,8 @@ func TestJetRepositories(t *testing.T) {
 	}
 
 	post, err := postRepo.Create(repository.CreatePostInput{
-		CategorySlug: category.Slug,
-		Title:        "第一篇帖子", Content: "正文", AuthorID: 7, AuthorUsername: "alice",
+		CategoryID: category.ID,
+		Title:      "第一篇帖子", Content: "正文", AuthorID: 7, AuthorUsername: "alice",
 		TagIDs: []int64{tag.ID}, Attr: `{}`,
 	})
 	if err != nil {
@@ -219,16 +219,28 @@ func TestJetRepositories(t *testing.T) {
 			}
 		}
 	}
+	updatedCategory, err := categoryRepo.Create("feedback", nil, `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	updatedTag, err := tagRepo.Create(updatedCategory.ID, "建议", 4, 10, `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
 	updated, err := postRepo.Update(post.ID, repository.UpdatePostInput{
-		Title:   "更新标题",
-		Content: "更新正文",
-		TagIDs:  []int64{tag.ID},
+		CategoryID: updatedCategory.ID,
+		Title:      "更新标题",
+		Content:    "更新正文",
+		TagIDs:     []int64{updatedTag.ID},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updated.Title != "更新标题" || updated.CommentsCount != 1 {
+	if updated.Title != "更新标题" || updated.CommentsCount != 1 || updated.CategoryID != updatedCategory.ID {
 		t.Fatalf("unexpected updated post: %#v", updated.Post)
+	}
+	if len(updated.Tags) != 1 || updated.Tags[0].ID != updatedTag.ID {
+		t.Fatalf("unexpected updated tags: %#v", updated.Tags)
 	}
 
 	if err := postRepo.SetStatus(post.ID, repository.StatusHidden); err != nil {
@@ -259,8 +271,8 @@ func TestJetRepositories(t *testing.T) {
 	}
 
 	secondPost, err := postRepo.Create(repository.CreatePostInput{
-		CategorySlug: category.Slug,
-		Title:        "CaseSensitiveTitle", Content: "用于排序", AuthorID: 8, AuthorUsername: "bob",
+		CategoryID: category.ID,
+		Title:      "CaseSensitiveTitle", Content: "用于排序", AuthorID: 8, AuthorUsername: "bob",
 		Attr: `{}`,
 	})
 	if err != nil {

@@ -32,14 +32,16 @@ type PostFilter struct {
 }
 
 type CreatePostInput struct {
-	CategorySlug, Title, Content string
-	AuthorID                     int64
-	AuthorUsername               string
-	TagIDs                       []int64
-	Attr                         string
+	CategoryID     int64
+	Title, Content string
+	AuthorID       int64
+	AuthorUsername string
+	TagIDs         []int64
+	Attr           string
 }
 
 type UpdatePostInput struct {
+	CategoryID     int64
 	Title, Content string
 	TagIDs         []int64
 }
@@ -183,15 +185,8 @@ func (r *postRepository) Create(input CreatePostInput) (*PostDetails, error) {
 	}
 	defer tx.Rollback()
 
-	var category Category
-	findCategory := SELECT(table.Category.AllColumns).
-		FROM(table.Category).
-		WHERE(table.Category.Slug.EQ(String(input.CategorySlug)))
-	if err := findCategory.Query(tx, &category); err != nil {
-		return nil, err
-	}
 	record := Post{
-		CategoryID:     category.ID,
+		CategoryID:     input.CategoryID,
 		Title:          input.Title,
 		AuthorID:       input.AuthorID,
 		AuthorUsername: input.AuthorUsername,
@@ -209,6 +204,9 @@ func (r *postRepository) Create(input CreatePostInput) (*PostDetails, error) {
 		MODEL(record).
 		RETURNING(table.Post.AllColumns)
 	if err := insert.Query(tx, &record); err != nil {
+		if isForeignKeyViolation(err) {
+			return nil, ErrInvalidCategory
+		}
 		return nil, err
 	}
 	if err := replacePostTags(tx, record.ID, record.CategoryID, input.TagIDs); err != nil {
@@ -259,15 +257,18 @@ func (r *postRepository) Update(id int64, input UpdatePostInput) (*PostDetails, 
 		return nil, err
 	}
 	defer tx.Rollback()
-	stmt := table.Post.UPDATE(table.Post.Title, table.Post.Content, table.Post.UpdatedAt).
-		SET(String(input.Title), String(input.Content), TimestampzT(time.Now())).
+	stmt := table.Post.UPDATE(table.Post.CategoryID, table.Post.Title, table.Post.Content, table.Post.UpdatedAt).
+		SET(Int64(input.CategoryID), String(input.Title), String(input.Content), TimestampzT(time.Now())).
 		WHERE(table.Post.ID.EQ(Int64(id)).AND(table.Post.Status.EQ(Int16(StatusPublished)))).
 		RETURNING(table.Post.AllColumns)
 	var record Post
 	if err := stmt.Query(tx, &record); err != nil {
+		if isForeignKeyViolation(err) {
+			return nil, ErrInvalidCategory
+		}
 		return nil, err
 	}
-	if err := replacePostTags(tx, id, record.CategoryID, input.TagIDs); err != nil {
+	if err := replacePostTags(tx, id, input.CategoryID, input.TagIDs); err != nil {
 		return nil, err
 	}
 	if err := tx.Commit(); err != nil {

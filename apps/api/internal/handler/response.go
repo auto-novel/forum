@@ -43,6 +43,9 @@ func repoError(err error, message string) error {
 	if repository.IsNotFound(err) {
 		return httpx.NotFound("资源不存在")
 	}
+	if errors.Is(err, repository.ErrInvalidCategory) {
+		return httpx.BadRequest("分类无效")
+	}
 	if errors.Is(err, repository.ErrInvalidTag) {
 		return httpx.BadRequest("标签无效")
 	}

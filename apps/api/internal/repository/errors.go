@@ -14,8 +14,9 @@ const (
 )
 
 var (
-	ErrInvalidTag     = errors.New("invalid or inactive tag")
-	ErrCommentsLocked = errors.New("comments are locked")
+	ErrInvalidCategory = errors.New("invalid category")
+	ErrInvalidTag      = errors.New("invalid or inactive tag")
+	ErrCommentsLocked  = errors.New("comments are locked")
 )
 
 func IsNotFound(err error) bool {
@@ -25,4 +26,9 @@ func IsNotFound(err error) bool {
 func IsUniqueViolation(err error) bool {
 	var pqErr *pq.Error
 	return errors.As(err, &pqErr) && pqErr.Code == "23505"
+}
+
+func isForeignKeyViolation(err error) bool {
+	var pqErr *pq.Error
+	return errors.As(err, &pqErr) && pqErr.Code == "23503"
 }
