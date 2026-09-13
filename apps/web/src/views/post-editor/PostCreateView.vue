@@ -97,7 +97,7 @@ async function submitPost() {
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
       <section>
-        <h1 class="text-2xl font-bold tracking-tight text-ink">发表帖子</h1>
+        <h1 class="text-xl font-bold text-ink">发表帖子</h1>
         <p class="mt-1 text-sm text-muted">
           分享内容前，请选择最合适的讨论分类。
         </p>

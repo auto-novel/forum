@@ -3,12 +3,13 @@ import type { PostTag } from '@/api';
 
 withDefaults(
   defineProps<{
-    tags: PostTag[];
+    tags?: PostTag[];
     label?: string;
     emptyText?: string;
     disabled?: boolean;
   }>(),
   {
+    tags: () => [],
     label: '标签（可选）',
     emptyText: '这个分类暂时没有可用标签。',
     disabled: false,
