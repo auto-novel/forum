@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed, useSlots } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 
 import type { PostTag } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import TagSelector from '@/components/TagSelector.vue';
+
+const MarkdownHelpDialog = defineAsyncComponent(
+  () => import('@/components/markdown/MarkdownHelpDialog.vue'),
+);
 
 const props = withDefaults(
   defineProps<{
@@ -33,8 +37,6 @@ const emit = defineEmits<{
 const title = defineModel<string>('title', { required: true });
 const content = defineModel<string>('content', { required: true });
 const tagIds = defineModel<number[]>('tagIds', { required: true });
-const slots = useSlots();
-
 const canSubmit = computed(
   () =>
     Boolean(title.value.trim() && content.value.trim()) && !props.submitting,
@@ -76,7 +78,10 @@ function submit() {
     />
 
     <div>
-      <label class="mb-2 block text-sm font-semibold text-ink">正文</label>
+      <div class="mb-2 flex items-center justify-between gap-3">
+        <label class="text-sm font-semibold text-ink">正文</label>
+        <MarkdownHelpDialog mode="article" />
+      </div>
       <MarkdownEditor
         v-model="content"
         mode="article"
@@ -87,10 +92,8 @@ function submit() {
     </div>
 
     <div
-      class="flex flex-wrap items-center gap-3 border-t border-divider pt-5"
-      :class="slots.hint ? 'justify-between' : 'justify-end'"
+      class="flex flex-wrap items-center justify-end gap-3 border-t border-divider pt-5"
     >
-      <slot name="hint" />
       <div class="flex items-center gap-3">
         <button
           v-if="showCancel"

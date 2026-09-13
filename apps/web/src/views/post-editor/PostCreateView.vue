@@ -146,12 +146,6 @@ async function submitPost() {
               </select>
             </div>
           </template>
-
-          <template #hint>
-            <p class="text-xs text-muted">
-              内容支持 Markdown，草稿会自动保存在本机。
-            </p>
-          </template>
         </PostForm>
       </section>
     </div>

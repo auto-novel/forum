@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, defineAsyncComponent, onBeforeUnmount, ref } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
@@ -13,6 +13,10 @@ import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 import CommentComposer from './CommentComposer.vue';
+
+const MarkdownHelpDialog = defineAsyncComponent(
+  () => import('@/components/markdown/MarkdownHelpDialog.vue'),
+);
 
 const props = defineProps<{
   comment: PostComment;
@@ -173,22 +177,25 @@ function handleConfirmationOpenChange(open: boolean) {
         :rows="5"
         :disabled="submitting"
       />
-      <div class="mt-3 flex justify-end gap-2">
-        <button
-          type="button"
-          :class="commentActionClass"
-          :disabled="submitting"
-          @click="editing = false"
-        >
-          取消
-        </button>
-        <button
-          type="submit"
-          class="rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-hover disabled:opacity-50"
-          :disabled="!content.trim() || submitting"
-        >
-          {{ submitting ? '保存中…' : '保存' }}
-        </button>
+      <div class="mt-3 flex items-center justify-between gap-3">
+        <MarkdownHelpDialog mode="comment" />
+        <div class="flex gap-2">
+          <button
+            type="button"
+            :class="commentActionClass"
+            :disabled="submitting"
+            @click="editing = false"
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            class="rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+            :disabled="!content.trim() || submitting"
+          >
+            {{ submitting ? '保存中…' : '保存' }}
+          </button>
+        </div>
       </div>
     </form>
     <MarkdownContent

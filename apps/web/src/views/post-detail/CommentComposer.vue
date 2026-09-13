@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
@@ -7,6 +7,10 @@ import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { useDraftStore } from '@/stores/draft';
 import { getApiErrorMessage } from '@/utils/apiError';
+
+const MarkdownHelpDialog = defineAsyncComponent(
+  () => import('@/components/markdown/MarkdownHelpDialog.vue'),
+);
 
 const props = defineProps<{
   postId: number;
@@ -89,7 +93,7 @@ async function submitComment() {
         :disabled="submitting"
       />
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs text-muted">支持 Markdown，草稿会自动保存在本机。</p>
+        <MarkdownHelpDialog mode="comment" />
         <div class="flex items-center gap-2">
           <button
             v-if="replyTo"
