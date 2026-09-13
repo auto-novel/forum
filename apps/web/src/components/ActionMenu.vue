@@ -26,7 +26,7 @@ withDefaults(
       <button
         type="button"
         class="inline-flex items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
-        :class="compact ? 'size-[1.875rem]' : 'size-9'"
+        :class="compact ? 'size-6' : 'size-9'"
         aria-label="更多操作"
         title="更多操作"
       >

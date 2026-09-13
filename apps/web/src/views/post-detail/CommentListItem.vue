@@ -40,6 +40,8 @@ const now = ref(Date.now());
 const confirmationAction = ref<'delete' | 'hide'>();
 const commentActionClass =
   'inline-flex min-h-[1.875rem] items-center rounded-sm px-[0.55rem] text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
+const commentHeaderActionClass =
+  'inline-flex h-6 items-center rounded-sm px-2 text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
 const modificationDeadline =
   new Date(props.comment.createdAt).getTime() + 20 * 60_000;
@@ -154,11 +156,7 @@ function handleConfirmationOpenChange(open: boolean) {
   <article
     :id="`comment-${comment.id}`"
     class="py-4"
-    :class="
-      comment.rootId != null
-        ? 'ml-6 border-l-2 border-primary-soft pl-4 sm:ml-10 sm:pl-5'
-        : ''
-    "
+    :class="comment.rootId != null ? 'ml-6 pl-4 sm:ml-10 sm:pl-5' : ''"
   >
     <header class="flex items-center gap-2 text-xs text-muted">
       <span class="font-medium text-ink">{{ comment.authorUsername }}</span>
@@ -166,11 +164,48 @@ function handleConfirmationOpenChange(open: boolean) {
       <time :datetime="comment.createdAt">
         {{ formatDate(comment.createdAt) }}
       </time>
+      <div
+        v-if="isPublished && !editing"
+        class="ml-auto flex items-center gap-1"
+      >
+        <button
+          v-if="authUser && !locked"
+          type="button"
+          :class="commentHeaderActionClass"
+          :aria-expanded="replying"
+          @click="emit('reply', comment)"
+        >
+          回复
+        </button>
+        <button
+          v-if="canEdit"
+          type="button"
+          :class="commentHeaderActionClass"
+          @click="startEditing"
+        >
+          编辑
+        </button>
+        <ActionMenu v-if="hasMenu" compact side="bottom" align="end">
+          <ActionMenuItem
+            v-if="isAdmin"
+            @activate="confirmationAction = 'hide'"
+          >
+            隐藏评论
+          </ActionMenuItem>
+          <ActionMenuItem
+            danger
+            :disabled="submitting"
+            @activate="confirmationAction = 'delete'"
+          >
+            删除评论
+          </ActionMenuItem>
+        </ActionMenu>
+      </div>
     </header>
-    <p v-if="!isPublished" class="mt-3 text-sm text-muted">
+    <p v-if="!isPublished" class="mt-2 text-sm text-muted">
       {{ comment.status === 2 ? '该评论已删除' : '该评论已隐藏' }}
     </p>
-    <form v-else-if="editing" class="mt-3" @submit.prevent="saveEdit">
+    <form v-else-if="editing" class="mt-2" @submit.prevent="saveEdit">
       <MarkdownEditor
         v-model="content"
         mode="comment"
@@ -200,42 +235,11 @@ function handleConfirmationOpenChange(open: boolean) {
     </form>
     <MarkdownContent
       v-else
-      class="mt-3"
+      class="mt-2"
       mode="comment"
       :source="comment.content"
     />
 
-    <div v-if="isPublished && !editing" class="mt-3 flex items-center gap-1">
-      <button
-        v-if="authUser && !locked"
-        type="button"
-        :class="commentActionClass"
-        :aria-expanded="replying"
-        @click="emit('reply', comment)"
-      >
-        回复
-      </button>
-      <button
-        v-if="canEdit"
-        type="button"
-        :class="commentActionClass"
-        @click="startEditing"
-      >
-        编辑
-      </button>
-      <ActionMenu v-if="hasMenu" compact side="top" align="start">
-        <ActionMenuItem v-if="isAdmin" @activate="confirmationAction = 'hide'">
-          隐藏评论
-        </ActionMenuItem>
-        <ActionMenuItem
-          danger
-          :disabled="submitting"
-          @activate="confirmationAction = 'delete'"
-        >
-          删除评论
-        </ActionMenuItem>
-      </ActionMenu>
-    </div>
     <CommentComposer
       v-if="replying"
       :id="`comment-reply-composer-${comment.id}`"
