@@ -17,10 +17,12 @@ function setupAuthProxy(config: UserConfig) {
   const authUrl = 'https://auth.novelia.cc';
   const proxy = config.server!.proxy!;
 
-  proxy['/auth-proxy/api'] = {
+  proxy['^/api(?!/v1/auth)'] = proxy['/api'];
+  delete proxy['/api'];
+
+  proxy['/api/v1/auth'] = {
     target: authUrl,
     changeOrigin: true,
-    rewrite: (path) => path.replace(/^\/auth-proxy/, ''),
   };
 
   proxy['/auth-proxy/assets'] = {
