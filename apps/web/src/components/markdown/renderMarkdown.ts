@@ -18,6 +18,16 @@ const COMMENT_DISABLED_RULES = [
   'table',
 ];
 
+function renderStarRating(value: number) {
+  const stars = Array.from({ length: 5 }, (_, index) => {
+    const active = index + 1 <= value;
+    const halfActive = !active && index + 0.5 <= value;
+    return `<span class="markdown-star${active ? ' markdown-star--active' : ''}"><span class="markdown-star__half${halfActive ? ' markdown-star__half--active' : ''}"></span></span>`;
+  }).join('');
+
+  return `<div class="markdown-star-rating" role="img" aria-label="评分 ${value} / 5">${stars}</div>\n`;
+}
+
 function createMarkdown(mode: MarkdownMode) {
   const markdown = new MarkdownIt({
     html: false,
@@ -48,13 +58,12 @@ function createMarkdown(mode: MarkdownMode) {
     name: 'star',
     validate: (params) => params.trim().split(' ', 2)[0] === 'star',
     openRenderer: (tokens: Token[], index: number): string => {
-      const rawValue = Number(tokens[index].info.trim().slice(5).trim());
-      const value = Number.isFinite(rawValue)
-        ? Math.min(5, Math.max(0, rawValue))
-        : 0;
-      return `<div class="markdown-star-rating" role="img" aria-label="评分 ${value} / 5">★ <strong>${value}</strong> / 5`;
+      const info = tokens[index].info.trim().slice(5).trim();
+      const value =
+        !Number.isNaN(Number(info)) && info !== '' ? Number(info) : 0;
+      return renderStarRating(value);
     },
-    closeRenderer: () => '</div>\n',
+    closeRenderer: () => '',
   });
 
   if (mode === 'comment') markdown.disable(COMMENT_DISABLED_RULES);

@@ -235,9 +235,56 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 .markdown-content :deep(.markdown-star-rating) {
+  display: inline-flex;
+  flex-wrap: nowrap;
   margin-bottom: 1rem;
-  color: #f59e0b;
-  font-size: 1rem;
+}
+
+.markdown-content :deep(.markdown-star) {
+  position: relative;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  color: rgb(219, 219, 223);
+}
+
+.markdown-content :deep(.markdown-star:not(:first-child)) {
+  margin-left: 6px;
+}
+
+.markdown-content :deep(.markdown-star::before),
+.markdown-content :deep(.markdown-star__half::before) {
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  content: '';
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.markdown-content :deep(.markdown-star--active) {
+  color: #4fb233;
+}
+
+.markdown-content :deep(.markdown-star__half) {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  width: 50%;
+  overflow: hidden;
+  color: transparent;
+}
+
+.markdown-content :deep(.markdown-star__half--active) {
+  color: #4fb233;
+}
+
+.markdown-content :deep(.markdown-star__half::before) {
+  flex: 0 0 20px;
 }
 
 .markdown-content :deep([data-markdown-spoiler]) {

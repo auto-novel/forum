@@ -179,7 +179,7 @@ defineExpose({ focus });
           :class="editorToolClass"
           title="评分"
           aria-label="评分"
-          @mousedown.prevent="insertBlock('::: star 5\n', '\n:::', '')"
+          @mousedown.prevent="insertBlock('::: star 5', '', '')"
         >
           <StarBorderOutlined class="mx-auto size-4" aria-hidden="true" />
         </button>
