@@ -93,7 +93,7 @@ const features: MarkdownFeature[] = [
 
         <div class="overflow-y-auto p-4 sm:p-6">
           <div
-            class="space-y-3 sm:space-y-0 sm:overflow-hidden sm:rounded-md sm:border sm:border-border"
+            class="divide-y divide-divider sm:divide-y-0 sm:overflow-hidden sm:rounded-md sm:border sm:border-border"
           >
             <div
               class="hidden grid-cols-[10.5rem_minmax(0,1fr)] bg-paper text-xs font-semibold text-muted sm:grid"
@@ -104,7 +104,7 @@ const features: MarkdownFeature[] = [
             <section
               v-for="feature in features"
               :key="feature.name"
-              class="grid gap-2 rounded-md border border-border p-3 text-sm sm:grid-cols-[10.5rem_minmax(0,1fr)] sm:items-center sm:gap-0 sm:rounded-none sm:border-0 sm:border-t sm:border-divider sm:p-0"
+              class="grid gap-2 py-3 text-sm sm:grid-cols-[10.5rem_minmax(0,1fr)] sm:items-center sm:gap-0 sm:border-t sm:border-divider sm:py-0"
               :class="{
                 'bg-paper/50': mode === 'comment' && feature.articleOnly,
               }"
