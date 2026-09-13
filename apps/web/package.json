@@ -19,7 +19,6 @@
     "@vue/tsconfig": "^0.9.1",
     "dompurify": "^3.4.15",
     "markdown-it": "^15.0.1",
-    "markdown-it-anchor": "^10.0.0",
     "pinia": "^4.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "reka-ui": "^2.10.4",

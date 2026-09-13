@@ -7,6 +7,7 @@ import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
@@ -55,6 +56,9 @@ const canEdit = computed(
   () => (isOwner.value || isAdmin.value) && withinModificationWindow.value,
 );
 const hasMenu = computed(() => canEdit.value || isAdmin.value);
+const hasUnsavedChanges = computed(
+  () => editing.value && content.value !== props.comment.content,
+);
 const confirmation = computed(() =>
   confirmationAction.value === 'delete'
     ? {
@@ -68,6 +72,8 @@ const confirmation = computed(() =>
         confirmLabel: '隐藏评论',
       },
 );
+
+useUnsavedChangesGuard(hasUnsavedChanges);
 
 onBeforeUnmount(() => window.clearTimeout(expiryTimer));
 

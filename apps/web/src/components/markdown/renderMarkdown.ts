@@ -2,16 +2,13 @@ import { container } from '@mdit/plugin-container';
 import { spoiler } from '@mdit/plugin-spoiler';
 import DOMPurify from 'dompurify';
 import MarkdownIt, { type RendererRule, type Token } from 'markdown-it';
-import MarkdownItAnchor from 'markdown-it-anchor';
 
 export type MarkdownMode = 'article' | 'comment';
 
 const COMMENT_DISABLED_RULES = [
-  'backticks',
   'blockquote',
   'code',
   'entity',
-  'escape',
   'fence',
   'heading',
   'hr',
@@ -27,7 +24,6 @@ function createMarkdown(mode: MarkdownMode) {
     linkify: true,
     breaks: true,
   });
-  markdown.use(MarkdownItAnchor);
   markdown.use(spoiler, {
     tag: 'span',
     attrs: [

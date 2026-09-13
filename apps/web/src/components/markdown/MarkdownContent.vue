@@ -254,11 +254,7 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 .markdown-content :deep([data-markdown-spoiler][data-hide='false']),
-.markdown-content :deep([data-markdown-spoiler][data-hide='false'] *),
-.markdown-content :deep([data-markdown-spoiler][data-hide='true']:hover),
-.markdown-content :deep([data-markdown-spoiler][data-hide='true']:hover *),
-.markdown-content :deep([data-markdown-spoiler][data-hide='true']:focus),
-.markdown-content :deep([data-markdown-spoiler][data-hide='true']:focus *) {
+.markdown-content :deep([data-markdown-spoiler][data-hide='false'] *) {
   color: var(--color-surface);
 }
 </style>

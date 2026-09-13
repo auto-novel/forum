@@ -5,14 +5,7 @@ import {
   UnfoldMoreOutlined,
   VisibilityOffOutlined,
 } from '@vicons/material';
-import {
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  useTemplateRef,
-  watch,
-} from 'vue';
+import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import type { MarkdownMode } from './renderMarkdown';
 import MarkdownContent from './MarkdownContent.vue';
@@ -36,17 +29,10 @@ const props = withDefaults(
 const value = defineModel<string>({ required: true });
 const textarea = useTemplateRef<HTMLTextAreaElement>('textarea');
 const activeTab = ref<'edit' | 'preview'>('edit');
-const previewMinHeight = ref(`${props.rows * 1.5 + 1.5}rem`);
-let resizeObserver: ResizeObserver | undefined;
 const editorTabClass =
   'relative min-w-16 border-r border-border px-[0.9rem] py-[0.55rem] text-[0.8125rem] font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 const editorToolClass =
   'relative min-w-8 flex-none rounded-sm px-2 py-[0.35rem] text-xs text-ink transition-colors duration-150 hover:bg-divider/40 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
-
-function handleBeforeUnload(event: BeforeUnloadEvent) {
-  if (!value.value.trim()) return;
-  event.preventDefault();
-}
 
 function resizeCommentEditor() {
   const element = textarea.value;
@@ -56,19 +42,8 @@ function resizeCommentEditor() {
 }
 
 onMounted(async () => {
-  window.addEventListener('beforeunload', handleBeforeUnload);
   await nextTick();
   resizeCommentEditor();
-  if (!textarea.value) return;
-  resizeObserver = new ResizeObserver(() => {
-    if (textarea.value)
-      previewMinHeight.value = `${textarea.value.offsetHeight}px`;
-  });
-  resizeObserver.observe(textarea.value);
-});
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload);
-  resizeObserver?.disconnect();
 });
 
 watch(value, () => void nextTick(resizeCommentEditor));
@@ -236,12 +211,7 @@ defineExpose({ focus });
       />
     </div>
 
-    <div
-      v-show="activeTab === 'preview'"
-      class="p-4"
-      role="tabpanel"
-      :style="{ minHeight: previewMinHeight }"
-    >
+    <div v-if="activeTab === 'preview'" class="min-h-48 p-4" role="tabpanel">
       <MarkdownContent v-if="value.trim()" :mode="mode" :source="value" />
       <p v-else class="text-sm text-muted">没有可预览的内容</p>
     </div>

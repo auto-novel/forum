@@ -3,8 +3,9 @@ import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { authUser, updatePost } from '@/api';
+import { authUser, updatePost, type Post } from '@/api';
 import AsyncContent from '@/components/AsyncContent.vue';
+import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
 import { usePostStore } from '@/stores/post';
@@ -25,6 +26,7 @@ const title = ref('');
 const content = ref('');
 const selectedTagIds = ref<number[]>([]);
 const submitting = ref(false);
+const savedSnapshot = ref('');
 
 const postId = computed(() => {
   const value = Number(route.params.id);
@@ -43,6 +45,31 @@ const detailRoute = computed(() => ({
   name: 'post-detail' as const,
   params: { id: postId.value },
 }));
+const hasUnsavedChanges = computed(
+  () => savedSnapshot.value !== '' && savedSnapshot.value !== formSnapshot(),
+);
+
+useUnsavedChangesGuard(hasUnsavedChanges);
+
+function formSnapshot() {
+  return JSON.stringify([
+    title.value,
+    content.value,
+    [...selectedTagIds.value].sort((left, right) => left - right),
+  ]);
+}
+
+function applyPost(value: Post) {
+  title.value = value.title;
+  content.value = value.content;
+  const validTagIds = new Set(
+    categoryStore.tagsByCategoryId(value.categoryId).map((tag) => tag.id),
+  );
+  selectedTagIds.value = value.tags
+    .map((tag) => tag.id)
+    .filter((id) => validTagIds.has(id));
+  savedSnapshot.value = formSnapshot();
+}
 
 async function loadPost() {
   await postStore.loadPost(postId.value);
@@ -57,6 +84,7 @@ async function save() {
       content: content.value,
       tagIds: selectedTagIds.value,
     });
+    applyPost(updatedPost);
     postStore.setPost(updatedPost);
     notifySuccess('帖子修改已保存');
     await router.replace({
@@ -78,12 +106,7 @@ watch(
   post,
   (value) => {
     if (!value) return;
-    title.value = value.title;
-    content.value = value.content;
-    const validTagIds = new Set(tags.value.map((tag) => tag.id));
-    selectedTagIds.value = value.tags
-      .map((tag) => tag.id)
-      .filter((id) => validTagIds.has(id));
+    applyPost(value);
   },
   { immediate: true },
 );

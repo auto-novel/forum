@@ -5,6 +5,7 @@ import { authUser, type PostComment } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
+import { useDraftStore } from '@/stores/draft';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
@@ -19,44 +20,28 @@ const emit = defineEmits<{
 }>();
 
 const commentStore = useCommentStore();
+const draftStore = useDraftStore();
 const content = ref('');
 const submitting = ref(false);
 const draftKey = computed(() =>
   authUser.value
-    ? `forum:comment-draft:${props.postId}:${authUser.value.id}:${props.replyTo?.rootId ?? props.replyTo?.id ?? 'root'}`
+    ? `${props.postId}:${authUser.value.id}:${props.replyTo?.rootId ?? props.replyTo?.id ?? 'root'}`
     : '',
 );
-
-function readDraft(key: string) {
-  if (!key) return '';
-  try {
-    return localStorage.getItem(key) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function saveDraft(key: string, value: string) {
-  if (!key) return;
-  try {
-    if (value.trim()) localStorage.setItem(key, value);
-    else localStorage.removeItem(key);
-  } catch {
-    // Draft persistence is optional when browser storage is unavailable.
-  }
-}
 
 watch(
   draftKey,
   (key) => {
-    const draft = readDraft(key);
+    const draft = key ? draftStore.getCommentDraft(key) : '';
     content.value =
       draft || (props.replyTo ? `@${props.replyTo.authorUsername} ` : '');
   },
   { immediate: true },
 );
 
-watch(content, (value) => saveDraft(draftKey.value, value));
+watch(content, (value) => {
+  if (draftKey.value) draftStore.saveCommentDraft(draftKey.value, value);
+});
 
 async function submitComment() {
   const value = content.value.trim();
@@ -68,7 +53,7 @@ async function submitComment() {
       rootId: props.replyTo?.rootId ?? props.replyTo?.id,
     });
     content.value = '';
-    saveDraft(draftKey.value, '');
+    draftStore.clearCommentDraft(draftKey.value);
     notifySuccess('评论已发表');
     emit('created', comment);
   } catch (error) {

@@ -5,20 +5,15 @@ import { useRoute, useRouter } from 'vue-router';
 import { authUser, createPost } from '@/api';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
+import { useDraftStore } from '@/stores/draft';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 import PostForm from './PostForm.vue';
 
-interface PostDraft {
-  title: string;
-  category: string;
-  tagIds: number[];
-  content: string;
-}
-
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
+const draftStore = useDraftStore();
 const initialCategory =
   categoryStore.categories.find(
     (category) => category.slug === route.query.category,
@@ -36,60 +31,21 @@ const selectedCategory = computed(
     ) ?? categoryStore.defaultCategory,
 );
 const tags = computed(() => selectedCategory.value.tags);
-const draftKey = computed(() =>
-  authUser.value ? `forum:post-draft:${authUser.value.id}` : '',
-);
-
-function readDraft(key: string): PostDraft | undefined {
-  if (!key) return;
-  try {
-    const value = JSON.parse(
-      localStorage.getItem(key) ?? 'null',
-    ) as Partial<PostDraft> | null;
-    if (
-      !value ||
-      typeof value.title !== 'string' ||
-      typeof value.content !== 'string'
-    )
-      return;
-    const categoryItem =
-      categoryStore.categories.find((item) => item.slug === value.category) ??
-      categoryStore.defaultCategory;
-    const category = categoryItem.slug;
-    const validIds = new Set(categoryItem.tags.map((tag) => tag.id));
-    const tagIds = Array.isArray(value.tagIds)
-      ? value.tagIds.filter(
-          (id): id is number =>
-            Number.isSafeInteger(id) && id > 0 && validIds.has(id),
-        )
-      : [];
-    return { title: value.title, category, tagIds, content: value.content };
-  } catch {
-    return;
-  }
-}
-
-function writeDraft(key: string, draft?: PostDraft) {
-  if (!key) return;
-  try {
-    if (draft && (draft.title.trim() || draft.content.trim())) {
-      localStorage.setItem(key, JSON.stringify(draft));
-    } else {
-      localStorage.removeItem(key);
-    }
-  } catch {
-    // Draft persistence is optional when browser storage is unavailable.
-  }
-}
+const draftUserId = computed(() => authUser.value?.id ?? 0);
 
 watch(
-  draftKey,
-  (key) => {
-    const draft = readDraft(key);
+  draftUserId,
+  (userId) => {
+    if (!userId) return;
+    const draft = draftStore.getPostDraft(userId);
     if (!draft) return;
+    const categoryItem =
+      categoryStore.categories.find((item) => item.slug === draft.category) ??
+      categoryStore.defaultCategory;
+    const validIds = new Set(categoryItem.tags.map((tag) => tag.id));
     title.value = draft.title;
-    categorySlug.value = draft.category;
-    selectedTagIds.value = draft.tagIds;
+    categorySlug.value = categoryItem.slug;
+    selectedTagIds.value = draft.tagIds.filter((id) => validIds.has(id));
     content.value = draft.content;
   },
   { immediate: true },
@@ -98,7 +54,8 @@ watch(
 watch(
   [title, categorySlug, selectedTagIds, content],
   () => {
-    writeDraft(draftKey.value, {
+    if (!draftUserId.value) return;
+    draftStore.savePostDraft(draftUserId.value, {
       title: title.value,
       category: categorySlug.value,
       tagIds: selectedTagIds.value,
@@ -122,7 +79,7 @@ async function submitPost() {
       content: content.value,
       tagIds: selectedTagIds.value,
     });
-    writeDraft(draftKey.value);
+    draftStore.clearPostDraft(draftUserId.value);
     title.value = '';
     content.value = '';
     selectedTagIds.value = [];
