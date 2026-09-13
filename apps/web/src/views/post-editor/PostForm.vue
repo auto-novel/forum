@@ -3,7 +3,6 @@ import { computed, defineAsyncComponent } from 'vue';
 
 import type { PostTag } from '@/api';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-import TagSelector from '@/components/TagSelector.vue';
 
 const MarkdownHelpDialog = defineAsyncComponent(
   () => import('@/components/markdown/MarkdownHelpDialog.vue'),
@@ -16,7 +15,6 @@ const props = withDefaults(
     submitting: boolean;
     submitLabel: string;
     submittingLabel: string;
-    tagLabel?: string;
     titlePlaceholder?: string;
     contentPlaceholder?: string;
     showTitleCount?: boolean;
@@ -25,7 +23,6 @@ const props = withDefaults(
   {
     titlePlaceholder: '',
     contentPlaceholder: '使用 Markdown 输入内容…',
-    tagLabel: '标签',
     showTitleCount: false,
     showCancel: false,
   },
@@ -96,12 +93,30 @@ function submit() {
       </select>
     </div>
 
-    <TagSelector
-      v-model="tagIds"
-      :tags="tags"
-      :label="tagLabel"
-      :disabled="submitting"
-    />
+    <fieldset :disabled="submitting">
+      <legend class="mb-2 text-sm font-semibold text-ink">标签</legend>
+      <div v-if="tags.length" class="flex flex-wrap gap-2">
+        <label
+          v-for="tag in tags"
+          :key="tag.id"
+          class="cursor-pointer rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors"
+          :class="
+            tagIds.includes(tag.id)
+              ? 'border-primary bg-primary-soft text-primary'
+              : 'border-border text-muted hover:border-primary hover:text-primary'
+          "
+        >
+          <input
+            v-model="tagIds"
+            type="checkbox"
+            class="sr-only"
+            :value="tag.id"
+          />
+          {{ tag.name }}
+        </label>
+      </div>
+      <p v-else class="text-sm text-muted">这个分类暂时没有可用标签。</p>
+    </fieldset>
 
     <div>
       <div class="mb-2 flex items-center justify-between gap-3">
