@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
@@ -99,22 +100,17 @@ async function submitComment() {
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
         <MarkdownHelpDialog mode="comment" />
         <div class="flex items-center gap-2">
-          <button
+          <AppButton
             v-if="replyTo"
-            type="button"
-            class="rounded-sm border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            variant="outline"
             :disabled="submitting"
             @click="emit('cancelReply')"
           >
             取消
-          </button>
-          <button
-            type="submit"
-            class="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="!content.trim() || submitting"
-          >
+          </AppButton>
+          <AppButton type="submit" :disabled="!content.trim() || submitting">
             {{ submitting ? '发表中…' : '发表' }}
-          </button>
+          </AppButton>
         </div>
       </div>
     </form>

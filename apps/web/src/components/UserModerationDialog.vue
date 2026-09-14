@@ -11,6 +11,7 @@ import {
 } from 'reka-ui';
 
 import { authApi } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { getApiErrorMessage } from '@/utils/apiError';
 
@@ -141,33 +142,33 @@ async function submit() {
           </div>
 
           <div class="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              class="rounded-sm border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            <AppButton
+              variant="outline"
               :disabled="submitting"
               @click="updateOpen(false)"
             >
               取消
-            </button>
-            <button
+            </AppButton>
+            <AppButton
               type="submit"
-              class="rounded-sm bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              variant="danger"
               :disabled="!canSubmit || submitting"
             >
               {{ submitting ? '处理中…' : isStrike ? '确认处罚' : '确认封禁' }}
-            </button>
+            </AppButton>
           </div>
         </form>
 
-        <button
-          type="button"
-          class="absolute top-4 right-4 rounded-sm p-1.5 text-muted transition-colors hover:bg-divider/50 hover:text-ink focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50"
+        <AppButton
+          class="absolute top-4 right-4"
+          variant="subtle"
+          size="icon-sm"
           aria-label="关闭"
           :disabled="submitting"
           @click="updateOpen(false)"
         >
           <CloseOutlined class="size-5" aria-hidden="true" />
-        </button>
+        </AppButton>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

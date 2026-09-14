@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, onBeforeUnmount, ref } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -31,8 +32,6 @@ const submitting = ref(false);
 const now = ref(Date.now());
 const confirmationAction = ref<'delete' | 'hide'>();
 const userModerationAction = ref<'strike' | 'ban'>();
-const actionClass =
-  'inline-flex h-6 items-center rounded-sm px-2 text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
 const modificationDeadline =
   new Date(props.comment.createdAt).getTime() + 20 * 60_000;
@@ -121,23 +120,18 @@ function handleUserModerationOpenChange(open: boolean) {
 
 <template>
   <div v-if="hasActions" class="ml-auto flex items-center gap-1">
-    <button
+    <AppButton
       v-if="canReply"
-      type="button"
-      :class="actionClass"
+      variant="ghost"
+      size="xs"
       :aria-expanded="replying"
       @click="emit('reply')"
     >
       回复
-    </button>
-    <button
-      v-if="canEdit"
-      type="button"
-      :class="actionClass"
-      @click="emit('edit')"
-    >
+    </AppButton>
+    <AppButton v-if="canEdit" variant="ghost" size="xs" @click="emit('edit')">
       编辑
-    </button>
+    </AppButton>
     <ActionMenu v-if="hasMenu" compact side="bottom" align="end">
       <ActionMenuItem
         v-if="isAdmin"

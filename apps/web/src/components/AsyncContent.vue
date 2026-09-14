@@ -2,6 +2,8 @@
 import { Inventory2Outlined } from '@vicons/material';
 import { computed } from 'vue';
 
+import AppButton from '@/components/AppButton.vue';
+
 const props = withDefaults(
   defineProps<{
     loading: boolean;
@@ -82,14 +84,9 @@ const retryClass = computed(() => (props.size === 'compact' ? 'mt-4' : 'mt-5'));
         >
           {{ error }}
         </p>
-        <button
-          type="button"
-          class="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-          :class="retryClass"
-          @click="$emit('retry')"
-        >
+        <AppButton :class="retryClass" @click="$emit('retry')">
           {{ retryLabel }}
-        </button>
+        </AppButton>
       </div>
     </div>
 

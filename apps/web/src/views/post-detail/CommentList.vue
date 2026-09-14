@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
+import AppButton from '@/components/AppButton.vue';
+
 import type { PostComment } from '@/api';
 import AsyncContent from '@/components/AsyncContent.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
@@ -43,16 +45,15 @@ const emit = defineEmits<{
         评论
         <span class="text-muted">{{ total }}</span>
       </h2>
-      <button
-        type="button"
-        class="inline-flex min-h-9 items-center gap-1.5 rounded-sm bg-primary px-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      <AppButton
+        size="sm"
         aria-controls="comment-composer"
         :aria-expanded="composing"
         @click="emit('comment')"
       >
         <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
         {{ composing ? '取消评论' : '发表评论' }}
-      </button>
+      </AppButton>
     </header>
 
     <slot name="composer" />

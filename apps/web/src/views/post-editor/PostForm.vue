@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent } from 'vue';
 
 import type { PostTag } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 
 const MarkdownHelpDialog = defineAsyncComponent(
@@ -136,22 +137,17 @@ function submit() {
       class="flex flex-wrap items-center justify-end gap-3 border-t border-divider pt-5"
     >
       <div class="flex items-center gap-3">
-        <button
+        <AppButton
           v-if="showCancel"
-          type="button"
-          class="rounded-sm border border-border px-4 py-2 text-sm font-medium hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+          variant="outline"
           :disabled="submitting"
           @click="emit('cancel')"
         >
           取消
-        </button>
-        <button
-          type="submit"
-          class="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="!canSubmit"
-        >
+        </AppButton>
+        <AppButton type="submit" :disabled="!canSubmit">
           {{ submitting ? submittingLabel : submitLabel }}
-        </button>
+        </AppButton>
       </div>
     </div>
   </form>

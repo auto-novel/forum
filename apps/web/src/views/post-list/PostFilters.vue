@@ -3,6 +3,7 @@ import { SearchOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
 
 import { type PostSort } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{
@@ -106,13 +107,7 @@ watch(
       v-if="queryInput || tagInput || sortInput !== 'active'"
       class="flex gap-2"
     >
-      <button
-        type="button"
-        class="min-h-10 rounded-sm border border-border px-3 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-primary"
-        @click="reset"
-      >
-        重置
-      </button>
+      <AppButton variant="outline" @click="reset">重置</AppButton>
     </div>
   </form>
 </template>

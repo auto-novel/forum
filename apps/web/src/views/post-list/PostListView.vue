@@ -5,6 +5,7 @@ import { computed, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import { useCategoryStore } from '@/stores/category';
 import { usePostStore } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
@@ -120,16 +121,16 @@ watch(
   <div class="page-container py-4 md:py-6">
     <div class="min-w-0 space-y-4">
       <div class="flex justify-end">
-        <RouterLink
+        <AppButton
+          :as="RouterLink"
           :to="{
             name: 'post-create',
             query: { category: selectedCategory },
           }"
-          class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-sm bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <AddOutlined class="size-4" aria-hidden="true" />
           发表帖子
-        </RouterLink>
+        </AppButton>
       </div>
       <PostFilters
         :category-id="selectedCategoryItem.id"

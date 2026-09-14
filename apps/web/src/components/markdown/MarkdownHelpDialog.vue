@@ -11,6 +11,8 @@ import {
   DialogTrigger,
 } from 'reka-ui';
 
+import AppButton from '@/components/AppButton.vue';
+
 import type { MarkdownMode } from './renderMarkdown';
 
 defineProps<{
@@ -60,13 +62,10 @@ const features: MarkdownFeature[] = [
 <template>
   <DialogRoot>
     <DialogTrigger as-child>
-      <button
-        type="button"
-        class="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-xs text-muted transition-colors hover:bg-divider/40 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      >
+      <AppButton variant="subtle" size="xs">
         <HelpOutlineOutlined class="size-4" aria-hidden="true" />
         Markdown 语法帮助
-      </button>
+      </AppButton>
     </DialogTrigger>
 
     <DialogPortal>
@@ -83,11 +82,15 @@ const features: MarkdownFeature[] = [
           <DialogDescription class="mt-1 text-sm leading-6 text-muted">
             以下是编辑器支持的基本语法，特殊标记的功能不能用于评论。
           </DialogDescription>
-          <DialogClose
-            class="absolute top-4 right-4 rounded-sm p-1.5 text-muted transition-colors hover:bg-divider/50 hover:text-ink focus-visible:outline-2 focus-visible:outline-primary"
-            aria-label="关闭"
-          >
-            <CloseOutlined class="size-5" aria-hidden="true" />
+          <DialogClose as-child>
+            <AppButton
+              class="absolute top-4 right-4"
+              variant="subtle"
+              size="icon-sm"
+              aria-label="关闭"
+            >
+              <CloseOutlined class="size-5" aria-hidden="true" />
+            </AppButton>
           </DialogClose>
         </header>
 

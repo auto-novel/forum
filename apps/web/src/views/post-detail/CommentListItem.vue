@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, ref } from 'vue';
 
 import { type PostComment } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
@@ -33,8 +34,6 @@ const commentStore = useCommentStore();
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
-const commentActionClass =
-  'inline-flex min-h-[1.875rem] items-center rounded-sm px-[0.55rem] text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 
 const isPublished = computed(() => props.comment.status === 0);
 const hasUnsavedChanges = computed(
@@ -111,21 +110,21 @@ async function saveEdit() {
       <div class="mt-3 flex items-center justify-between gap-3">
         <MarkdownHelpDialog mode="comment" />
         <div class="flex gap-2">
-          <button
-            type="button"
-            :class="commentActionClass"
+          <AppButton
+            variant="ghost"
+            size="xs"
             :disabled="submitting"
             @click="editing = false"
           >
             取消
-          </button>
-          <button
+          </AppButton>
+          <AppButton
             type="submit"
-            class="rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+            size="xs"
             :disabled="!content.trim() || submitting"
           >
             {{ submitting ? '保存中…' : '保存' }}
-          </button>
+          </AppButton>
         </div>
       </div>
     </form>

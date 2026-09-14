@@ -13,6 +13,7 @@ import {
   unlockPost,
   unpinPost,
 } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import ActionMenu from '@/components/ActionMenu.vue';
 import ActionMenuItem from '@/components/ActionMenuItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -36,8 +37,6 @@ const favoriteLoading = ref(false);
 const actionLoading = ref(false);
 const confirmationAction = ref<'delete' | 'hide'>();
 const userModerationAction = ref<'strike' | 'ban'>();
-const postActionClass =
-  'inline-flex min-h-9 items-center gap-[0.4rem] rounded-sm px-[0.7rem] text-[0.8125rem] font-semibold transition-colors duration-150 hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50';
 
 const isAdmin = computed(() => authUser.value?.role === 'admin');
 const isOwner = computed(() => authUser.value?.id === props.post.authorId);
@@ -180,10 +179,10 @@ watch(
 <template>
   <section class="relative border-t border-divider py-3" aria-label="帖子操作">
     <div class="flex flex-wrap items-center gap-2">
-      <button
+      <AppButton
         v-if="authUser"
-        type="button"
-        :class="[postActionClass, favorited ? 'text-primary' : 'text-muted']"
+        :variant="favorited ? 'ghost-active' : 'ghost'"
+        size="sm"
         :disabled="favoriteLoading"
         :aria-pressed="favorited"
         @click="toggleFavorite"
@@ -191,7 +190,7 @@ watch(
         <StarFilled v-if="favorited" class="size-4" aria-hidden="true" />
         <StarBorderOutlined v-else class="size-4" aria-hidden="true" />
         {{ favoriteLoading ? '处理中…' : favorited ? '取消收藏' : '收藏' }}
-      </button>
+      </AppButton>
 
       <div v-if="canManagePost">
         <ActionMenu>

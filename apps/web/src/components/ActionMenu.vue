@@ -7,6 +7,8 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui';
 
+import AppButton from '@/components/AppButton.vue';
+
 withDefaults(
   defineProps<{
     side?: 'top' | 'right' | 'bottom' | 'left';
@@ -23,10 +25,9 @@ withDefaults(
 <template>
   <DropdownMenuRoot>
     <DropdownMenuTrigger as-child>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center rounded-sm text-muted transition-colors hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
-        :class="compact ? 'size-6' : 'size-9'"
+      <AppButton
+        variant="ghost"
+        :size="compact ? 'icon-xs' : 'icon'"
         aria-label="更多操作"
         title="更多操作"
       >
@@ -34,7 +35,7 @@ withDefaults(
           :class="compact ? 'size-4' : 'size-5'"
           aria-hidden="true"
         />
-      </button>
+      </AppButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
       <DropdownMenuContent

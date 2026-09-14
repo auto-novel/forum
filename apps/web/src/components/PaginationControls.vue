@@ -8,6 +8,8 @@ import {
   PaginationRoot,
 } from 'reka-ui';
 
+import AppButton from '@/components/AppButton.vue';
+
 defineProps<{
   page: number;
   totalPages: number;
@@ -29,10 +31,8 @@ defineEmits<{
     aria-label="分页"
     @update:page="$emit('change', $event)"
   >
-    <PaginationPrev
-      class="rounded-sm border border-border px-3 py-1.5 font-medium transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
-    >
-      上一页
+    <PaginationPrev as-child>
+      <AppButton variant="outline" size="sm">上一页</AppButton>
     </PaginationPrev>
 
     <span class="text-xs text-muted sm:hidden">
@@ -46,9 +46,15 @@ defineEmits<{
         <PaginationListItem
           v-if="item.type === 'page'"
           :value="item.value"
-          class="grid size-8 place-items-center rounded-sm text-xs font-medium text-muted transition-colors hover:bg-paper hover:text-primary data-[selected]:bg-primary data-[selected]:text-white data-[selected]:hover:bg-primary-hover data-[selected]:hover:text-white"
+          as-child
         >
-          {{ item.value }}
+          <AppButton
+            variant="ghost"
+            size="icon-sm"
+            class="text-xs font-medium data-[selected]:bg-primary data-[selected]:text-white data-[selected]:hover:bg-primary-hover data-[selected]:hover:text-white"
+          >
+            {{ item.value }}
+          </AppButton>
         </PaginationListItem>
         <PaginationEllipsis
           v-else
@@ -59,10 +65,8 @@ defineEmits<{
       </template>
     </PaginationList>
 
-    <PaginationNext
-      class="rounded-sm border border-border px-3 py-1.5 font-medium transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
-    >
-      下一页
+    <PaginationNext as-child>
+      <AppButton variant="outline" size="sm">下一页</AppButton>
     </PaginationNext>
   </PaginationRoot>
 </template>

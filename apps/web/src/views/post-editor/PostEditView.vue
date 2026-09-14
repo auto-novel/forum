@@ -4,6 +4,7 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { authUser, updatePost, type Post } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import AsyncContent from '@/components/AsyncContent.vue';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
@@ -179,12 +180,14 @@ watch(postId, loadPost, { immediate: true });
                 : '登录后才能编辑帖子，请使用页面右上角的登录入口。'
             }}
           </p>
-          <RouterLink
+          <AppButton
+            :as="RouterLink"
             :to="detailRoute"
-            class="mt-5 inline-flex rounded-sm border border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-primary"
+            variant="outline"
+            class="mt-5"
           >
             返回帖子详情
-          </RouterLink>
+          </AppButton>
         </section>
       </AsyncContent>
     </div>

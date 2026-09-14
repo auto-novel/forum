@@ -7,6 +7,8 @@ import {
 } from '@vicons/material';
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
+import AppButton from '@/components/AppButton.vue';
+
 import type { MarkdownMode } from './renderMarkdown';
 import MarkdownContent from './MarkdownContent.vue';
 
@@ -30,9 +32,7 @@ const value = defineModel<string>({ required: true });
 const textarea = useTemplateRef<HTMLTextAreaElement>('textarea');
 const activeTab = ref<'edit' | 'preview'>('edit');
 const editorTabClass =
-  'relative min-w-16 border-r border-border px-[0.9rem] py-[0.55rem] text-[0.8125rem] font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
-const editorToolClass =
-  'relative min-w-8 flex-none rounded-sm px-2 py-[0.35rem] text-xs text-ink transition-colors duration-150 hover:bg-divider/40 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
+  'relative min-w-16 border-r border-border px-[0.9rem] py-[0.55rem] text-[0.8125rem] font-semibold';
 
 function resizeCommentEditor() {
   const element = textarea.value;
@@ -98,8 +98,9 @@ defineExpose({ focus });
   <div class="overflow-hidden rounded-md border border-border">
     <div class="flex flex-wrap items-stretch border-b border-border">
       <div class="flex flex-none" role="tablist" aria-label="Markdown 编辑模式">
-        <button
-          type="button"
+        <AppButton
+          variant="plain"
+          size="none"
           :class="[
             editorTabClass,
             activeTab === 'edit' ? '-mb-px text-ink' : 'text-muted',
@@ -109,9 +110,10 @@ defineExpose({ focus });
           @click="activeTab = 'edit'"
         >
           编辑
-        </button>
-        <button
-          type="button"
+        </AppButton>
+        <AppButton
+          variant="plain"
+          size="none"
           :class="[
             editorTabClass,
             activeTab === 'preview' ? '-mb-px text-ink' : 'text-muted',
@@ -121,7 +123,7 @@ defineExpose({ focus });
           @click="activeTab = 'preview'"
         >
           预览
-        </button>
+        </AppButton>
       </div>
 
       <div
@@ -129,63 +131,66 @@ defineExpose({ focus });
         class="order-last flex w-full items-center gap-0.5 overflow-x-auto border-t border-border p-1 sm:order-none sm:ml-auto sm:w-auto sm:border-t-0"
         aria-label="Markdown 格式工具"
       >
-        <button
-          type="button"
-          :class="[editorToolClass, 'font-bold']"
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
+          class="font-bold"
           title="粗体"
           aria-label="粗体"
           @mousedown.prevent="wrapSelection('**', '**', '粗体')"
         >
           B
-        </button>
-        <button
-          type="button"
-          :class="[editorToolClass, 'italic']"
+        </AppButton>
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
+          class="italic"
           title="斜体"
           aria-label="斜体"
           @mousedown.prevent="wrapSelection('*', '*', '斜体')"
         >
           I
-        </button>
-        <button
-          type="button"
-          :class="[editorToolClass, 'line-through']"
+        </AppButton>
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
+          class="line-through"
           title="删除线"
           aria-label="删除线"
           @mousedown.prevent="wrapSelection('~~', '~~', '删除线')"
         >
           S
-        </button>
-        <button
-          type="button"
-          :class="editorToolClass"
+        </AppButton>
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
           title="链接"
           aria-label="链接"
           @mousedown.prevent="wrapSelection('[', '](https://)', '链接文字')"
         >
           <LinkOutlined class="mx-auto size-4" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          :class="editorToolClass"
+        </AppButton>
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
           title="剧透"
           aria-label="剧透"
           @mousedown.prevent="wrapSelection('!!', '!!', '剧透内容')"
         >
           <VisibilityOffOutlined class="mx-auto size-4" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          :class="editorToolClass"
+        </AppButton>
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
           title="评分"
           aria-label="评分"
           @mousedown.prevent="insertBlock('::: star 5', '', '')"
         >
           <StarBorderOutlined class="mx-auto size-4" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          :class="editorToolClass"
+        </AppButton>
+        <AppButton
+          variant="toolbar"
+          size="icon-sm"
           title="折叠内容"
           aria-label="折叠内容"
           @mousedown.prevent="
@@ -193,7 +198,7 @@ defineExpose({ focus });
           "
         >
           <UnfoldMoreOutlined class="mx-auto size-4" aria-hidden="true" />
-        </button>
+        </AppButton>
       </div>
     </div>
 
