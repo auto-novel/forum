@@ -3,7 +3,7 @@ import { NAlert, NButton, NSpace, NText } from 'naive-ui';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useForumApi, type Category, type Post } from '@/api';
+import { useForumApi, type Category, type PostSummary } from '@/api';
 
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
@@ -13,7 +13,7 @@ const PAGE_SIZE = 20;
 const api = useForumApi();
 const router = useRouter();
 const categories = ref<Category[]>([]);
-const posts = ref<Post[]>([]);
+const posts = ref<PostSummary[]>([]);
 const loading = ref(true);
 const moderationSaving = ref(false);
 const errorMessage = ref('');
@@ -24,7 +24,7 @@ const queryInput = ref('');
 const categoryInput = ref('');
 const query = ref('');
 const category = ref('');
-const selectedPost = ref<Post | null>(null);
+const selectedPost = ref<PostSummary | null>(null);
 let requestId = 0;
 
 const categoryMap = computed(
@@ -74,7 +74,7 @@ function changePage(nextPage: number) {
   void loadPosts();
 }
 
-function reviewComments(post: Post) {
+function reviewComments(post: PostSummary) {
   void router.push({ name: 'comments', query: { post: post.id } });
 }
 

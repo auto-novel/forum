@@ -9,10 +9,10 @@ import {
   NText,
 } from 'naive-ui';
 
-import type { Post } from '@/api';
+import type { PostSummary } from '@/api';
 
 defineProps<{
-  posts: Post[];
+  posts: PostSummary[];
   loading: boolean;
 }>();
 

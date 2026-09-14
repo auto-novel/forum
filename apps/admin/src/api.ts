@@ -41,13 +41,12 @@ export interface PostTag {
   color: number;
 }
 
-export interface Post {
+export interface PostSummary {
   id: number;
   categoryId: number;
   title: string;
   authorId: number;
   authorUsername: string;
-  content: string;
   status: number;
   viewsCount: number;
   commentsCount: number;
@@ -134,7 +133,7 @@ export function createForumApi(authApi: AuthApi) {
             category: params.category || undefined,
           },
         })
-        .json<Page<Post>>();
+        .json<Page<PostSummary>>();
     },
     setPostStatus(id: number, status: number) {
       return client

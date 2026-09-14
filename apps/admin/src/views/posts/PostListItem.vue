@@ -8,16 +8,16 @@ import {
 } from '@vicons/material';
 import { NButton, NIcon, NTag, NText } from 'naive-ui';
 
-import type { Post } from '@/api';
+import type { PostSummary } from '@/api';
 
 defineProps<{
-  post: Post;
+  post: PostSummary;
   categoryName: string;
 }>();
 
 const emit = defineEmits<{
-  moderate: [post: Post];
-  reviewComments: [post: Post];
+  moderate: [post: PostSummary];
+  reviewComments: [post: PostSummary];
 }>();
 
 function formatDate(value: string) {
@@ -53,9 +53,6 @@ function formatDate(value: string) {
         </n-tag>
       </div>
       <n-text strong class="post-title">{{ post.title }}</n-text>
-      <n-text depth="3" class="post-excerpt">
-        {{ post.content.replace(/\s+/g, ' ').slice(0, 150) }}
-      </n-text>
       <div class="post-footer">
         <n-text depth="3">
           {{ post.authorUsername }} · {{ formatDate(post.activeAt) }}
@@ -122,14 +119,6 @@ function formatDate(value: string) {
 .post-title {
   font-size: 17px;
   line-height: 1.4;
-}
-
-.post-excerpt {
-  overflow: hidden;
-  display: -webkit-box;
-  line-height: 1.6;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
 .post-footer {

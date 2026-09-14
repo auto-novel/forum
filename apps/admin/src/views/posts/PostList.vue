@@ -12,12 +12,12 @@ import {
 } from 'naive-ui';
 import { computed } from 'vue';
 
-import type { Post } from '@/api';
+import type { PostSummary } from '@/api';
 
 import PostListItem from './PostListItem.vue';
 
 const props = defineProps<{
-  posts: Post[];
+  posts: PostSummary[];
   loading: boolean;
   total: number;
   page: number;
@@ -29,8 +29,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   updatePage: [page: number];
   resetFilters: [];
-  moderate: [post: Post];
-  reviewComments: [post: Post];
+  moderate: [post: PostSummary];
+  reviewComments: [post: PostSummary];
 }>();
 
 const pageCount = computed(() =>

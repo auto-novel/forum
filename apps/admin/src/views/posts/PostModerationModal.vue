@@ -11,9 +11,9 @@ import {
 } from 'naive-ui';
 import { reactive, watch } from 'vue';
 
-import { useForumApi, type Post } from '@/api';
+import { useForumApi, type PostSummary } from '@/api';
 
-const props = defineProps<{ post: Post | null }>();
+const props = defineProps<{ post: PostSummary | null }>();
 const emit = defineEmits<{
   close: [];
   success: [message: string];

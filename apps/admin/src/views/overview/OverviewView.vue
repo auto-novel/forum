@@ -9,7 +9,7 @@ import { NAlert, NButton, NText } from 'naive-ui';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useForumApi, type Post } from '@/api';
+import { useForumApi, type PostSummary } from '@/api';
 
 import OverviewMetrics from './OverviewMetrics.vue';
 import OverviewRecentPosts from './OverviewRecentPosts.vue';
@@ -21,7 +21,7 @@ const errorMessage = ref('');
 const categoryCount = ref(0);
 const tagCount = ref(0);
 const postCount = ref(0);
-const recentPosts = ref<Post[]>([]);
+const recentPosts = ref<PostSummary[]>([]);
 
 const recentCommentCount = computed(() =>
   recentPosts.value.reduce((total, post) => total + post.commentsCount, 0),
