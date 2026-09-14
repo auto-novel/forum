@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	forumcategory "auth/internal/category"
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
@@ -14,18 +15,10 @@ import (
 
 func (h *categoryHandler) RegisterAdminRoutes(router chi.Router) {
 	router.Get("/{cid}/tag", httpx.EH(h.listTags))
-	router.Post("/", httpx.EH(h.createCategory))
-	router.Put("/{id}", httpx.EH(h.updateCategory))
 	router.Post("/{cid}/tag", httpx.EH(h.createTag))
 	router.Put("/{cid}/tag/{id}", httpx.EH(h.updateTag))
 	router.Put("/{cid}/tag/{id}/active", httpx.EH(h.activateTag))
 	router.Delete("/{cid}/tag/{id}/active", httpx.EH(h.deactivateTag))
-}
-
-type categoryResponse struct {
-	ID        int64   `json:"id"`
-	Slug      string  `json:"slug"`
-	BannerURL *string `json:"bannerUrl,omitempty"`
 }
 
 type tagResponse struct {
@@ -42,6 +35,9 @@ func (h *categoryHandler) listTags(w http.ResponseWriter, r *http.Request) error
 	categoryID, err := httpx.ParseParamPositiveInt(r, "cid")
 	if err != nil {
 		return err
+	}
+	if _, ok := forumcategory.FindByID(categoryID); !ok {
+		return httpx.NotFound("分类不存在")
 	}
 	items, err := h.tagRepo.ListByCategory(categoryID)
 	if err != nil {
@@ -63,69 +59,6 @@ func (h *categoryHandler) listTags(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-type categoryInput struct {
-	Slug      string  `json:"slug" validate:"required,max=255"`
-	BannerURL *string `json:"bannerUrl"`
-}
-
-func (h *categoryHandler) createCategory(w http.ResponseWriter, r *http.Request) error {
-	input, err := httpx.Body[categoryInput](r)
-	if err != nil {
-		return err
-	}
-
-	category, err := h.categoryRepo.Create(
-		strings.TrimSpace(input.Slug),
-		input.BannerURL, "{}",
-	)
-	if repository.IsUniqueViolation(err) {
-		return httpx.Conflict("分类已存在")
-	}
-	if err != nil {
-		return httpx.InternalError(err, "创建分类失败")
-	}
-
-	response := categoryResponse{
-		ID:        category.ID,
-		Slug:      category.Slug,
-		BannerURL: category.BannerURL,
-	}
-	render.Status(r, http.StatusCreated)
-	render.JSON(w, r, response)
-	return nil
-}
-
-func (h *categoryHandler) updateCategory(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
-	if err != nil {
-		return err
-	}
-	input, err := httpx.Body[categoryInput](r)
-	if err != nil {
-		return err
-	}
-
-	category, err := h.categoryRepo.Update(
-		id,
-		strings.TrimSpace(input.Slug),
-		input.BannerURL,
-	)
-	if repository.IsNotFound(err) {
-		return httpx.NotFound("分类不存在")
-	} else if repository.IsUniqueViolation(err) {
-		return httpx.Conflict("分类已存在")
-	} else if err != nil {
-		return httpx.InternalError(err, "更新分类失败")
-	}
-
-	render.JSON(w, r, categoryResponse{
-		ID:        category.ID,
-		Slug:      category.Slug,
-		BannerURL: category.BannerURL,
-	})
-	return nil
-}
-
 type tagInput struct {
 	Name      string `json:"name" validate:"required,max=64"`
 	Color     int16  `json:"color" validate:"gte=0"`
@@ -137,10 +70,8 @@ func (h *categoryHandler) createTag(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return err
 	}
-	if _, err := h.categoryRepo.Find(categoryID); repository.IsNotFound(err) {
+	if _, ok := forumcategory.FindByID(categoryID); !ok {
 		return httpx.NotFound("分类不存在")
-	} else if err != nil {
-		return httpx.InternalError(err, "查询分类失败")
 	}
 
 	input, err := httpx.Body[tagInput](r)

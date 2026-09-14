@@ -3,6 +3,7 @@
 package tests
 
 import (
+	forumcategory "auth/internal/category"
 	"auth/internal/repository"
 	"errors"
 	"testing"
@@ -10,9 +11,15 @@ import (
 
 func TestJetRepositories(t *testing.T) {
 	resetDatabase()
-	category, err := categoryRepo.Create("general", nil, `{}`)
-	if err != nil {
-		t.Fatal(err)
+	category, _ := forumcategory.FindByID(forumcategory.NovelID)
+	if _, err := postRepo.Create(repository.CreatePostInput{
+		CategoryID: 999,
+		Title:      "无效分类",
+		Content:    "正文",
+		AuthorID:   7,
+		Attr:       `{}`,
+	}); !errors.Is(err, repository.ErrInvalidCategory) {
+		t.Fatalf("got %v, want ErrInvalidCategory", err)
 	}
 	tag, err := tagRepo.Create(category.ID, "公告", 1, 10, `{}`)
 	if err != nil {
@@ -219,10 +226,7 @@ func TestJetRepositories(t *testing.T) {
 			}
 		}
 	}
-	updatedCategory, err := categoryRepo.Create("feedback", nil, `{}`)
-	if err != nil {
-		t.Fatal(err)
-	}
+	updatedCategory, _ := forumcategory.FindByID(forumcategory.FeedbackID)
 	updatedTag, err := tagRepo.Create(updatedCategory.ID, "建议", 4, 10, `{}`)
 	if err != nil {
 		t.Fatal(err)

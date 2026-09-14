@@ -3,6 +3,7 @@ package repository
 import (
 	"auth/.gen/main/public/model"
 	"auth/.gen/main/public/table"
+	forumcategory "auth/internal/category"
 	"database/sql"
 	"time"
 
@@ -76,7 +77,12 @@ func integerExpressions(ids []int64) []Expression {
 func (filter PostFilter) condition() BoolExpression {
 	expressions := []BoolExpression{table.Post.Status.EQ(Int16(StatusPublished))}
 	if filter.CategorySlug != "" {
-		expressions = append(expressions, table.Category.Slug.EQ(String(filter.CategorySlug)))
+		category, ok := forumcategory.FindBySlug(filter.CategorySlug)
+		if !ok {
+			expressions = append(expressions, RawBool("FALSE"))
+		} else {
+			expressions = append(expressions, table.Post.CategoryID.EQ(Int64(category.ID)))
+		}
 	}
 	if filter.AuthorID > 0 {
 		expressions = append(expressions, table.Post.AuthorID.EQ(Int64(filter.AuthorID)))
@@ -102,11 +108,10 @@ func (filter PostFilter) condition() BoolExpression {
 }
 
 func postFrom(filter PostFilter) ReadableTable {
-	from := table.Post.INNER_JOIN(table.Category, table.Post.CategoryID.EQ(table.Category.ID))
 	if filter.FavoriteUserID > 0 {
-		return from.INNER_JOIN(table.PostFavorite, table.PostFavorite.PostID.EQ(table.Post.ID))
+		return table.Post.INNER_JOIN(table.PostFavorite, table.PostFavorite.PostID.EQ(table.Post.ID))
 	}
-	return from
+	return table.Post
 }
 
 func postOrderBy(sort string) []OrderByClause {
@@ -179,6 +184,9 @@ func (r *postRepository) Find(id int64, incrementViews bool) (*PostDetails, erro
 }
 
 func (r *postRepository) Create(input CreatePostInput) (*PostDetails, error) {
+	if _, ok := forumcategory.FindByID(input.CategoryID); !ok {
+		return nil, ErrInvalidCategory
+	}
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
@@ -204,9 +212,6 @@ func (r *postRepository) Create(input CreatePostInput) (*PostDetails, error) {
 		MODEL(record).
 		RETURNING(table.Post.AllColumns)
 	if err := insert.Query(tx, &record); err != nil {
-		if isForeignKeyViolation(err) {
-			return nil, ErrInvalidCategory
-		}
 		return nil, err
 	}
 	if err := replacePostTags(tx, record.ID, record.CategoryID, input.TagIDs); err != nil {
@@ -252,6 +257,9 @@ func replacePostTags(db qrm.DB, postID, categoryID int64, tagIDs []int64) error 
 }
 
 func (r *postRepository) Update(id int64, input UpdatePostInput) (*PostDetails, error) {
+	if _, ok := forumcategory.FindByID(input.CategoryID); !ok {
+		return nil, ErrInvalidCategory
+	}
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
@@ -263,9 +271,6 @@ func (r *postRepository) Update(id int64, input UpdatePostInput) (*PostDetails, 
 		RETURNING(table.Post.AllColumns)
 	var record Post
 	if err := stmt.Query(tx, &record); err != nil {
-		if isForeignKeyViolation(err) {
-			return nil, ErrInvalidCategory
-		}
 		return nil, err
 	}
 	if err := replacePostTags(tx, id, input.CategoryID, input.TagIDs); err != nil {

@@ -16,7 +16,6 @@ import (
 
 var (
 	testDB       *sql.DB
-	categoryRepo repository.CategoryRepository
 	tagRepo      repository.TagRepository
 	postRepo     repository.PostRepository
 	commentRepo  repository.CommentRepository
@@ -39,7 +38,6 @@ func TestMain(m *testing.M) {
 		fmt.Fprintln(os.Stderr, "run from the repository root: ./apps/api/tests/run.sh")
 		os.Exit(1)
 	}
-	categoryRepo = repository.NewCategoryRepository(testDB)
 	tagRepo = repository.NewTagRepository(testDB)
 	postRepo = repository.NewPostRepository(testDB, tagRepo)
 	commentRepo = repository.NewCommentRepository(testDB)
@@ -55,7 +53,7 @@ func TestMain(m *testing.M) {
 }
 
 func resetDatabase() {
-	if _, err := testDB.Exec("TRUNCATE post_favorite, post_tag, comment, post, tag, category RESTART IDENTITY"); err != nil {
+	if _, err := testDB.Exec("TRUNCATE post_favorite, post_tag, comment, post, tag RESTART IDENTITY"); err != nil {
 		panic(err)
 	}
 }

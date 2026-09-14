@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	forumcategory "auth/internal/category"
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
@@ -11,18 +12,11 @@ import (
 )
 
 type categoryHandler struct {
-	categoryRepo repository.CategoryRepository
-	tagRepo      repository.TagRepository
+	tagRepo repository.TagRepository
 }
 
-func NewCategoryHandler(
-	categoryRepo repository.CategoryRepository,
-	tagRepo repository.TagRepository,
-) *categoryHandler {
-	return &categoryHandler{
-		categoryRepo: categoryRepo,
-		tagRepo:      tagRepo,
-	}
+func NewCategoryHandler(tagRepo repository.TagRepository) *categoryHandler {
+	return &categoryHandler{tagRepo: tagRepo}
 }
 
 func (h *categoryHandler) RegisterRoutes(router chi.Router) {
@@ -30,10 +24,9 @@ func (h *categoryHandler) RegisterRoutes(router chi.Router) {
 }
 
 type categoryListResponse struct {
-	ID        int64                 `json:"id"`
-	Slug      string                `json:"slug"`
-	BannerURL *string               `json:"bannerUrl,omitempty"`
-	Tags      []categoryTagResponse `json:"tags"`
+	ID   int64                 `json:"id"`
+	Slug string                `json:"slug"`
+	Tags []categoryTagResponse `json:"tags"`
 }
 
 type categoryTagResponse struct {
@@ -44,19 +37,15 @@ type categoryTagResponse struct {
 }
 
 func (h *categoryHandler) list(w http.ResponseWriter, r *http.Request) error {
-	items, err := h.categoryRepo.List()
-	if err != nil {
-		return httpx.InternalError(err, "查询分类失败")
-	}
 	tags, err := h.tagRepo.ListActive()
 	if err != nil {
 		return httpx.InternalError(err, "查询标签失败")
 	}
-	render.JSON(w, r, newCategoryResponses(items, tags))
+	render.JSON(w, r, newCategoryResponses(forumcategory.List(), tags))
 	return nil
 }
 
-func newCategoryResponses(items []repository.Category, tags []repository.Tag) []categoryListResponse {
+func newCategoryResponses(items []forumcategory.Definition, tags []repository.Tag) []categoryListResponse {
 	tagsByCategory := make(map[int64][]categoryTagResponse, len(items))
 	for _, tag := range tags {
 		tagsByCategory[tag.CategoryID] = append(tagsByCategory[tag.CategoryID], categoryTagResponse{
@@ -73,10 +62,9 @@ func newCategoryResponses(items []repository.Category, tags []repository.Tag) []
 			categoryTags = []categoryTagResponse{}
 		}
 		response[i] = categoryListResponse{
-			ID:        item.ID,
-			Slug:      item.Slug,
-			BannerURL: item.BannerURL,
-			Tags:      categoryTags,
+			ID:   item.ID,
+			Slug: item.Slug,
+			Tags: categoryTags,
 		}
 	}
 	return response

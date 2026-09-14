@@ -1,17 +1,3 @@
-create table if not exists category
-(
-    id                 bigint generated always as identity primary key,
-    slug               varchar(255) not null unique,
-    banner_url         text,
-    attr               jsonb        not null default '{}'::jsonb
-);
-
-insert into category (slug)
-values ('novel'),
-       ('guide'),
-       ('feedback')
-on conflict (slug) do nothing;
-
 create table if not exists tag
 (
     id           bigint generated always as identity primary key,

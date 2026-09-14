@@ -48,14 +48,13 @@ func main() {
 	defer db.Close()
 
 	// repository
-	categoryRepo := repository.NewCategoryRepository(db)
 	tagRepo := repository.NewTagRepository(db)
 	postRepo := repository.NewPostRepository(db, tagRepo)
 	commentRepo := repository.NewCommentRepository(db)
 	favoriteRepo := repository.NewFavoriteRepository(db)
 
 	// handler
-	categoryHandler := handler.NewCategoryHandler(categoryRepo, tagRepo)
+	categoryHandler := handler.NewCategoryHandler(tagRepo)
 	postHandler := handler.NewPostHandler(postRepo, favoriteRepo, commentRepo)
 	commentHandler := handler.NewCommentHandler(commentRepo)
 	externalCommentHandler := handler.NewExternalCommentHandler(commentRepo)
