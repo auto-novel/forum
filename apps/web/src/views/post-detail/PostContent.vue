@@ -24,6 +24,7 @@ function formatDate(value: string) {
     <PostTagList
       :tags="post.tags"
       :pinned="post.pinOrder != null"
+      :locked="post.commentsLocked"
       :category-name="categoryName"
     />
 

@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { LockOutlined, PushPinOutlined } from '@vicons/material';
+
 import type { PostTag } from '@/api';
 
 defineProps<{
   tags: PostTag[];
   pinned?: boolean;
+  locked?: boolean;
   categoryName?: string;
 }>();
 
@@ -22,7 +25,7 @@ function tagClass(color: number) {
 
 <template>
   <div
-    v-if="categoryName || pinned || tags.length"
+    v-if="categoryName || pinned || locked || tags.length"
     class="flex flex-wrap items-center gap-1.5 text-xs"
   >
     <span v-if="categoryName" class="font-medium text-primary">
@@ -30,9 +33,19 @@ function tagClass(color: number) {
     </span>
     <span
       v-if="pinned"
-      class="rounded-sm bg-orange-50 px-2 py-0.5 font-medium text-orange-600"
+      class="inline-flex size-5 items-center justify-center rounded-sm bg-orange-50 text-orange-600"
+      title="已置顶"
+      aria-label="已置顶"
     >
-      置顶
+      <PushPinOutlined class="size-3.5" aria-hidden="true" />
+    </span>
+    <span
+      v-if="locked"
+      class="inline-flex size-5 items-center justify-center rounded-sm bg-orange-50 text-orange-600"
+      title="评论区已锁定"
+      aria-label="评论区已锁定"
+    >
+      <LockOutlined class="size-3.5" aria-hidden="true" />
     </span>
     <span
       v-for="tag in tags"
