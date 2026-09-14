@@ -156,6 +156,7 @@ export const useCommentStore = defineStore('comment', () => {
           { page, pageSize },
           controller.signal,
         );
+        if (controller.signal.aborted) return;
         for (const comment of result.items) {
           // Do not let a request started earlier roll back a local mutation.
           if (
@@ -250,6 +251,27 @@ export const useCommentStore = defineStore('comment', () => {
     setMutatedComment({ ...comment, status, content: '' });
   }
 
+  function registerDeletedCommentsByAuthor(authorId: number) {
+    for (const comment of Object.values(commentsById.value)) {
+      if (comment.authorId === authorId) applyStatus(comment.id, 2);
+    }
+
+    // Pending pages may contain this author's comments even if none are cached.
+    for (const [key, state] of Object.entries(pages.value)) {
+      const affected = state.ids.some(
+        (id) => commentsById.value[id]?.authorId === authorId,
+      );
+      if (!affected && !pageControllers.has(key)) continue;
+
+      pageControllers.get(key)?.abort();
+      pageControllers.delete(key);
+      pageRequests.delete(key);
+      state.revision += 1;
+      if (state.fetchedAt > 0) state.fetchedAt = 1;
+      state.loading = false;
+    }
+  }
+
   async function deleteComment(id: number, asAdmin: boolean) {
     if (asAdmin) await setPostCommentStatus(id, 'deleted');
     else await deletePostComment(id);
@@ -269,6 +291,7 @@ export const useCommentStore = defineStore('comment', () => {
     hideComment,
     loadPage,
     registerCreatedComment,
+    registerDeletedCommentsByAuthor,
     updateComment,
   };
 });

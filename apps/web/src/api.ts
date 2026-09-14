@@ -214,3 +214,7 @@ export function setPostCommentStatus(
 ) {
   return client.put(`admin/comment/${id}/status`, { json: { status } });
 }
+
+export function deleteCommentsByAuthor(authorId: number) {
+  return client.delete(`admin/comment/author/${authorId}`);
+}

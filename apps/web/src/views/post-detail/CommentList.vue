@@ -30,6 +30,7 @@ const emit = defineEmits<{
   cancelReply: [];
   created: [comment: PostComment];
   statusChanged: [id: number, status: number];
+  authorCommentsDeleted: [];
 }>();
 </script>
 
@@ -101,6 +102,7 @@ const emit = defineEmits<{
           @cancel-reply="emit('cancelReply')"
           @created="emit('created', $event)"
           @status-changed="(id, status) => emit('statusChanged', id, status)"
+          @author-comments-deleted="emit('authorCommentsDeleted')"
         />
       </div>
     </AsyncContent>

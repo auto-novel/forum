@@ -25,6 +25,7 @@ const emit = defineEmits<{
   reply: [];
   edit: [];
   statusChanged: [status: number];
+  authorCommentsDeleted: [];
 }>();
 
 const commentStore = useCommentStore();
@@ -179,9 +180,11 @@ function handleUserModerationOpenChange(open: boolean) {
       v-if="userModerationAction"
       open
       :action="userModerationAction"
+      :user-id="comment.authorId"
       :username="comment.authorUsername"
       :evidence="moderationEvidence"
       @update:open="handleUserModerationOpenChange"
+      @comments-deleted="emit('authorCommentsDeleted')"
     />
   </div>
 </template>

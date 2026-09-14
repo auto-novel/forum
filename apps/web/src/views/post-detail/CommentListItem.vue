@@ -28,6 +28,7 @@ const emit = defineEmits<{
   cancelReply: [];
   created: [comment: PostComment];
   statusChanged: [id: number, status: number];
+  authorCommentsDeleted: [];
 }>();
 
 const commentStore = useCommentStore();
@@ -95,6 +96,7 @@ async function saveEdit() {
         @reply="emit('reply', comment)"
         @edit="startEditing"
         @status-changed="emit('statusChanged', comment.id, $event)"
+        @author-comments-deleted="emit('authorCommentsDeleted')"
       />
     </header>
     <p v-if="!isPublished" class="mt-2 text-sm text-muted">

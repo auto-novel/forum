@@ -167,6 +167,11 @@ function handlePostUpdated(value: Post) {
   postStore.setPost(value);
 }
 
+async function handleAuthorCommentsDeleted() {
+  replyTo.value = undefined;
+  await Promise.all([loadPost(), retryComments()]);
+}
+
 function leaveDeletedPost() {
   void router.replace({
     name: 'posts',
@@ -213,6 +218,7 @@ watch([postId, commentPage], loadComments, { immediate: true });
             @edit="editPost"
             @deleted="leaveDeletedPost"
             @updated="handlePostUpdated"
+            @author-comments-deleted="handleAuthorCommentsDeleted"
           />
           <div id="comments">
             <CommentList
@@ -233,6 +239,7 @@ watch([postId, commentPage], loadComments, { immediate: true });
               @cancel-reply="replyTo = undefined"
               @created="handleCommentCreated"
               @status-changed="handleCommentStatusChanged"
+              @author-comments-deleted="handleAuthorCommentsDeleted"
             >
               <template #composer>
                 <CommentComposer

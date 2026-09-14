@@ -10,24 +10,29 @@ import {
   DialogTitle,
 } from 'reka-ui';
 
-import { authApi } from '@/api';
+import { authApi, deleteCommentsByAuthor } from '@/api';
 import AppButton from '@/components/AppButton.vue';
 import { notifyError, notifySuccess } from '@/notifications';
+import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
   open: boolean;
   action: 'strike' | 'ban';
+  userId: number;
   username: string;
   evidence: string;
 }>();
 
 const emit = defineEmits<{
   'update:open': [open: boolean];
+  commentsDeleted: [];
 }>();
 
 const reason = ref('');
+const commentStore = useCommentStore();
 const point = ref(1);
+const removeComments = ref(false);
 const submitting = ref(false);
 
 const isStrike = computed(() => props.action === 'strike');
@@ -51,6 +56,7 @@ watch(
     if (!open) return;
     reason.value = '';
     point.value = 1;
+    removeComments.value = false;
   },
 );
 
@@ -74,7 +80,20 @@ async function submit() {
       notifySuccess(`已处罚 @${props.username}`);
     } else {
       await authApi.banUser({ username: props.username, reason: value });
-      notifySuccess(`已封禁 @${props.username}`);
+      if (removeComments.value) {
+        try {
+          await deleteCommentsByAuthor(props.userId);
+          commentStore.registerDeletedCommentsByAuthor(props.userId);
+          emit('commentsDeleted');
+          notifySuccess(`已封禁 @${props.username} 并删除其全部评论`);
+        } catch (error) {
+          const message = await getApiErrorMessage(error, '未知错误');
+          notifySuccess(`已封禁 @${props.username}`);
+          notifyError(`删除该用户的评论失败：${message}`);
+        }
+      } else {
+        notifySuccess(`已封禁 @${props.username}`);
+      }
     }
     emit('update:open', false);
   } catch (error) {
@@ -130,6 +149,26 @@ async function submit() {
               :disabled="submitting"
               required
             />
+          </label>
+
+          <label
+            v-else
+            class="flex cursor-pointer items-start gap-3 rounded-sm border border-border bg-paper/60 px-3 py-3"
+          >
+            <input
+              v-model="removeComments"
+              type="checkbox"
+              class="mt-0.5 size-4 shrink-0 accent-primary"
+              :disabled="submitting"
+            />
+            <span>
+              <span class="block text-sm font-medium text-ink">
+                删除该用户的全部评论
+              </span>
+              <span class="mt-1 block text-xs leading-5 text-muted">
+                包括该用户在所有帖子及外部资源下发表的评论。
+              </span>
+            </span>
           </label>
 
           <div v-if="isStrike">

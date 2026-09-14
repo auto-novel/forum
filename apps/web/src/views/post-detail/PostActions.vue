@@ -30,6 +30,7 @@ const emit = defineEmits<{
   edit: [];
   deleted: [];
   updated: [post: Post];
+  authorCommentsDeleted: [];
 }>();
 
 const favorited = ref(props.post.favorited);
@@ -251,9 +252,11 @@ watch(
       v-if="userModerationAction"
       open
       :action="userModerationAction"
+      :user-id="post.authorId"
       :username="post.authorUsername"
       :evidence="moderationEvidence"
       @update:open="handleUserModerationOpenChange"
+      @comments-deleted="emit('authorCommentsDeleted')"
     />
   </section>
 </template>
