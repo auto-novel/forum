@@ -219,21 +219,6 @@ watch(
             <ActionMenuItem :disabled="actionLoading" @activate="toggleLock">
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
             </ActionMenuItem>
-            <template v-if="canModerateAuthor">
-              <ActionMenuItem
-                :disabled="actionLoading"
-                @activate="userModerationAction = 'strike'"
-              >
-                处罚作者
-              </ActionMenuItem>
-              <ActionMenuItem
-                danger
-                :disabled="actionLoading"
-                @activate="userModerationAction = 'ban'"
-              >
-                封禁作者
-              </ActionMenuItem>
-            </template>
             <ActionMenuItem
               :disabled="actionLoading"
               @activate="confirmationAction = 'hide'"
@@ -248,6 +233,22 @@ watch(
           >
             删除帖子
           </ActionMenuItem>
+          <template v-if="canModerateAuthor">
+            <ActionMenuItem
+              danger
+              :disabled="actionLoading"
+              @activate="userModerationAction = 'strike'"
+            >
+              处罚作者
+            </ActionMenuItem>
+            <ActionMenuItem
+              danger
+              :disabled="actionLoading"
+              @activate="userModerationAction = 'ban'"
+            >
+              封禁作者
+            </ActionMenuItem>
+          </template>
         </ActionMenu>
       </div>
     </div>

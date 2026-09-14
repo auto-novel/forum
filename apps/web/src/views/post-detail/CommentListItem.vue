@@ -1,26 +1,20 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeUnmount, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 
-import { authUser, type PostComment } from '@/api';
+import { type PostComment } from '@/api';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-import ActionMenu from '@/components/ActionMenu.vue';
-import ActionMenuItem from '@/components/ActionMenuItem.vue';
-import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
 
+import CommentActions from './CommentActions.vue';
 import CommentComposer from './CommentComposer.vue';
 
 const MarkdownHelpDialog = defineAsyncComponent(
   () => import('@/components/markdown/MarkdownHelpDialog.vue'),
 );
-const UserModerationDialog = defineAsyncComponent(
-  () => import('@/components/UserModerationDialog.vue'),
-);
-
 const props = defineProps<{
   comment: PostComment;
   locked: boolean;
@@ -39,63 +33,15 @@ const commentStore = useCommentStore();
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
-const now = ref(Date.now());
-const confirmationAction = ref<'delete' | 'hide'>();
-const userModerationAction = ref<'strike' | 'ban'>();
 const commentActionClass =
   'inline-flex min-h-[1.875rem] items-center rounded-sm px-[0.55rem] text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
-const commentHeaderActionClass =
-  'inline-flex h-6 items-center rounded-sm px-2 text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
-
-const modificationDeadline =
-  new Date(props.comment.createdAt).getTime() + 20 * 60_000;
-const expiryTimer = window.setTimeout(
-  () => {
-    now.value = Date.now();
-  },
-  Math.max(0, modificationDeadline - Date.now() + 50),
-);
 
 const isPublished = computed(() => props.comment.status === 0);
-const isAdmin = computed(() => authUser.value?.role === 'admin');
-const isOwner = computed(() => authUser.value?.id === props.comment.authorId);
-const canModerateAuthor = computed(() => isAdmin.value && !isOwner.value);
-const withinModificationWindow = computed(
-  () => now.value <= modificationDeadline,
-);
-const canEdit = computed(
-  () => (isOwner.value || isAdmin.value) && withinModificationWindow.value,
-);
-const hasMenu = computed(() => canEdit.value || isAdmin.value);
-const moderationEvidence = computed(() =>
-  [
-    `论坛评论 #${props.comment.id}（帖子 #${props.postId}）`,
-    new URL(
-      `/p/${props.postId}#comment-${props.comment.id}`,
-      window.location.origin,
-    ).toString(),
-  ].join('\n'),
-);
 const hasUnsavedChanges = computed(
   () => editing.value && content.value !== props.comment.content,
 );
-const confirmation = computed(() =>
-  confirmationAction.value === 'delete'
-    ? {
-        title: '删除评论',
-        description: '确定删除这条评论吗？删除后无法恢复。',
-        confirmLabel: '删除评论',
-      }
-    : {
-        title: '隐藏评论',
-        description: '确定隐藏这条评论吗？隐藏后可在管理端恢复。',
-        confirmLabel: '隐藏评论',
-      },
-);
 
 useUnsavedChangesGuard(hasUnsavedChanges);
-
-onBeforeUnmount(() => window.clearTimeout(expiryTimer));
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -127,47 +73,6 @@ async function saveEdit() {
     submitting.value = false;
   }
 }
-
-async function removeComment() {
-  submitting.value = true;
-  try {
-    await commentStore.deleteComment(props.comment.id, isAdmin.value);
-    notifySuccess('评论已删除');
-    emit('statusChanged', props.comment.id, 2);
-  } catch (reason) {
-    notifyError(await getApiErrorMessage(reason, '删除评论失败'));
-  } finally {
-    submitting.value = false;
-  }
-}
-
-async function hideComment() {
-  submitting.value = true;
-  try {
-    await commentStore.hideComment(props.comment.id);
-    notifySuccess('评论已隐藏');
-    emit('statusChanged', props.comment.id, 1);
-  } catch (reason) {
-    notifyError(await getApiErrorMessage(reason, '隐藏评论失败'));
-  } finally {
-    submitting.value = false;
-  }
-}
-
-function confirmAction() {
-  const action = confirmationAction.value;
-  confirmationAction.value = undefined;
-  if (action === 'delete') void removeComment();
-  else if (action === 'hide') void hideComment();
-}
-
-function handleConfirmationOpenChange(open: boolean) {
-  if (!open) confirmationAction.value = undefined;
-}
-
-function handleUserModerationOpenChange(open: boolean) {
-  if (!open) userModerationAction.value = undefined;
-}
 </script>
 
 <template>
@@ -182,51 +87,16 @@ function handleUserModerationOpenChange(open: boolean) {
       <time :datetime="comment.createdAt">
         {{ formatDate(comment.createdAt) }}
       </time>
-      <div
+      <CommentActions
         v-if="isPublished && !editing"
-        class="ml-auto flex items-center gap-1"
-      >
-        <button
-          v-if="authUser && !locked"
-          type="button"
-          :class="commentHeaderActionClass"
-          :aria-expanded="replying"
-          @click="emit('reply', comment)"
-        >
-          回复
-        </button>
-        <button
-          v-if="canEdit"
-          type="button"
-          :class="commentHeaderActionClass"
-          @click="startEditing"
-        >
-          编辑
-        </button>
-        <ActionMenu v-if="hasMenu" compact side="bottom" align="end">
-          <ActionMenuItem
-            v-if="isAdmin"
-            @activate="confirmationAction = 'hide'"
-          >
-            隐藏评论
-          </ActionMenuItem>
-          <template v-if="canModerateAuthor">
-            <ActionMenuItem @activate="userModerationAction = 'strike'">
-              处罚作者
-            </ActionMenuItem>
-            <ActionMenuItem danger @activate="userModerationAction = 'ban'">
-              封禁作者
-            </ActionMenuItem>
-          </template>
-          <ActionMenuItem
-            danger
-            :disabled="submitting"
-            @activate="confirmationAction = 'delete'"
-          >
-            删除评论
-          </ActionMenuItem>
-        </ActionMenu>
-      </div>
+        :comment="comment"
+        :locked="locked"
+        :post-id="postId"
+        :replying="replying"
+        @reply="emit('reply', comment)"
+        @edit="startEditing"
+        @status-changed="emit('statusChanged', comment.id, $event)"
+      />
     </header>
     <p v-if="!isPublished" class="mt-2 text-sm text-muted">
       {{ comment.status === 2 ? '该评论已删除' : '该评论已隐藏' }}
@@ -274,24 +144,6 @@ function handleUserModerationOpenChange(open: boolean) {
       :reply-to="comment"
       @created="emit('created', $event)"
       @cancel-reply="emit('cancelReply')"
-    />
-    <ConfirmDialog
-      :open="confirmationAction != null"
-      :title="confirmation.title"
-      :description="confirmation.description"
-      :confirm-label="confirmation.confirmLabel"
-      :loading="submitting"
-      danger
-      @update:open="handleConfirmationOpenChange"
-      @confirm="confirmAction"
-    />
-    <UserModerationDialog
-      v-if="userModerationAction"
-      open
-      :action="userModerationAction"
-      :username="comment.authorUsername"
-      :evidence="moderationEvidence"
-      @update:open="handleUserModerationOpenChange"
     />
   </article>
 </template>
