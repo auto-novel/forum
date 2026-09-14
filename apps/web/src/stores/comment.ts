@@ -52,15 +52,18 @@ export const useCommentStore = defineStore('comment', () => {
 
   function ensurePageState(postId: number, page: number, pageSize: number) {
     const key = pageKey(postId, page, pageSize);
-    return (pages.value[key] ??= {
-      postId,
-      page,
-      pageSize,
-      ids: [],
-      total: 0,
-      loading: false,
-      error: '',
-    });
+    if (!pages.value[key]) {
+      pages.value[key] = {
+        postId,
+        page,
+        pageSize,
+        ids: [],
+        total: 0,
+        loading: false,
+        error: '',
+      };
+    }
+    return pages.value[key];
   }
 
   function setComment(comment: PostComment) {
