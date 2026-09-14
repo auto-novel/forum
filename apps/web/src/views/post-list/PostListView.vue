@@ -120,8 +120,17 @@ watch(
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="min-w-0 space-y-4">
-      <div class="flex justify-end">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <PostFilters
+          class="order-2 lg:order-1 lg:flex-1"
+          :category-id="selectedCategoryItem.id"
+          :query="searchQuery"
+          :tag-id="selectedTagId"
+          :sort="selectedSort"
+          @apply="applyFilters"
+        />
         <AppButton
+          class="order-1 self-end lg:order-2 lg:self-auto"
           :as="RouterLink"
           :to="{
             name: 'post-create',
@@ -132,13 +141,6 @@ watch(
           发表帖子
         </AppButton>
       </div>
-      <PostFilters
-        :category-id="selectedCategoryItem.id"
-        :query="searchQuery"
-        :tag-id="selectedTagId"
-        :sort="selectedSort"
-        @apply="applyFilters"
-      />
       <PostList
         :posts="posts"
         :loading="postsLoading"

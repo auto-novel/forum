@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SearchOutlined } from '@vicons/material';
+import { ExpandMoreOutlined, SearchOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
 
 import { type PostSort } from '@/api';
@@ -48,11 +48,11 @@ watch(
 
 <template>
   <form
-    class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_10rem]"
+    class="flex min-w-0 flex-wrap gap-2 sm:flex-nowrap"
     role="search"
     @submit.prevent="apply"
   >
-    <label class="relative min-w-0">
+    <label class="relative w-full min-w-0 sm:flex-1">
       <span class="sr-only">搜索帖子</span>
       <SearchOutlined
         class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
@@ -62,16 +62,28 @@ watch(
         v-model="queryInput"
         type="search"
         enterkeyhint="search"
-        class="min-h-10 w-full rounded-sm border border-border bg-transparent pr-3 pl-9 text-sm outline-none transition placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15"
-        placeholder="搜索标题或正文，按 Enter 确认"
+        class="min-h-10 w-full rounded-sm border border-border bg-transparent pr-3 pl-9 text-sm outline-none transition placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15 sm:pr-10"
+        placeholder="搜索标题或正文"
       />
+      <span
+        class="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 text-sm text-muted/70 sm:block"
+        aria-hidden="true"
+      >
+        ↵
+      </span>
     </label>
 
-    <label>
+    <label
+      v-if="tags.length"
+      class="relative min-w-0 flex-1 sm:w-32 sm:flex-none"
+    >
       <span class="sr-only">按标签过滤</span>
       <select
         v-model="tagInput"
-        class="min-h-10 w-full rounded-sm border border-border bg-transparent px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        class="min-h-10 w-full appearance-none truncate rounded-sm border border-border pr-9 pl-3 text-sm font-normal outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        :class="
+          tagInput ? 'bg-primary/5 text-primary' : 'bg-transparent text-ink'
+        "
         @change="apply"
       >
         <option value="">全部标签</option>
@@ -79,13 +91,22 @@ watch(
           {{ tag.name }}
         </option>
       </select>
+      <ExpandMoreOutlined
+        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted"
+        aria-hidden="true"
+      />
     </label>
 
-    <label>
+    <label class="relative min-w-0 flex-1 sm:w-32 sm:flex-none">
       <span class="sr-only">帖子排序</span>
       <select
         v-model="sortInput"
-        class="min-h-10 w-full rounded-sm border border-border bg-transparent px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        class="min-h-10 w-full appearance-none truncate rounded-sm border border-border pr-9 pl-3 text-sm font-normal outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        :class="
+          sortInput !== 'active'
+            ? 'bg-primary/5 text-primary'
+            : 'bg-transparent text-ink'
+        "
         @change="apply"
       >
         <option value="active">最近活跃</option>
@@ -93,6 +114,10 @@ watch(
         <option value="views">浏览最多</option>
         <option value="comments">评论最多</option>
       </select>
+      <ExpandMoreOutlined
+        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted"
+        aria-hidden="true"
+      />
     </label>
   </form>
 </template>
