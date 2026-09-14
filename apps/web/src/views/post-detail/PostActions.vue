@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-  ChatBubbleOutlineOutlined,
-  StarBorderOutlined,
-  StarFilled,
-} from '@vicons/material';
+import { StarBorderOutlined, StarFilled } from '@vicons/material';
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 
 import {
@@ -33,7 +29,6 @@ const emit = defineEmits<{
   edit: [];
   deleted: [];
   updated: [post: Post];
-  comment: [];
 }>();
 
 const favorited = ref(props.post.favorited);
@@ -196,15 +191,6 @@ watch(
         <StarFilled v-if="favorited" class="size-4" aria-hidden="true" />
         <StarBorderOutlined v-else class="size-4" aria-hidden="true" />
         {{ favoriteLoading ? '处理中…' : favorited ? '取消收藏' : '收藏' }}
-      </button>
-
-      <button
-        type="button"
-        :class="[postActionClass, 'text-muted']"
-        @click="emit('comment')"
-      >
-        <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
-        评论
       </button>
 
       <div v-if="canManagePost">

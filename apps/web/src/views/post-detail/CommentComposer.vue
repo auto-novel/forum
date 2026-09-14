@@ -69,18 +69,22 @@ async function submitComment() {
 </script>
 
 <template>
-  <section :class="replyTo ? 'mt-3' : 'mt-5 border-t border-divider pt-5'">
-    <h2 v-if="!replyTo" class="font-semibold text-ink">发表评论</h2>
-
-    <div v-if="locked" class="mt-4 py-2 text-sm text-orange-700">
+  <section :class="replyTo ? 'mt-3' : 'border-b border-divider py-4'">
+    <div
+      v-if="locked"
+      :class="['py-2 text-sm text-orange-700', { 'mt-4': replyTo }]"
+    >
       评论区已锁定，暂时无法发表新评论。
     </div>
 
-    <div v-else-if="!authUser" class="mt-4 py-2 text-sm text-muted">
+    <div
+      v-else-if="!authUser"
+      :class="['py-2 text-sm text-muted', { 'mt-4': replyTo }]"
+    >
       登录后即可参与评论，请使用页面右上角的登录入口。
     </div>
 
-    <form v-else :class="{ 'mt-4': !replyTo }" @submit.prevent="submitComment">
+    <form v-else @submit.prevent="submitComment">
       <MarkdownEditor
         v-model="content"
         mode="comment"

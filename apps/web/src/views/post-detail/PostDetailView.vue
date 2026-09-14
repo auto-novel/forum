@@ -150,7 +150,8 @@ function handleCommentStatusChanged(id: number) {
 
 function startComment() {
   replyTo.value = undefined;
-  composingComment.value = true;
+  composingComment.value = !composingComment.value;
+  if (!composingComment.value) return;
   void nextTick(() =>
     document
       .querySelector('#comment-composer')
@@ -212,14 +213,6 @@ watch([postId, commentPage], loadComments, { immediate: true });
             @edit="editPost"
             @deleted="leaveDeletedPost"
             @updated="handlePostUpdated"
-            @comment="startComment"
-          />
-          <CommentComposer
-            v-if="composingComment"
-            id="comment-composer"
-            :post-id="post.id"
-            :locked="post.commentsLocked"
-            @created="handleCommentCreated"
           />
           <div id="comments">
             <CommentList
@@ -231,14 +224,26 @@ watch([postId, commentPage], loadComments, { immediate: true });
               :total-pages="commentTotalPages"
               :locked="post.commentsLocked"
               :post-id="post.id"
+              :composing="composingComment"
               :reply-to-id="replyTo?.id"
               @retry="retryComments"
+              @comment="startComment"
               @change-page="changeCommentPage"
               @reply="startReply"
               @cancel-reply="replyTo = undefined"
               @created="handleCommentCreated"
               @status-changed="handleCommentStatusChanged"
-            />
+            >
+              <template #composer>
+                <CommentComposer
+                  v-if="composingComment"
+                  id="comment-composer"
+                  :post-id="post.id"
+                  :locked="post.commentsLocked"
+                  @created="handleCommentCreated"
+                />
+              </template>
+            </CommentList>
           </div>
         </template>
       </AsyncContent>

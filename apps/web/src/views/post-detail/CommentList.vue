@@ -16,11 +16,13 @@ defineProps<{
   totalPages: number;
   locked: boolean;
   postId: number;
+  composing: boolean;
   replyToId?: number;
 }>();
 
 const emit = defineEmits<{
   retry: [];
+  comment: [];
   changePage: [page: number];
   reply: [comment: PostComment];
   cancelReply: [];
@@ -31,12 +33,29 @@ const emit = defineEmits<{
 
 <template>
   <section class="mt-5 border-t border-divider" aria-live="polite">
-    <header class="border-b border-divider py-4">
+    <header
+      :class="[
+        'flex items-center justify-between gap-4 py-4',
+        { 'border-b border-divider': !composing },
+      ]"
+    >
       <h2 class="font-semibold text-ink">
         评论
         <span class="text-muted">{{ total }}</span>
       </h2>
+      <button
+        type="button"
+        class="inline-flex min-h-9 items-center gap-1.5 rounded-sm bg-primary px-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        aria-controls="comment-composer"
+        :aria-expanded="composing"
+        @click="emit('comment')"
+      >
+        <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
+        {{ composing ? '取消评论' : '发表评论' }}
+      </button>
     </header>
+
+    <slot name="composer" />
 
     <AsyncContent
       :loading="loading"
