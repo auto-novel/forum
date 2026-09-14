@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { AddOutlined } from '@vicons/material';
-import { NAlert, NButton, NIcon, NSpace, NText } from 'naive-ui';
+import { NAlert, NSpace, NText } from 'naive-ui';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import { useForumApi, type Category, type Tag } from '@/api';
 
-import CategoryFormModal from './CategoryFormModal.vue';
 import CategoryList from './CategoryList.vue';
 import TagFormModal from './TagFormModal.vue';
 import TagList from './TagList.vue';
@@ -20,11 +18,8 @@ const saving = ref(false);
 const activeUpdatingTagId = ref<number>();
 const errorMessage = ref('');
 const successMessage = ref('');
-const categoryModalOpen = ref(false);
 const tagModalOpen = ref(false);
-const editingCategoryId = ref<number>();
 const editingTagId = ref<number>();
-const categoryForm = reactive({ slug: '', bannerUrl: '' });
 const tagForm = reactive({ name: '', color: 0, sortOrder: 0 });
 
 const selectedCategory = computed(() =>
@@ -61,46 +56,6 @@ async function loadTags(categoryId?: number) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
   } finally {
     tagsLoading.value = false;
-  }
-}
-
-function openCreateCategory() {
-  editingCategoryId.value = undefined;
-  categoryForm.slug = '';
-  categoryForm.bannerUrl = '';
-  categoryModalOpen.value = true;
-}
-
-function openEditCategory(category: Category) {
-  editingCategoryId.value = category.id;
-  categoryForm.slug = category.slug;
-  categoryForm.bannerUrl = category.bannerUrl ?? '';
-  categoryModalOpen.value = true;
-}
-
-async function saveCategory() {
-  const slug = categoryForm.slug.trim();
-  if (!slug) return;
-  saving.value = true;
-  errorMessage.value = '';
-  try {
-    const request = {
-      slug,
-      bannerUrl: categoryForm.bannerUrl.trim() || null,
-    };
-    const category = editingCategoryId.value
-      ? await api.updateCategory(editingCategoryId.value, request)
-      : await api.createCategory(request);
-    categoryModalOpen.value = false;
-    selectedCategoryId.value = category.id;
-    successMessage.value = editingCategoryId.value
-      ? '分类信息已更新'
-      : '分类已创建';
-    await loadCategories();
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : String(error);
-  } finally {
-    saving.value = false;
   }
 }
 
@@ -175,11 +130,9 @@ onMounted(loadCategories);
 <template>
   <n-space vertical :size="16" class="categories-page">
     <div class="page-actions">
-      <n-text depth="3">共 {{ categories.length }} 个分类</n-text>
-      <n-button type="primary" @click="openCreateCategory">
-        <template #icon><n-icon :component="AddOutlined" /></template>
-        新建分类
-      </n-button>
+      <n-text depth="3">
+        分类由后端静态配置，共 {{ categories.length }} 个
+      </n-text>
     </div>
 
     <n-alert
@@ -205,7 +158,6 @@ onMounted(loadCategories);
         :loading="loading"
         :selected-id="selectedCategoryId"
         @select="selectedCategoryId = $event"
-        @edit="openEditCategory"
       />
       <TagList
         :category="selectedCategory"
@@ -218,15 +170,6 @@ onMounted(loadCategories);
       />
     </div>
 
-    <CategoryFormModal
-      v-model:slug="categoryForm.slug"
-      v-model:banner-url="categoryForm.bannerUrl"
-      :show="categoryModalOpen"
-      :editing="editingCategoryId != null"
-      :saving="saving"
-      @close="categoryModalOpen = false"
-      @save="saveCategory"
-    />
     <TagFormModal
       v-model:name="tagForm.name"
       v-model:color="tagForm.color"

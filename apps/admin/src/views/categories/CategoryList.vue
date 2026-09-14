@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { EditOutlined, ImageOutlined } from '@vicons/material';
-import { NButton, NEmpty, NIcon, NSkeleton, NText } from 'naive-ui';
+import { NEmpty, NSkeleton, NText } from 'naive-ui';
 
 import type { Category } from '@/api';
 
@@ -12,7 +11,6 @@ defineProps<{
 
 const emit = defineEmits<{
   select: [id: number];
-  edit: [category: Category];
 }>();
 </script>
 
@@ -32,16 +30,12 @@ const emit = defineEmits<{
       @click="emit('select', category.id)"
     >
       <span class="category-art">
-        <img v-if="category.bannerUrl" :src="category.bannerUrl" alt="" />
-        <n-icon v-else :component="ImageOutlined" />
+        {{ category.id }}
       </span>
       <span class="category-copy">
         <n-text strong>{{ category.slug }}</n-text>
         <n-text depth="3">ID {{ category.id }}</n-text>
       </span>
-      <n-button text aria-label="编辑分类" @click.stop="emit('edit', category)">
-        <template #icon><n-icon :component="EditOutlined" /></template>
-      </n-button>
     </button>
   </section>
 </template>
@@ -101,12 +95,6 @@ const emit = defineEmits<{
   flex: none;
   color: #18a058;
   font-size: 22px;
-}
-
-.category-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .category-copy {

@@ -25,7 +25,6 @@ export interface CategoryTag extends PostTag {
 export interface CategoryListItem {
   id: number;
   slug: string;
-  bannerUrl?: string;
   tags: CategoryTag[];
 }
 

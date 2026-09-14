@@ -12,7 +12,6 @@ export interface Page<T> {
 export interface Category {
   id: number;
   slug: string;
-  bannerUrl?: string;
 }
 
 export interface CategoryTag {
@@ -72,11 +71,6 @@ export interface Comment {
   updatedAt: string;
 }
 
-interface CategoryRequest {
-  slug: string;
-  bannerUrl: string | null;
-}
-
 interface TagRequest {
   name: string;
   color: number;
@@ -102,16 +96,6 @@ export function createForumApi(authApi: AuthApi) {
   return {
     getCategories() {
       return client.get(endpoint('category/')).json<CategoryListItem[]>();
-    },
-    createCategory(request: CategoryRequest) {
-      return client
-        .post(endpoint('admin/category/'), { json: request })
-        .json<Category>();
-    },
-    updateCategory(id: number, request: CategoryRequest) {
-      return client
-        .put(endpoint(`admin/category/${id}`), { json: request })
-        .json<Category>();
     },
     getTags(categoryId: number) {
       return client

@@ -54,7 +54,7 @@ const emit = defineEmits<{
     </div>
     <n-empty
       v-else-if="!category || !tags.length"
-      :description="category ? '该分类暂无标签' : '请先创建分类'"
+      :description="category ? '该分类暂无标签' : '暂无分类'"
     />
     <div v-else class="tag-list">
       <div v-for="tag in tags" :key="tag.id" class="tag-row">
