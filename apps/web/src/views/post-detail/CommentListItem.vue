@@ -17,6 +17,9 @@ import CommentComposer from './CommentComposer.vue';
 const MarkdownHelpDialog = defineAsyncComponent(
   () => import('@/components/markdown/MarkdownHelpDialog.vue'),
 );
+const UserModerationDialog = defineAsyncComponent(
+  () => import('@/components/UserModerationDialog.vue'),
+);
 
 const props = defineProps<{
   comment: PostComment;
@@ -38,6 +41,7 @@ const content = ref(props.comment.content);
 const submitting = ref(false);
 const now = ref(Date.now());
 const confirmationAction = ref<'delete' | 'hide'>();
+const userModerationAction = ref<'strike' | 'ban'>();
 const commentActionClass =
   'inline-flex min-h-[1.875rem] items-center rounded-sm px-[0.55rem] text-xs font-semibold text-muted hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary';
 const commentHeaderActionClass =
@@ -55,6 +59,7 @@ const expiryTimer = window.setTimeout(
 const isPublished = computed(() => props.comment.status === 0);
 const isAdmin = computed(() => authUser.value?.role === 'admin');
 const isOwner = computed(() => authUser.value?.id === props.comment.authorId);
+const canModerateAuthor = computed(() => isAdmin.value && !isOwner.value);
 const withinModificationWindow = computed(
   () => now.value <= modificationDeadline,
 );
@@ -62,6 +67,15 @@ const canEdit = computed(
   () => (isOwner.value || isAdmin.value) && withinModificationWindow.value,
 );
 const hasMenu = computed(() => canEdit.value || isAdmin.value);
+const moderationEvidence = computed(() =>
+  [
+    `论坛评论 #${props.comment.id}（帖子 #${props.postId}）`,
+    new URL(
+      `/p/${props.postId}#comment-${props.comment.id}`,
+      window.location.origin,
+    ).toString(),
+  ].join('\n'),
+);
 const hasUnsavedChanges = computed(
   () => editing.value && content.value !== props.comment.content,
 );
@@ -150,6 +164,10 @@ function confirmAction() {
 function handleConfirmationOpenChange(open: boolean) {
   if (!open) confirmationAction.value = undefined;
 }
+
+function handleUserModerationOpenChange(open: boolean) {
+  if (!open) userModerationAction.value = undefined;
+}
 </script>
 
 <template>
@@ -192,6 +210,14 @@ function handleConfirmationOpenChange(open: boolean) {
           >
             隐藏评论
           </ActionMenuItem>
+          <template v-if="canModerateAuthor">
+            <ActionMenuItem @activate="userModerationAction = 'strike'">
+              处罚作者
+            </ActionMenuItem>
+            <ActionMenuItem danger @activate="userModerationAction = 'ban'">
+              封禁作者
+            </ActionMenuItem>
+          </template>
           <ActionMenuItem
             danger
             :disabled="submitting"
@@ -258,6 +284,14 @@ function handleConfirmationOpenChange(open: boolean) {
       danger
       @update:open="handleConfirmationOpenChange"
       @confirm="confirmAction"
+    />
+    <UserModerationDialog
+      v-if="userModerationAction"
+      open
+      :action="userModerationAction"
+      :username="comment.authorUsername"
+      :evidence="moderationEvidence"
+      @update:open="handleUserModerationOpenChange"
     />
   </article>
 </template>

@@ -4,7 +4,7 @@ import {
   StarBorderOutlined,
   StarFilled,
 } from '@vicons/material';
-import { computed, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 
 import {
   authUser,
@@ -23,6 +23,10 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { getApiErrorMessage } from '@/utils/apiError';
 
+const UserModerationDialog = defineAsyncComponent(
+  () => import('@/components/UserModerationDialog.vue'),
+);
+
 const props = defineProps<{ post: Post }>();
 
 const emit = defineEmits<{
@@ -36,14 +40,19 @@ const favorited = ref(props.post.favorited);
 const favoriteLoading = ref(false);
 const actionLoading = ref(false);
 const confirmationAction = ref<'delete' | 'hide'>();
+const userModerationAction = ref<'strike' | 'ban'>();
 const postActionClass =
   'inline-flex min-h-9 items-center gap-[0.4rem] rounded-sm px-[0.7rem] text-[0.8125rem] font-semibold transition-colors duration-150 hover:bg-paper hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50';
 
 const isAdmin = computed(() => authUser.value?.role === 'admin');
-const canManage = computed(
-  () =>
-    authUser.value?.id === props.post.authorId ||
-    authUser.value?.role === 'admin',
+const isOwner = computed(() => authUser.value?.id === props.post.authorId);
+const canManagePost = computed(() => isOwner.value || isAdmin.value);
+const canModerateAuthor = computed(() => isAdmin.value && !isOwner.value);
+const moderationEvidence = computed(() =>
+  [
+    `论坛帖子 #${props.post.id}：${props.post.title}`,
+    new URL(`/p/${props.post.id}`, window.location.origin).toString(),
+  ].join('\n'),
 );
 const confirmation = computed(() =>
   confirmationAction.value === 'delete'
@@ -134,6 +143,10 @@ function handleConfirmationOpenChange(open: boolean) {
   if (!open) confirmationAction.value = undefined;
 }
 
+function handleUserModerationOpenChange(open: boolean) {
+  if (!open) userModerationAction.value = undefined;
+}
+
 function togglePin() {
   const pinOrder = props.post.pinOrder == null ? 0 : undefined;
   const request =
@@ -194,7 +207,7 @@ watch(
         评论
       </button>
 
-      <div v-if="canManage">
+      <div v-if="canManagePost">
         <ActionMenu>
           <ActionMenuItem :disabled="actionLoading" @activate="editPost">
             编辑帖子
@@ -206,6 +219,21 @@ watch(
             <ActionMenuItem :disabled="actionLoading" @activate="toggleLock">
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
             </ActionMenuItem>
+            <template v-if="canModerateAuthor">
+              <ActionMenuItem
+                :disabled="actionLoading"
+                @activate="userModerationAction = 'strike'"
+              >
+                处罚作者
+              </ActionMenuItem>
+              <ActionMenuItem
+                danger
+                :disabled="actionLoading"
+                @activate="userModerationAction = 'ban'"
+              >
+                封禁作者
+              </ActionMenuItem>
+            </template>
             <ActionMenuItem
               :disabled="actionLoading"
               @activate="confirmationAction = 'hide'"
@@ -232,6 +260,14 @@ watch(
       danger
       @update:open="handleConfirmationOpenChange"
       @confirm="confirmAction"
+    />
+    <UserModerationDialog
+      v-if="userModerationAction"
+      open
+      :action="userModerationAction"
+      :username="post.authorUsername"
+      :evidence="moderationEvidence"
+      @update:open="handleUserModerationOpenChange"
     />
   </section>
 </template>
