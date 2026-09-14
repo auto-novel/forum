@@ -7,6 +7,7 @@ import PostDetailView from '@/views/post-detail/PostDetailView.vue';
 import PostCreateView from '@/views/post-editor/PostCreateView.vue';
 import PostEditView from '@/views/post-editor/PostEditView.vue';
 import PostListView from '@/views/post-list/PostListView.vue';
+import MyStrikeListView from '@/views/strike/MyStrikeListView.vue';
 
 function defaultCategorySlug() {
   return useCategoryStore().defaultCategory.slug;
@@ -50,6 +51,12 @@ const router = createRouter({
       name: 'my-posts',
       component: MyPostListView,
       meta: { title: '我的帖子' },
+    },
+    {
+      path: '/my/strikes',
+      name: 'my-strikes',
+      component: MyStrikeListView,
+      meta: { title: '处罚记录' },
     },
     {
       path: '/posts/new',
