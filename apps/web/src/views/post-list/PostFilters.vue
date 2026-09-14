@@ -3,7 +3,6 @@ import { SearchOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
 
 import { type PostSort } from '@/api';
-import AppButton from '@/components/AppButton.vue';
 import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{
@@ -38,13 +37,6 @@ function apply() {
   });
 }
 
-function reset() {
-  queryInput.value = '';
-  tagInput.value = '';
-  sortInput.value = 'active';
-  apply();
-}
-
 watch(() => [props.query, props.tagId, props.sort], syncInputs);
 watch(
   () => props.categoryId,
@@ -56,7 +48,7 @@ watch(
 
 <template>
   <form
-    class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_10rem_auto]"
+    class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_10rem]"
     role="search"
     @submit.prevent="apply"
   >
@@ -102,12 +94,5 @@ watch(
         <option value="comments">评论最多</option>
       </select>
     </label>
-
-    <div
-      v-if="queryInput || tagInput || sortInput !== 'active'"
-      class="flex gap-2"
-    >
-      <AppButton variant="outline" @click="reset">重置</AppButton>
-    </div>
   </form>
 </template>
