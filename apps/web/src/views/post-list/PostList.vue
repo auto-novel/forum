@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { Post } from '@/api';
+import type { PostSummary } from '@/api';
 import AsyncContent from '@/components/AsyncContent.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
 
 import PostListItem from './PostListItem.vue';
 
 defineProps<{
-  posts: Post[];
+  posts: PostSummary[];
   loading: boolean;
   error?: string;
   page: number;
@@ -34,11 +34,10 @@ const emit = defineEmits<{
     >
       <template #loading>
         <div class="divide-y divide-divider" aria-label="正在加载帖子">
-          <div v-for="index in 5" :key="index" class="py-5">
+          <div v-for="index in 5" :key="index" class="py-4">
             <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
             <div class="mt-3 h-5 w-3/4 animate-pulse rounded-sm bg-border" />
-            <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
-            <div class="mt-2 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
+            <div class="mt-3 h-3 w-1/3 animate-pulse rounded-sm bg-divider" />
           </div>
         </div>
       </template>

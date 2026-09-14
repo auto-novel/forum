@@ -9,11 +9,13 @@ import {
   type Page,
   type Post,
   type PostSort,
+  type PostSummary,
 } from '@/api';
 
-type ListRequest = (signal: AbortSignal) => Promise<Page<Post>>;
+type ListRequest = (signal: AbortSignal) => Promise<Page<PostSummary>>;
 
 export const usePostStore = defineStore('post', () => {
+  const summariesById = ref<Record<number, PostSummary>>({});
   const postsById = ref<Record<number, Post>>({});
   const listPostIds = ref<number[]>([]);
   const listTotal = ref(0);
@@ -27,7 +29,7 @@ export const usePostStore = defineStore('post', () => {
 
   const listPosts = computed(() =>
     listPostIds.value.flatMap((id) => {
-      const post = postsById.value[id];
+      const post = summariesById.value[id];
       return post ? [post] : [];
     }),
   );
@@ -39,10 +41,11 @@ export const usePostStore = defineStore('post', () => {
 
   function setPost(post: Post) {
     postsById.value[post.id] = post;
+    summariesById.value[post.id] = post;
   }
 
-  function setPosts(posts: Post[]) {
-    for (const post of posts) setPost(post);
+  function setPosts(posts: PostSummary[]) {
+    for (const post of posts) summariesById.value[post.id] = post;
   }
 
   function clearList() {

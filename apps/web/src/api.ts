@@ -28,13 +28,12 @@ export interface CategoryListItem {
   tags: CategoryTag[];
 }
 
-export interface Post {
+export interface PostSummary {
   id: number;
   categoryId: number;
   title: string;
   authorId: number;
   authorUsername: string;
-  content: string;
   status: number;
   viewsCount: number;
   commentsCount: number;
@@ -45,6 +44,10 @@ export interface Post {
   updatedAt: string;
   activeAt: string;
   tags: PostTag[];
+}
+
+export interface Post extends PostSummary {
+  content: string;
 }
 
 export type PostSort = 'active' | 'newest' | 'views' | 'comments';
@@ -84,7 +87,7 @@ export function getPosts(
       },
       signal,
     })
-    .json<Page<Post>>();
+    .json<Page<PostSummary>>();
 }
 
 export function getFavoritePosts(
@@ -99,7 +102,7 @@ export function getFavoritePosts(
       },
       signal,
     })
-    .json<Page<Post>>();
+    .json<Page<PostSummary>>();
 }
 
 export function getMyPosts(
@@ -114,7 +117,7 @@ export function getMyPosts(
       },
       signal,
     })
-    .json<Page<Post>>();
+    .json<Page<PostSummary>>();
 }
 
 export function getPost(id: number, signal?: AbortSignal) {

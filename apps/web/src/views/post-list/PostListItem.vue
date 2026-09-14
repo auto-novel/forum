@@ -5,16 +5,12 @@ import {
 } from '@vicons/material';
 import { RouterLink } from 'vue-router';
 
-import type { Post } from '@/api';
+import type { PostSummary } from '@/api';
 import PostTagList from '@/components/PostTagList.vue';
 
 defineProps<{
-  post: Post;
+  post: PostSummary;
 }>();
-
-function excerpt(content: string) {
-  return content.replace(/\s+/g, ' ').trim().slice(0, 180);
-}
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -45,9 +41,6 @@ function formatDate(value: string) {
         {{ post.title }}
       </RouterLink>
     </h2>
-    <p class="mt-1.5 line-clamp-2 text-sm leading-6 text-muted">
-      {{ excerpt(post.content) || '这篇帖子暂时没有摘要。' }}
-    </p>
 
     <div
       class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted"
