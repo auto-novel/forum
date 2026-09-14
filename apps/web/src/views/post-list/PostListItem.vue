@@ -42,7 +42,7 @@ function formatDate(value: string) {
     <div class="min-w-0">
       <PostTagList class="mb-2" :tags="post.tags" />
 
-      <h2 class="text-[17px] leading-snug font-semibold">
+      <h2 class="text-base leading-snug font-medium">
         <span
           v-if="post.pinOrder != null"
           class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-orange-50 align-text-bottom text-orange-600"
@@ -95,7 +95,7 @@ function formatDate(value: string) {
     <dl class="hidden text-center sm:block">
       <dt class="text-xs text-muted">查看</dt>
       <dd
-        class="mt-1 text-xl leading-tight font-semibold tabular-nums break-all"
+        class="mt-1 text-lg leading-tight font-medium tabular-nums break-all"
         :class="post.viewsCount > 1000 ? 'text-orange-600' : 'text-ink/80'"
       >
         {{ formatCount(post.viewsCount) }}
@@ -104,7 +104,7 @@ function formatDate(value: string) {
     <dl class="hidden text-center sm:block">
       <dt class="text-xs text-muted">评论</dt>
       <dd
-        class="mt-1 text-xl leading-tight font-semibold tabular-nums break-all"
+        class="mt-1 text-lg leading-tight font-medium tabular-nums break-all"
         :class="post.commentsCount > 1000 ? 'text-orange-600' : 'text-ink/80'"
       >
         {{ formatCount(post.commentsCount) }}
