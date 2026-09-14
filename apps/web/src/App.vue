@@ -12,9 +12,11 @@ import { RouterView, useRoute } from 'vue-router';
 
 import GlobalNotifications from '@/components/GlobalNotifications.vue';
 import { useCategoryStore } from '@/stores/category';
+import { usePostStore } from '@/stores/post';
 
 const route = useRoute();
 const categoryStore = useCategoryStore();
+const postStore = usePostStore();
 
 function categoryIcon(slug: string): Component {
   if (slug === 'novel') return MenuBookOutlined;
@@ -46,11 +48,19 @@ const accountOptions: WebKitMenuOption[] = [
   },
 ];
 
-const selectedNavigationKey = computed(() =>
-  route.name === 'posts' && typeof route.params.slug === 'string'
-    ? route.params.slug
-    : undefined,
-);
+const selectedNavigationKey = computed(() => {
+  if (route.name === 'posts' && typeof route.params.slug === 'string') {
+    return route.params.slug;
+  }
+
+  if (route.name === 'post-detail') {
+    return categoryStore.categories.find(
+      (category) => category.id === postStore.currentPost?.categoryId,
+    )?.slug;
+  }
+
+  return undefined;
+});
 </script>
 
 <template>
