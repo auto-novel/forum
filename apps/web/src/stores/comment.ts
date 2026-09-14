@@ -16,16 +16,24 @@ interface CommentPageState {
   pageSize: number;
   ids: number[];
   total: number;
+  fetchedAt: number;
+  accessedAt: number;
+  revision: number;
   loading: boolean;
   error: string;
 }
 
+const CACHE_MAX_AGE = 60 * 1000;
+const CACHE_MAX_PAGES = 30;
 const EMPTY_PAGE_STATE: Readonly<CommentPageState> = Object.freeze({
   postId: 0,
   page: 1,
   pageSize: 1,
   ids: [],
   total: 0,
+  fetchedAt: 0,
+  accessedAt: 0,
+  revision: 0,
   loading: false,
   error: '',
 });
@@ -38,6 +46,9 @@ export const useCommentStore = defineStore('comment', () => {
   const commentsById = ref<Record<number, PostComment>>({});
   const pages = ref<Record<string, CommentPageState>>({});
   const pageControllers = new Map<string, AbortController>();
+  const pageRequests = new Map<string, Promise<void>>();
+  const commentRevisions = new Map<number, number>();
+  let mutationRevision = 0;
 
   function getPageState(postId: number, page: number, pageSize: number) {
     return pages.value[pageKey(postId, page, pageSize)] ?? EMPTY_PAGE_STATE;
@@ -59,6 +70,9 @@ export const useCommentStore = defineStore('comment', () => {
         pageSize,
         ids: [],
         total: 0,
+        fetchedAt: 0,
+        accessedAt: Date.now(),
+        revision: 0,
         loading: false,
         error: '',
       };
@@ -70,41 +84,109 @@ export const useCommentStore = defineStore('comment', () => {
     commentsById.value[comment.id] = comment;
   }
 
-  async function loadPage(postId: number, page: number, pageSize: number) {
+  function setMutatedComment(comment: PostComment) {
+    mutationRevision += 1;
+    commentRevisions.set(comment.id, mutationRevision);
+    setComment(comment);
+  }
+
+  function prunePageCache(retainedKey: string) {
+    const entries = Object.entries(pages.value);
+    if (entries.length <= CACHE_MAX_PAGES) return;
+
+    const evictedPages = entries
+      .filter(
+        ([key, state]) =>
+          key !== retainedKey && !state.loading && !pageControllers.has(key),
+      )
+      .sort(([, left], [, right]) => left.accessedAt - right.accessedAt)
+      .slice(0, entries.length - CACHE_MAX_PAGES);
+    const evictedIds = evictedPages.flatMap(([, state]) => state.ids);
+    for (const [key] of evictedPages) delete pages.value[key];
+
+    const retainedIds = new Set(
+      Object.values(pages.value).flatMap((state) => state.ids),
+    );
+    for (const id of evictedIds) {
+      if (!retainedIds.has(id)) {
+        delete commentsById.value[id];
+      }
+    }
+  }
+
+  function loadPage(
+    postId: number,
+    page: number,
+    pageSize: number,
+    options: { force?: boolean } = {},
+  ) {
     const key = pageKey(postId, page, pageSize);
-    pageControllers.get(key)?.abort();
     const state = ensurePageState(postId, page, pageSize);
-    state.ids = [];
-    state.total = 0;
-    state.error = '';
+    state.accessedAt = Date.now();
 
     if (!postId) {
       state.loading = false;
-      return;
+      return Promise.resolve();
     }
 
+    if (
+      !options.force &&
+      state.fetchedAt > 0 &&
+      Date.now() - state.fetchedAt < CACHE_MAX_AGE
+    ) {
+      return Promise.resolve();
+    }
+
+    const pendingRequest = pageRequests.get(key);
+    if (pendingRequest && !options.force) return pendingRequest;
+
+    if (options.force) pageControllers.get(key)?.abort();
     const controller = new AbortController();
     pageControllers.set(key, controller);
-    state.loading = true;
-    try {
-      const result = await getPostComments(
-        postId,
-        { page, pageSize },
-        controller.signal,
-      );
-      for (const comment of result.items) setComment(comment);
-      state.ids = result.items.map((comment) => comment.id);
-      state.total = result.total;
-    } catch (reason) {
-      if (reason instanceof DOMException && reason.name === 'AbortError')
-        return;
-      state.error = reason instanceof Error ? reason.message : '无法加载评论';
-    } finally {
-      if (pageControllers.get(key) === controller) {
-        state.loading = false;
-        pageControllers.delete(key);
+    const hasCachedPage = state.fetchedAt > 0;
+    const requestMutationRevision = mutationRevision;
+    const requestPageRevision = state.revision;
+    state.loading = !hasCachedPage;
+    state.error = '';
+
+    const request = (async () => {
+      try {
+        const result = await getPostComments(
+          postId,
+          { page, pageSize },
+          controller.signal,
+        );
+        for (const comment of result.items) {
+          // Do not let a request started earlier roll back a local mutation.
+          if (
+            (commentRevisions.get(comment.id) ?? 0) <= requestMutationRevision
+          ) {
+            setComment(comment);
+          }
+        }
+        if (state.revision !== requestPageRevision) return;
+        state.ids = result.items.map((comment) => comment.id);
+        state.total = result.total;
+        state.fetchedAt = Date.now();
+        state.accessedAt = state.fetchedAt;
+        prunePageCache(key);
+      } catch (reason) {
+        if (reason instanceof DOMException && reason.name === 'AbortError')
+          return;
+        if (!hasCachedPage) {
+          state.error =
+            reason instanceof Error ? reason.message : '无法加载评论';
+        }
+      } finally {
+        if (pageControllers.get(key) === controller) {
+          state.loading = false;
+          pageControllers.delete(key);
+          pageRequests.delete(key);
+        }
       }
-    }
+    })();
+    pageRequests.set(key, request);
+    return request;
   }
 
   async function createComment(
@@ -112,7 +194,7 @@ export const useCommentStore = defineStore('comment', () => {
     input: { content: string; rootId?: number },
   ) {
     const comment = await createPostComment(postId, input);
-    setComment(comment);
+    setMutatedComment(comment);
     return comment;
   }
 
@@ -124,6 +206,7 @@ export const useCommentStore = defineStore('comment', () => {
     const key = pageKey(comment.postId, currentPage, pageSize);
     pageControllers.get(key)?.abort();
     pageControllers.delete(key);
+    pageRequests.delete(key);
 
     const currentState = ensurePageState(comment.postId, currentPage, pageSize);
     currentState.loading = false;
@@ -132,7 +215,12 @@ export const useCommentStore = defineStore('comment', () => {
     const states = Object.values(pages.value).filter(
       (state) => state.postId === comment.postId,
     );
-    for (const state of states) state.total += 1;
+    for (const state of states) {
+      // Keep optimistic content visible, but revalidate server-side pagination.
+      state.revision += 1;
+      state.total += 1;
+      if (state.fetchedAt > 0) state.fetchedAt = 1;
+    }
 
     const lastPage = Math.max(1, Math.ceil(currentState.total / pageSize));
     if (comment.rootId != null) {
@@ -152,14 +240,14 @@ export const useCommentStore = defineStore('comment', () => {
 
   async function updateComment(id: number, content: string) {
     const comment = await updatePostComment(id, content);
-    setComment(comment);
+    setMutatedComment(comment);
     return comment;
   }
 
   function applyStatus(id: number, status: number) {
     const comment = commentsById.value[id];
     if (!comment) return;
-    setComment({ ...comment, status, content: '' });
+    setMutatedComment({ ...comment, status, content: '' });
   }
 
   async function deleteComment(id: number, asAdmin: boolean) {

@@ -74,6 +74,15 @@ async function loadComments() {
   );
 }
 
+async function retryComments() {
+  await commentStore.loadPage(
+    postId.value,
+    commentPage.value,
+    COMMENT_PAGE_SIZE,
+    { force: true },
+  );
+}
+
 function changeCommentPage(nextPage: number) {
   void router.push({
     name: 'post-detail',
@@ -108,6 +117,11 @@ async function handleCommentCreated(comment: PostComment) {
   document
     .querySelector(`#comment-${comment.id}`)
     ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  void commentStore.loadPage(
+    postId.value,
+    commentPage.value,
+    COMMENT_PAGE_SIZE,
+  );
 }
 
 function startReply(comment: PostComment) {
@@ -218,7 +232,7 @@ watch([postId, commentPage], loadComments, { immediate: true });
               :locked="post.commentsLocked"
               :post-id="post.id"
               :reply-to-id="replyTo?.id"
-              @retry="loadComments"
+              @retry="retryComments"
               @change-page="changeCommentPage"
               @reply="startReply"
               @cancel-reply="replyTo = undefined"
