@@ -34,6 +34,7 @@ type CommentRepository interface {
 	Create(input CreateCommentInput) (*Comment, error)
 	Update(subjectType int16, id int64, content string) (*Comment, error)
 	SetStatus(subjectType int16, id int64, status int16) error
+	DeleteAllByAuthor(authorID int64) error
 }
 
 type commentRepository struct{ db *sql.DB }
@@ -213,6 +214,31 @@ func (r *commentRepository) SetStatus(subjectType int16, id int64, status int16)
 		}
 	}
 	return tx.Commit()
+}
+
+func (r *commentRepository) DeleteAllByAuthor(authorID int64) error {
+	_, err := r.db.Exec(`
+		WITH published_comments AS (
+			UPDATE comment
+			SET status = $2, updated_at = CURRENT_TIMESTAMP
+			WHERE author_id = $1 AND status = $3
+			RETURNING subject_type, subject_key
+		), hidden_comments AS (
+			UPDATE comment
+			SET status = $2, updated_at = CURRENT_TIMESTAMP
+			WHERE author_id = $1 AND status = $4
+		), deleted_post_comments AS (
+			SELECT subject_key, COUNT(*)::integer AS count
+			FROM published_comments
+			WHERE subject_type = $5
+			GROUP BY subject_key
+		)
+		UPDATE post
+		SET comments_count = GREATEST(post.comments_count - deleted_post_comments.count, 0)
+		FROM deleted_post_comments
+		WHERE post.id::text = deleted_post_comments.subject_key
+	`, authorID, StatusDeleted, StatusPublished, StatusHidden, CommentSubjectPost)
+	return err
 }
 
 func PostSubjectKey(postID int64) string {
