@@ -137,7 +137,12 @@ func (r *postRepository) List(filter PostFilter, limit, offset int64) (int64, []
 		return 0, nil, err
 	}
 
-	stmt := SELECT(table.Post.AllColumns).
+	stmt := SELECT(
+		table.Post.ID, table.Post.CategoryID, table.Post.Title,
+		table.Post.AuthorID, table.Post.AuthorUsername, table.Post.Status,
+		table.Post.ViewsCount, table.Post.CommentsCount, table.Post.CommentsLocked,
+		table.Post.PinOrder, table.Post.CreatedAt, table.Post.UpdatedAt, table.Post.ActiveAt,
+	).
 		FROM(from).
 		WHERE(condition).
 		ORDER_BY(postOrderBy(filter.Sort)...).

@@ -125,9 +125,16 @@ func TestJetRepositories(t *testing.T) {
 		t.Fatalf("unexpected posts: total=%d items=%d", total, len(posts))
 	}
 
+	if posts[0].Content != "" || posts[0].Attr != "" {
+		t.Fatal("list loaded content or attributes")
+	}
+
 	viewed, err := postRepo.Find(post.ID, true)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if viewed.Content != post.Content {
+		t.Fatal("detail did not preserve content")
 	}
 	if viewed.ViewsCount != 1 {
 		t.Fatalf("views count = %d", viewed.ViewsCount)

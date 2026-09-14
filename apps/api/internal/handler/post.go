@@ -20,13 +20,12 @@ type postTagResponse struct {
 	Color int16  `json:"color"`
 }
 
-type postResponse struct {
+type postListItemResponse struct {
 	ID             int64             `json:"id"`
 	CategoryID     int64             `json:"categoryId"`
 	Title          string            `json:"title"`
 	AuthorID       int64             `json:"authorId"`
 	AuthorUsername string            `json:"authorUsername"`
-	Content        string            `json:"content"`
 	Status         int16             `json:"status"`
 	ViewsCount     int32             `json:"viewsCount"`
 	CommentsCount  int32             `json:"commentsCount"`
@@ -39,7 +38,19 @@ type postResponse struct {
 	Tags           []postTagResponse `json:"tags"`
 }
 
+type postResponse struct {
+	postListItemResponse
+	Content string `json:"content"`
+}
+
 func newPostResponse(value repository.PostDetails, favorited bool) postResponse {
+	return postResponse{
+		postListItemResponse: newPostListItemResponse(value, favorited),
+		Content:              value.Content,
+	}
+}
+
+func newPostListItemResponse(value repository.PostDetails, favorited bool) postListItemResponse {
 	tags := make([]postTagResponse, len(value.Tags))
 	for i, tag := range value.Tags {
 		tags[i] = postTagResponse{
@@ -48,13 +59,12 @@ func newPostResponse(value repository.PostDetails, favorited bool) postResponse 
 			Color: tag.Color,
 		}
 	}
-	return postResponse{
+	return postListItemResponse{
 		ID:             value.ID,
 		CategoryID:     value.CategoryID,
 		Title:          value.Title,
 		AuthorID:       value.AuthorID,
 		AuthorUsername: value.AuthorUsername,
-		Content:        value.Content,
 		Status:         value.Status,
 		ViewsCount:     value.ViewsCount,
 		CommentsCount:  value.CommentsCount,
@@ -152,11 +162,11 @@ func respondPosts(
 			return repoError(err, "查询收藏状态失败")
 		}
 	}
-	response := make([]postResponse, len(items))
+	response := make([]postListItemResponse, len(items))
 	for i, item := range items {
-		response[i] = newPostResponse(item, favorites[item.ID])
+		response[i] = newPostListItemResponse(item, favorites[item.ID])
 	}
-	render.JSON(w, r, page[postResponse]{Total: total, Items: response})
+	render.JSON(w, r, page[postListItemResponse]{Total: total, Items: response})
 	return nil
 }
 
