@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {
   ChatBubbleOutlineOutlined,
+  LockOutlined,
+  PushPinOutlined,
   VisibilityOutlined,
 } from '@vicons/material';
 import { RouterLink } from 'vue-router';
@@ -26,14 +28,25 @@ function formatDate(value: string) {
 
 <template>
   <article class="group relative py-4 transition-colors duration-300">
-    <PostTagList
-      class="mb-2"
-      :tags="post.tags"
-      :pinned="post.pinOrder != null"
-      :locked="post.commentsLocked"
-    />
+    <PostTagList class="mb-2" :tags="post.tags" />
 
     <h2 class="text-[17px] leading-snug font-semibold">
+      <span
+        v-if="post.pinOrder != null"
+        class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-orange-50 align-text-bottom text-orange-600"
+        title="已置顶"
+        aria-label="已置顶"
+      >
+        <PushPinOutlined class="size-3.5" aria-hidden="true" />
+      </span>
+      <span
+        v-if="post.commentsLocked"
+        class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-orange-50 align-text-bottom text-orange-600"
+        title="评论区已锁定"
+        aria-label="评论区已锁定"
+      >
+        <LockOutlined class="size-3.5" aria-hidden="true" />
+      </span>
       <RouterLink
         :to="{ name: 'post-detail', params: { id: post.id } }"
         class="text-ink transition-colors duration-300 before:absolute before:inset-0 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary group-hover:text-primary"
