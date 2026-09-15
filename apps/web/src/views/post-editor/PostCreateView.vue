@@ -41,9 +41,11 @@ watch(
     if (!userId) return;
     const draft = draftStore.getPostDraft(userId);
     if (!draft) return;
+    const draftCategory =
+      draft.category === 'guide' ? 'announcements' : draft.category;
     const categoryItem =
       categoryStore.writableCategories.find(
-        (item) => item.slug === draft.category,
+        (item) => item.slug === draftCategory,
       ) ?? categoryStore.defaultCategory;
     const validIds = new Set(categoryItem.tags.map((tag) => tag.id));
     title.value = draft.title;

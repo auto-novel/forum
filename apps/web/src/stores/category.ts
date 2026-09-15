@@ -7,17 +7,17 @@ import { authUser, getCategories, type CategoryListItem } from '@/api';
 const CACHE_MAX_AGE = 15 * 60 * 1000;
 const CATEGORY_TITLES: Record<string, string> = {
   novel: '小说讨论',
-  guide: '使用指南',
+  announcements: '站务公告',
   feedback: '意见反馈',
 };
 const FALLBACK_CATEGORIES: CategoryListItem[] = [
-  { id: 2, slug: 'guide', tags: [] },
+  { id: 2, slug: 'announcements', tags: [] },
   { id: 1, slug: 'novel', tags: [] },
   { id: 3, slug: 'feedback', tags: [] },
 ];
 
 const QUERY_KEY = ['categories'];
-const STORAGE_KEY = 'forum:categories:v1';
+const STORAGE_KEY = 'forum:categories:v2';
 interface CategorySnapshot {
   items: CategoryListItem[];
   fetchedAt: number;
@@ -99,7 +99,7 @@ export const useCategoryStore = defineStore('category', () => {
         title: CATEGORY_TITLES[category.slug] ?? category.slug,
       }))
       .sort((left, right) => {
-        const order = ['guide', 'novel', 'feedback'];
+        const order = ['announcements', 'novel', 'feedback'];
         return order.indexOf(left.slug) - order.indexOf(right.slug);
       }),
   );
@@ -113,7 +113,7 @@ export const useCategoryStore = defineStore('category', () => {
   );
 
   function canPublish(slug: string) {
-    return slug !== 'guide' || authUser.value?.role === 'admin';
+    return slug !== 'announcements' || authUser.value?.role === 'admin';
   }
 
   function tagsByCategoryId(categoryId: number) {

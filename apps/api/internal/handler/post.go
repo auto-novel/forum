@@ -231,8 +231,8 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
-	if input.CategoryID == forumcategory.GuideID && !principal.IsAdmin() {
-		return httpx.Forbidden("使用指南仅管理员可以发帖")
+	if input.CategoryID == forumcategory.AnnouncementsID && !principal.IsAdmin() {
+		return httpx.Forbidden("站务公告仅管理员可以发帖")
 	}
 	post, err := h.postRepo.Create(repository.CreatePostInput{
 		CategoryID:     input.CategoryID,
@@ -280,8 +280,8 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
-	if input.CategoryID == forumcategory.GuideID && !principal.IsAdmin() {
-		return httpx.Forbidden("使用指南仅管理员可以发帖")
+	if input.CategoryID == forumcategory.AnnouncementsID && !principal.IsAdmin() {
+		return httpx.Forbidden("站务公告仅管理员可以发帖")
 	}
 	post, err := h.postRepo.Update(id, repository.UpdatePostInput{
 		CategoryID: input.CategoryID,

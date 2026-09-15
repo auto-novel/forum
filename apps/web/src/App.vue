@@ -21,7 +21,7 @@ const postStore = usePostStore();
 
 function categoryIcon(slug: string): Component {
   if (slug === 'novel') return MenuBookOutlined;
-  if (slug === 'guide') return ExploreOutlined;
+  if (slug === 'announcements') return ExploreOutlined;
   return ForumOutlined;
 }
 

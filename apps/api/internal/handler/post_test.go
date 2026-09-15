@@ -92,7 +92,7 @@ type noFavoriteRepository struct{ repository.FavoriteRepository }
 
 func (noFavoriteRepository) Has(int64, int64) (bool, error) { return false, nil }
 
-func TestGuidePublishingRequiresAdmin(t *testing.T) {
+func TestAnnouncementsPublishingRequiresAdmin(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPatch} {
 		for _, role := range []string{"member", "trusted", "admin"} {
 			for _, categoryID := range []int64{1, 2, 3} {
