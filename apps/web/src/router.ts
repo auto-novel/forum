@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import { useCategoryStore } from '@/stores/category';
+import { setPostListReturn } from '@/utils/postNavigation';
 import FavoritePostListView from '@/views/post-list/FavoritePostListView.vue';
 import MyPostListView from '@/views/post-list/MyPostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
@@ -86,7 +87,23 @@ const router = createRouter({
   ],
 });
 
-router.afterEach((to) => {
+router.afterEach((to, from, failure) => {
+  if (failure) return;
+  if (
+    to.name === 'post-detail' &&
+    ['posts', 'favorites', 'my-posts'].includes(String(from.name))
+  ) {
+    setPostListReturn({
+      path: from.fullPath,
+      scrollTop: document.querySelector('main')?.scrollTop ?? 0,
+    });
+  } else if (!(
+    ['post-detail', 'post-edit'].includes(String(to.name)) &&
+    ['post-detail', 'post-edit'].includes(String(from.name)) &&
+    to.params.id === from.params.id
+  )) {
+    setPostListReturn();
+  }
   document.title = `${String(to.meta.title ?? '社区')} | Novelia Forum`;
 });
 

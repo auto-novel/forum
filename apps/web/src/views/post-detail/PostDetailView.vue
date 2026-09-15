@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { ArrowBackOutlined } from '@vicons/material';
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { type Post, type PostComment } from '@/api';
+import AppButton from '@/components/AppButton.vue';
 import AsyncContent from '@/components/AsyncContent.vue';
+import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
 import { useCommentStore } from '@/stores/comment';
 import { usePostStore } from '@/stores/post';
+import { postListReturn } from '@/utils/postNavigation';
 
 import CommentComposer from './CommentComposer.vue';
 import CommentList from './CommentList.vue';
@@ -181,6 +185,25 @@ function leaveDeletedPost() {
   });
 }
 
+function returnToList() {
+  if (postListReturn) {
+    const { path, query, hash } = router.resolve(postListReturn.path);
+    void router.push({
+      path,
+      query,
+      hash,
+      state: { postListScrollTop: postListReturn.scrollTop },
+    });
+    return;
+  }
+  void router.push({
+    name: 'posts',
+    params: {
+      slug: category.value?.slug ?? categoryStore.defaultCategory.slug,
+    },
+  });
+}
+
 watch(postId, loadPost, { immediate: true });
 watch([postId, commentPage], loadComments, { immediate: true });
 </script>
@@ -188,6 +211,30 @@ watch([postId, commentPage], loadComments, { immediate: true });
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
+      <div class="mb-3 flex flex-wrap items-center gap-1.5">
+        <AppButton
+          variant="plain"
+          size="none"
+          class="min-h-9 rounded-sm text-xs font-medium text-primary hover:text-primary-hover"
+          title="返回列表"
+          aria-label="返回列表"
+          @click="returnToList"
+        >
+          <ArrowBackOutlined class="size-4" aria-hidden="true" />
+          {{ post && !postError ? (category?.title ?? '未分类') : '返回列表' }}
+        </AppButton>
+        <PostTagList
+          v-if="post && !postLoading && !postError"
+          class="min-w-0"
+          :tags="post.tags"
+          :pinned="post.pinOrder != null"
+          :locked="post.commentsLocked"
+        />
+        <div
+          v-else-if="postLoading"
+          class="h-3 w-24 animate-pulse rounded-sm bg-divider"
+        />
+      </div>
       <AsyncContent
         :loading="postLoading"
         :error="postError"
@@ -198,7 +245,6 @@ watch([postId, commentPage], loadComments, { immediate: true });
       >
         <template #loading>
           <div class="py-6">
-            <div class="h-3 w-24 animate-pulse rounded-sm bg-divider" />
             <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />
             <div class="mt-5 h-4 w-56 animate-pulse rounded-sm bg-divider" />
             <div class="my-6 h-px bg-divider" />
@@ -209,10 +255,7 @@ watch([postId, commentPage], loadComments, { immediate: true });
         </template>
 
         <template v-if="post">
-          <PostContent
-            :post="post"
-            :category-name="category?.title ?? '未分类'"
-          />
+          <PostContent :post="post" />
           <PostActions
             :post="post"
             @edit="editPost"

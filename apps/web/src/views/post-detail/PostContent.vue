@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import type { Post } from '@/api';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
-import PostTagList from '@/components/PostTagList.vue';
 
 defineProps<{
   post: Post;
-  categoryName: string;
 }>();
 
 function formatDate(value: string) {
@@ -21,15 +19,8 @@ function formatDate(value: string) {
 
 <template>
   <article class="pb-6">
-    <PostTagList
-      :tags="post.tags"
-      :pinned="post.pinOrder != null"
-      :locked="post.commentsLocked"
-      :category-name="categoryName"
-    />
-
     <h1
-      class="mt-3 text-2xl leading-tight font-bold tracking-tight text-ink sm:text-3xl"
+      class="text-2xl leading-tight font-bold tracking-tight text-ink sm:text-3xl"
     >
       {{ post.title }}
     </h1>

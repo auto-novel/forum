@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { nextTick, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
 import AsyncContent from '@/components/AsyncContent.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
 
 import PostListItem from './PostListItem.vue';
 
-defineProps<{
+const props = defineProps<{
   posts: PostSummary[];
   loading: boolean;
   error?: string;
@@ -14,6 +16,26 @@ defineProps<{
   emptyTitle?: string;
   emptyDescription?: string;
 }>();
+
+const route = useRoute();
+
+async function restoreScroll() {
+  if (props.loading || props.error) return;
+  const path = route.fullPath;
+  await nextTick();
+  if (route.fullPath !== path) return;
+  const scrollTop = window.history.state?.postListScrollTop;
+  if (typeof scrollTop !== 'number' || !Number.isFinite(scrollTop)) return;
+  document
+    .querySelector('main')
+    ?.scrollTo({ top: scrollTop, behavior: 'instant' });
+  const state = { ...window.history.state };
+  delete state.postListScrollTop;
+  window.history.replaceState(state, '');
+}
+
+onMounted(restoreScroll);
+watch(() => props.loading, restoreScroll, { flush: 'post' });
 
 const emit = defineEmits<{
   retry: [];

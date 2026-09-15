@@ -61,7 +61,7 @@ const sizeClass = computed(
     :is="as"
     :type="as === 'button' ? type : undefined"
     :class="[
-      'inline-flex shrink-0 items-center justify-center gap-1.5 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50',
+      'inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50',
       variantClass,
       sizeClass,
     ]"
