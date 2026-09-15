@@ -165,7 +165,7 @@ function handleKeydown(event: KeyboardEvent) {
 
 .markdown-content :deep(code) {
   border-radius: 0.25rem;
-  background: var(--color-paper);
+  background: var(--color-divider);
   padding: 0.15em 0.35em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88em;
@@ -175,7 +175,7 @@ function handleKeydown(event: KeyboardEvent) {
   overflow-x: auto;
   border: 1px solid var(--color-divider);
   border-radius: 0.375rem;
-  background: var(--color-paper);
+  background: var(--color-divider);
   padding: 1rem;
   line-height: 1.6;
 }
