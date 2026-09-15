@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	forumcategory "auth/internal/category"
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
@@ -230,6 +231,9 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
+	if input.CategoryID == forumcategory.GuideID && !principal.IsAdmin() {
+		return httpx.Forbidden("使用指南仅管理员可以发帖")
+	}
 	post, err := h.postRepo.Create(repository.CreatePostInput{
 		CategoryID:     input.CategoryID,
 		Title:          strings.TrimSpace(input.Title),
@@ -275,6 +279,10 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err := validatePost(input); err != nil {
 		return err
 	}
+	principal, _ := httpx.AuthenticatedPrincipal(r)
+	if input.CategoryID == forumcategory.GuideID && !principal.IsAdmin() {
+		return httpx.Forbidden("使用指南仅管理员可以发帖")
+	}
 	post, err := h.postRepo.Update(id, repository.UpdatePostInput{
 		CategoryID: input.CategoryID,
 		Title:      strings.TrimSpace(input.Title),
@@ -284,7 +292,6 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return repoError(err, "更新帖子失败")
 	}
-	principal, _ := httpx.AuthenticatedPrincipal(r)
 	favorited, favoriteErr := h.favoriteRepo.Has(post.ID, principal.UserID)
 	if favoriteErr != nil {
 		return repoError(favoriteErr, "查询收藏状态失败")

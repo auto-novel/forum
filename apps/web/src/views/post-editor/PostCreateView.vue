@@ -17,7 +17,7 @@ const router = useRouter();
 const categoryStore = useCategoryStore();
 const draftStore = useDraftStore();
 const initialCategory =
-  categoryStore.categories.find(
+  categoryStore.writableCategories.find(
     (category) => category.slug === route.query.category,
   )?.slug ?? categoryStore.defaultCategory.slug;
 const title = ref('');
@@ -28,7 +28,7 @@ const submitting = ref(false);
 
 const selectedCategory = computed(
   () =>
-    categoryStore.categories.find(
+    categoryStore.writableCategories.find(
       (category) => category.slug === categorySlug.value,
     ) ?? categoryStore.defaultCategory,
 );
@@ -42,8 +42,9 @@ watch(
     const draft = draftStore.getPostDraft(userId);
     if (!draft) return;
     const categoryItem =
-      categoryStore.categories.find((item) => item.slug === draft.category) ??
-      categoryStore.defaultCategory;
+      categoryStore.writableCategories.find(
+        (item) => item.slug === draft.category,
+      ) ?? categoryStore.defaultCategory;
     const validIds = new Set(categoryItem.tags.map((tag) => tag.id));
     title.value = draft.title;
     categorySlug.value = categoryItem.slug;
@@ -113,7 +114,7 @@ async function submitPost() {
           v-model:content="content"
           v-model:tag-ids="selectedTagIds"
           class="mt-6"
-          :categories="categoryStore.categories"
+          :categories="categoryStore.writableCategories"
           :tags="tags"
           :submitting="submitting"
           submit-label="发布帖子"

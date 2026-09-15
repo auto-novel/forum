@@ -1,9 +1,14 @@
 package handler
 
 import (
+	"auth/internal/httpx"
 	"encoding/json"
+	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"auth/internal/repository"
@@ -60,6 +65,68 @@ func TestPostListOmitsContentAndDetailPreservesIt(t *testing.T) {
 	for key, value := range detail {
 		if string(item[key]) != string(value) {
 			t.Fatalf("list metadata %s differs from detail", key)
+		}
+	}
+}
+
+type writePostRepository struct {
+	repository.PostRepository
+	written bool
+}
+
+func (r *writePostRepository) Find(int64, bool) (*repository.PostDetails, error) {
+	return &repository.PostDetails{Post: repository.Post{ID: 42, AuthorID: 1}}, nil
+}
+
+func (r *writePostRepository) Create(input repository.CreatePostInput) (*repository.PostDetails, error) {
+	r.written = true
+	return &repository.PostDetails{Post: repository.Post{ID: 42, CategoryID: input.CategoryID}}, nil
+}
+
+func (r *writePostRepository) Update(id int64, input repository.UpdatePostInput) (*repository.PostDetails, error) {
+	r.written = true
+	return &repository.PostDetails{Post: repository.Post{ID: id, CategoryID: input.CategoryID}}, nil
+}
+
+type noFavoriteRepository struct{ repository.FavoriteRepository }
+
+func (noFavoriteRepository) Has(int64, int64) (bool, error) { return false, nil }
+
+func TestGuidePublishingRequiresAdmin(t *testing.T) {
+	for _, method := range []string{http.MethodPost, http.MethodPatch} {
+		for _, role := range []string{"member", "trusted", "admin"} {
+			for _, categoryID := range []int64{1, 2, 3} {
+				t.Run(fmt.Sprintf("%s/%s/%d", method, role, categoryID), func(t *testing.T) {
+					repo := &writePostRepository{}
+					router := chi.NewRouter()
+					NewPostHandler(repo, noFavoriteRepository{}, nil).RegisterRoutes(router)
+					path := "/"
+					wantStatus := http.StatusCreated
+					if method == http.MethodPatch {
+						path = "/42/"
+						wantStatus = http.StatusOK
+					}
+					allowed := categoryID != 2 || role == "admin"
+					if !allowed {
+						wantStatus = http.StatusForbidden
+					}
+					request := httptest.NewRequest(method, path, strings.NewReader(fmt.Sprintf(
+						`{"categoryId":%d,"title":"标题","content":"正文","tagIds":[]}`, categoryID)))
+					request.Header.Set("Content-Type", "application/json")
+					token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+						"sub": "tester", "uid": 1, "role": role,
+					}).SignedString([]byte(httpx.AccessTokenSecret))
+					if err != nil {
+						t.Fatal(err)
+					}
+					request.Header.Set("Authorization", "Bearer "+token)
+					recorder := httptest.NewRecorder()
+					router.ServeHTTP(recorder, request)
+					if recorder.Code != wantStatus || repo.written != allowed {
+						t.Fatalf("status=%d want=%d written=%v allowed=%v body=%s", recorder.Code, wantStatus, repo.written, allowed, recorder.Body.String())
+					}
+				})
+			}
 		}
 	}
 }

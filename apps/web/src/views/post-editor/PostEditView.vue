@@ -40,6 +40,11 @@ const loading = computed(() => !categoriesReady.value || postLoading.value);
 const canEdit = computed(
   () =>
     post.value != null &&
+    categoryStore.canPublish(
+      categoryStore.categories.find(
+        (item) => item.id === post.value?.categoryId,
+      )?.slug ?? '',
+    ) &&
     (authUser.value?.id === post.value.authorId ||
       authUser.value?.role === 'admin'),
 );
@@ -168,7 +173,7 @@ void categoryStore.initialize().then(() => {
             v-model:content="content"
             v-model:tag-ids="selectedTagIds"
             class="mt-6"
-            :categories="categoryStore.categories"
+            :categories="categoryStore.writableCategories"
             :tags="tags"
             :submitting="submitting"
             submit-label="保存修改"
@@ -188,7 +193,7 @@ void categoryStore.initialize().then(() => {
           <p class="mt-2 text-sm text-muted">
             {{
               authUser
-                ? '只有帖子作者或管理员可以编辑这篇帖子。'
+                ? '只有具有该板块发帖权限的作者或管理员可以编辑这篇帖子。'
                 : '登录后才能编辑帖子，请使用页面右上角的登录入口。'
             }}
           </p>

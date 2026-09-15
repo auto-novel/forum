@@ -2,7 +2,7 @@ import { computed, watch } from 'vue';
 import { defineStore } from 'pinia';
 import { useQuery, useQueryCache } from '@pinia/colada';
 
-import { getCategories, type CategoryListItem } from '@/api';
+import { authUser, getCategories, type CategoryListItem } from '@/api';
 
 const CACHE_MAX_AGE = 15 * 60 * 1000;
 const CATEGORY_TITLES: Record<string, string> = {
@@ -11,8 +11,8 @@ const CATEGORY_TITLES: Record<string, string> = {
   feedback: '意见反馈',
 };
 const FALLBACK_CATEGORIES: CategoryListItem[] = [
-  { id: 1, slug: 'novel', tags: [] },
   { id: 2, slug: 'guide', tags: [] },
+  { id: 1, slug: 'novel', tags: [] },
   { id: 3, slug: 'feedback', tags: [] },
 ];
 
@@ -93,14 +93,28 @@ export const useCategoryStore = defineStore('category', () => {
   const items = computed(() => query.data.value?.items ?? []);
   const fetchedAt = computed(() => query.data.value?.fetchedAt ?? 0);
   const categories = computed(() =>
-    (items.value.length ? items.value : FALLBACK_CATEGORIES).map(
-      (category) => ({
+    (items.value.length ? items.value : FALLBACK_CATEGORIES)
+      .map((category) => ({
         ...category,
         title: CATEGORY_TITLES[category.slug] ?? category.slug,
+      }))
+      .sort((left, right) => {
+        const order = ['guide', 'novel', 'feedback'];
+        return order.indexOf(left.slug) - order.indexOf(right.slug);
       }),
-    ),
   );
-  const defaultCategory = computed(() => categories.value[0]);
+  const defaultCategory = computed(
+    () =>
+      categories.value.find((category) => category.slug === 'novel') ??
+      categories.value[0],
+  );
+  const writableCategories = computed(() =>
+    categories.value.filter((category) => canPublish(category.slug)),
+  );
+
+  function canPublish(slug: string) {
+    return slug !== 'guide' || authUser.value?.role === 'admin';
+  }
 
   function tagsByCategoryId(categoryId: number) {
     return (
@@ -116,6 +130,8 @@ export const useCategoryStore = defineStore('category', () => {
 
   return {
     categories,
+    writableCategories,
+    canPublish,
     defaultCategory,
     items,
     fetchedAt,
