@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ArrowBackOutlined } from '@vicons/material';
-import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -9,8 +8,8 @@ import AppButton from '@/components/AppButton.vue';
 import AsyncContent from '@/components/AsyncContent.vue';
 import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
-import { useCommentStore } from '@/stores/comment';
-import { usePostStore } from '@/stores/post';
+import { useCommentPageQuery, useCommentStore } from '@/stores/comment';
+import { usePostQuery, usePostStore } from '@/stores/post';
 import { postListReturn } from '@/utils/postNavigation';
 
 import CommentComposer from './CommentComposer.vue';
@@ -25,11 +24,7 @@ const router = useRouter();
 const categoryStore = useCategoryStore();
 const commentStore = useCommentStore();
 const postStore = usePostStore();
-const {
-  currentPost: post,
-  detailLoading: postLoading,
-  detailError: postError,
-} = storeToRefs(postStore);
+
 const composingComment = ref(false);
 const replyTo = ref<PostComment>();
 
@@ -38,24 +33,33 @@ const postId = computed(() => {
   return Number.isSafeInteger(value) && value > 0 ? value : 0;
 });
 
+const {
+  post,
+  loading: postLoading,
+  error: postError,
+  retry: loadPost,
+} = usePostQuery(postId);
+watch(
+  post,
+  (value) => {
+    if (value) document.title = `${value.title} | Novelia Forum`;
+  },
+  { immediate: true },
+);
+
 const commentPage = computed(() => {
   const value = Number(route.query.commentPage);
   return Number.isInteger(value) && value > 0 ? value : 1;
 });
 
-const commentState = computed(() =>
-  commentStore.getPageState(postId.value, commentPage.value, COMMENT_PAGE_SIZE),
-);
-const comments = computed(() =>
-  commentStore.getPageComments(
-    postId.value,
-    commentPage.value,
-    COMMENT_PAGE_SIZE,
-  ),
-);
-const commentsTotal = computed(() => commentState.value.total);
-const commentsLoading = computed(() => commentState.value.loading);
-const commentsError = computed(() => commentState.value.error);
+const {
+  comments,
+  total: commentsTotal,
+  loading: commentsLoading,
+  error: commentsError,
+  refresh: loadComments,
+  retry: retryComments,
+} = useCommentPageQuery(postId, commentPage, COMMENT_PAGE_SIZE);
 
 const commentTotalPages = computed(() =>
   Math.max(1, Math.ceil(commentsTotal.value / COMMENT_PAGE_SIZE)),
@@ -64,28 +68,6 @@ const commentTotalPages = computed(() =>
 const category = computed(() =>
   categoryStore.categories.find((item) => item.id === post.value?.categoryId),
 );
-
-async function loadPost() {
-  const loadedPost = await postStore.loadPost(postId.value);
-  if (loadedPost) document.title = `${loadedPost.title} | Novelia Forum`;
-}
-
-async function loadComments() {
-  await commentStore.loadPage(
-    postId.value,
-    commentPage.value,
-    COMMENT_PAGE_SIZE,
-  );
-}
-
-async function retryComments() {
-  await commentStore.loadPage(
-    postId.value,
-    commentPage.value,
-    COMMENT_PAGE_SIZE,
-    { force: true },
-  );
-}
 
 function changeCommentPage(nextPage: number) {
   void router.push({
@@ -121,11 +103,7 @@ async function handleCommentCreated(comment: PostComment) {
   document
     .querySelector(`#comment-${comment.id}`)
     ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  void commentStore.loadPage(
-    postId.value,
-    commentPage.value,
-    COMMENT_PAGE_SIZE,
-  );
+  void loadComments();
 }
 
 function startReply(comment: PostComment) {
@@ -177,10 +155,12 @@ async function handleAuthorCommentsDeleted() {
 }
 
 function leaveDeletedPost() {
+  const slug = category.value?.slug ?? categoryStore.defaultCategory.slug;
+  postStore.removePost(postId.value);
   void router.replace({
     name: 'posts',
     params: {
-      slug: category.value?.slug ?? categoryStore.defaultCategory.slug,
+      slug,
     },
   });
 }
@@ -203,9 +183,6 @@ function returnToList() {
     },
   });
 }
-
-watch(postId, loadPost, { immediate: true });
-watch([postId, commentPage], loadComments, { immediate: true });
 </script>
 
 <template>

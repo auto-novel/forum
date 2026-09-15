@@ -1,24 +1,16 @@
 <script setup lang="ts">
 import { StarBorderOutlined } from '@vicons/material';
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { authUser } from '@/api';
-import { usePostStore } from '@/stores/post';
+import { usePostListQuery } from '@/stores/post';
 import PostList from './PostList.vue';
 
 const PAGE_SIZE = 20;
 
 const route = useRoute();
 const router = useRouter();
-const postStore = usePostStore();
-const {
-  listPosts: posts,
-  listTotal: total,
-  listLoading: loading,
-  listError: error,
-} = storeToRefs(postStore);
 
 const page = computed(() => {
   const value = Number(route.query.page);
@@ -29,16 +21,16 @@ const totalPages = computed(() =>
   Math.max(1, Math.ceil(total.value / PAGE_SIZE)),
 );
 
-async function loadFavorites() {
-  if (!authUser.value) {
-    postStore.clearList();
-    return;
-  }
-  await postStore.loadFavoritePosts({
-    page: page.value,
-    pageSize: PAGE_SIZE,
-  });
-}
+const {
+  posts,
+  total,
+  loading,
+  error,
+  retry: loadFavorites,
+} = usePostListQuery('favorites', () => ({
+  page: page.value,
+  pageSize: PAGE_SIZE,
+}));
 
 function changePage(nextPage: number) {
   void router.push({
@@ -47,8 +39,6 @@ function changePage(nextPage: number) {
   });
   document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-watch([authUser, page], loadFavorites, { immediate: true });
 </script>
 
 <template>

@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { AddOutlined } from '@vicons/material';
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
 import AppButton from '@/components/AppButton.vue';
 import { useCategoryStore } from '@/stores/category';
-import { usePostStore } from '@/stores/post';
+import { usePostListQuery } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
 
@@ -17,13 +16,6 @@ const POST_SORTS = new Set<PostSort>(['active', 'newest', 'views', 'comments']);
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
-const postStore = usePostStore();
-const {
-  listPosts: posts,
-  listTotal: total,
-  listLoading: postsLoading,
-  listError: postsError,
-} = storeToRefs(postStore);
 
 const selectedCategory = computed(() => {
   const value = route.params.slug;
@@ -69,16 +61,20 @@ const hasFilters = computed(() =>
   Boolean(searchQuery.value || selectedTagId.value),
 );
 
-async function loadPosts() {
-  await postStore.loadCategoryPosts({
-    page: page.value,
-    pageSize: PAGE_SIZE,
-    category: selectedCategory.value,
-    query: searchQuery.value || undefined,
-    tagIds: selectedTagId.value ? [selectedTagId.value] : undefined,
-    sort: selectedSort.value,
-  });
-}
+const {
+  posts,
+  total,
+  loading: postsLoading,
+  error: postsError,
+  retry: loadPosts,
+} = usePostListQuery('category', () => ({
+  page: page.value,
+  pageSize: PAGE_SIZE,
+  category: selectedCategory.value,
+  query: searchQuery.value || undefined,
+  tagIds: selectedTagId.value ? [selectedTagId.value] : undefined,
+  sort: selectedSort.value,
+}));
 
 function applyFilters(filters: {
   query: string;
@@ -109,12 +105,6 @@ function changePage(nextPage: number) {
   });
   document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-watch(
-  [selectedCategory, searchQuery, selectedTagId, selectedSort, page],
-  loadPosts,
-  { immediate: true },
-);
 </script>
 
 <template>

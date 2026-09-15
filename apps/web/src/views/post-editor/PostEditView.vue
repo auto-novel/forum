@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
@@ -9,7 +8,7 @@ import AsyncContent from '@/components/AsyncContent.vue';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
-import { usePostStore } from '@/stores/post';
+import { usePostQuery, usePostStore } from '@/stores/post';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 import PostForm from './PostForm.vue';
@@ -18,11 +17,7 @@ const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
 const postStore = usePostStore();
-const {
-  currentPost: post,
-  detailLoading: loading,
-  detailError: error,
-} = storeToRefs(postStore);
+
 const title = ref('');
 const content = ref('');
 const categorySlug = ref('');
@@ -34,6 +29,14 @@ const postId = computed(() => {
   const value = Number(route.params.id);
   return Number.isSafeInteger(value) && value > 0 ? value : 0;
 });
+const categoriesReady = ref(false);
+const {
+  post,
+  loading: postLoading,
+  error,
+  retry,
+} = usePostQuery(postId, { editing: true, enabled: categoriesReady });
+const loading = computed(() => !categoriesReady.value || postLoading.value);
 const canEdit = computed(
   () =>
     post.value != null &&
@@ -82,7 +85,7 @@ function applyPost(value: Post) {
 
 async function loadPost() {
   await categoryStore.initialize();
-  await postStore.loadPost(postId.value);
+  await retry();
 }
 
 function changeCategory() {
@@ -118,14 +121,23 @@ function cancel() {
 }
 
 watch(
-  post,
-  (value) => {
-    if (!value) return;
+  [post, categoriesReady],
+  ([value, ready]) => {
+    if (!ready || !value || hasUnsavedChanges.value) return;
     applyPost(value);
   },
   { immediate: true },
 );
-watch(postId, loadPost, { immediate: true });
+watch(
+  postId,
+  () => {
+    savedSnapshot.value = '';
+  },
+  { flush: 'sync' },
+);
+void categoryStore.initialize().then(() => {
+  categoriesReady.value = true;
+});
 </script>
 
 <template>

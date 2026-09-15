@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { authUser, createPost } from '@/api';
+import { usePostStore } from '@/stores/post';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
 import { useDraftStore } from '@/stores/draft';
@@ -10,6 +11,7 @@ import { getApiErrorMessage } from '@/utils/apiError';
 
 import PostForm from './PostForm.vue';
 
+const postStore = usePostStore();
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
@@ -79,6 +81,7 @@ async function submitPost() {
       content: content.value,
       tagIds: selectedTagIds.value,
     });
+    postStore.setPost(post);
     draftStore.clearPostDraft(draftUserId.value);
     title.value = '';
     content.value = '';

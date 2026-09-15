@@ -13,6 +13,7 @@
     "@mdit/plugin-spoiler": "^2.1.1",
     "@novelia/auth-api": "github:auto-novel/auth#e6909c2711d3e13c2da8a7d27505f3dc0880e24e&path:packages/auth-api",
     "@novelia/web-kit": "github:auto-novel/auth#e6909c2711d3e13c2da8a7d27505f3dc0880e24e&path:packages/web-kit",
+    "@pinia/colada": "^1.4.4",
     "@tailwindcss/vite": "^4.3.3",
     "@vicons/material": "^0.13.0",
     "@vitejs/plugin-vue": "^6.0.8",
