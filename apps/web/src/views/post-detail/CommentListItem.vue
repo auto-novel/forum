@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 
-import { type PostComment } from '@/api';
+import { authUser, type PostComment } from '@/api';
 import AppButton from '@/components/AppButton.vue';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
@@ -35,8 +35,19 @@ const commentStore = useCommentStore();
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
+const showModeratedContent = ref(false);
 
 const isPublished = computed(() => props.comment.status === 0);
+const isAdmin = computed(() => authUser.value?.role === 'admin');
+const statusLabel = computed(() =>
+  props.comment.status === 2 ? '该评论已删除' : '该评论已隐藏',
+);
+watch(
+  [() => props.comment.id, () => props.comment.status, () => authUser.value],
+  () => {
+    showModeratedContent.value = false;
+  },
+);
 const hasUnsavedChanges = computed(
   () => editing.value && content.value !== props.comment.content,
 );
@@ -99,9 +110,29 @@ async function saveEdit() {
         @author-comments-deleted="emit('authorCommentsDeleted')"
       />
     </header>
-    <p v-if="!isPublished" class="mt-2 text-sm text-muted">
-      {{ comment.status === 2 ? '该评论已删除' : '该评论已隐藏' }}
-    </p>
+    <div v-if="!isPublished" class="mt-2">
+      <AppButton
+        v-if="isAdmin"
+        variant="plain"
+        size="none"
+        class="text-sm text-muted hover:text-primary"
+        :aria-expanded="showModeratedContent"
+        :aria-controls="`comment-${comment.id}-moderated-content`"
+        @click="showModeratedContent = !showModeratedContent"
+      >
+        {{ statusLabel }} ·
+        {{ showModeratedContent ? '点击收起原文' : '点击查看原文' }}
+      </AppButton>
+      <p v-else class="text-sm text-muted">{{ statusLabel }}</p>
+      <div v-if="isAdmin" :id="`comment-${comment.id}-moderated-content`">
+        <MarkdownContent
+          v-if="showModeratedContent"
+          class="mt-2"
+          mode="comment"
+          :source="comment.content"
+        />
+      </div>
+    </div>
     <form v-else-if="editing" class="mt-2" @submit.prevent="saveEdit">
       <MarkdownEditor
         v-model="content"

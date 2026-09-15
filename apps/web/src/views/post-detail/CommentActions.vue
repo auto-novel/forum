@@ -65,12 +65,12 @@ const confirmation = computed(() =>
   confirmationAction.value === 'delete'
     ? {
         title: '删除评论',
-        description: '确定删除这条评论吗？删除后无法恢复。',
+        description: '确定删除这条评论吗？',
         confirmLabel: '删除评论',
       }
     : {
         title: '隐藏评论',
-        description: '确定隐藏这条评论吗？隐藏后可在管理端恢复。',
+        description: '确定隐藏这条评论吗？',
         confirmLabel: '隐藏评论',
       },
 );

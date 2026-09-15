@@ -53,12 +53,12 @@ const confirmation = computed(() =>
   confirmationAction.value === 'delete'
     ? {
         title: '删除帖子',
-        description: '确定删除这篇帖子吗？删除后无法恢复。',
+        description: '确定删除这篇帖子吗？',
         confirmLabel: '删除帖子',
       }
     : {
         title: '隐藏帖子',
-        description: '确定隐藏这篇帖子吗？隐藏后可在管理端恢复。',
+        description: '确定隐藏这篇帖子吗？',
         confirmLabel: '隐藏帖子',
       },
 );

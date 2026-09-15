@@ -156,14 +156,24 @@ export const useCommentStore = defineStore('comment', () => {
 
   function applyStatus(id: number, status: number) {
     updateCachedComments((comment) =>
-      comment.id === id ? { ...comment, status, content: '' } : comment,
+      comment.id === id
+        ? {
+            ...comment,
+            status,
+            content: authUser.value?.role === 'admin' ? comment.content : '',
+          }
+        : comment,
     );
   }
 
   function registerDeletedCommentsByAuthor(authorId: number) {
     updateCachedComments((comment) =>
       comment.authorId === authorId
-        ? { ...comment, status: 2, content: '' }
+        ? {
+            ...comment,
+            status: 2,
+            content: authUser.value?.role === 'admin' ? comment.content : '',
+          }
         : comment,
     );
   }
