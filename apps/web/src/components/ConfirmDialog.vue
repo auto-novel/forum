@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -26,10 +25,16 @@ withDefaults(
   },
 );
 
-defineEmits<{
+const emit = defineEmits<{
   'update:open': [open: boolean];
   confirm: [];
 }>();
+
+function confirm() {
+  // 先执行确认，再关闭弹窗，避免父组件提前清空待执行的动作。
+  emit('confirm');
+  emit('update:open', false);
+}
 </script>
 
 <template>
@@ -49,15 +54,13 @@ defineEmits<{
           <AlertDialogCancel as-child>
             <AppButton variant="outline" :disabled="loading">取消</AppButton>
           </AlertDialogCancel>
-          <AlertDialogAction as-child>
-            <AppButton
-              :variant="danger ? 'danger' : 'primary'"
-              :disabled="loading"
-              @click="$emit('confirm')"
-            >
-              {{ loading ? '处理中…' : confirmLabel }}
-            </AppButton>
-          </AlertDialogAction>
+          <AppButton
+            :variant="danger ? 'danger' : 'primary'"
+            :disabled="loading"
+            @click="confirm"
+          >
+            {{ loading ? '处理中…' : confirmLabel }}
+          </AppButton>
         </div>
       </AlertDialogContent>
     </AlertDialogPortal>
