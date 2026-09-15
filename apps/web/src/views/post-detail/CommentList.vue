@@ -14,7 +14,7 @@ defineProps<{
   loading: boolean;
   error?: string;
   page: number;
-  total: number;
+  commentsCount: number;
   totalPages: number;
   locked: boolean;
   postId: number;
@@ -44,7 +44,7 @@ const emit = defineEmits<{
     >
       <h2 class="font-semibold text-ink">
         评论
-        <span class="text-muted">{{ total }}</span>
+        <span class="text-muted">{{ commentsCount }}</span>
       </h2>
       <AppButton
         size="sm"

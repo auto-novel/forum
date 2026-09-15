@@ -54,7 +54,7 @@ const commentPage = computed(() => {
 
 const {
   comments,
-  total: commentsTotal,
+  total: commentRecordTotal,
   loading: commentsLoading,
   error: commentsError,
   refresh: loadComments,
@@ -62,7 +62,7 @@ const {
 } = useCommentPageQuery(postId, commentPage, COMMENT_PAGE_SIZE);
 
 const commentTotalPages = computed(() =>
-  Math.max(1, Math.ceil(commentsTotal.value / COMMENT_PAGE_SIZE)),
+  Math.max(1, Math.ceil(commentRecordTotal.value / COMMENT_PAGE_SIZE)),
 );
 
 const category = computed(() =>
@@ -246,7 +246,7 @@ function returnToList() {
               :loading="commentsLoading"
               :error="commentsError"
               :page="commentPage"
-              :total="commentsTotal"
+              :comments-count="post.commentsCount"
               :total-pages="commentTotalPages"
               :locked="post.commentsLocked"
               :post-id="post.id"
