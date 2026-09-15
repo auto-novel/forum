@@ -120,8 +120,7 @@ async function saveEdit() {
         :aria-controls="`comment-${comment.id}-moderated-content`"
         @click="showModeratedContent = !showModeratedContent"
       >
-        {{ statusLabel }} ·
-        {{ showModeratedContent ? '点击收起原文' : '点击查看原文' }}
+        {{ statusLabel }}
       </AppButton>
       <p v-else class="text-sm text-muted">{{ statusLabel }}</p>
       <div v-if="isAdmin" :id="`comment-${comment.id}-moderated-content`">
