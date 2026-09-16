@@ -1,6 +1,7 @@
 package main
 
 import (
+	"auth/internal/domainfilter"
 	"auth/internal/handler"
 	"auth/internal/httpx"
 	"auth/internal/infra"
@@ -36,6 +37,20 @@ func main() {
 
 	// authn
 	httpx.AccessTokenSecret = env("ACCESS_TOKEN_SECRET", "secret")
+	var domains *domainfilter.Filter
+	if path := os.Getenv("DOMAIN_FILTER_FILE"); path != "" {
+		file, err := os.Open(path)
+		if err != nil {
+			slog.Error("Open domain rules failed", "error", err)
+			os.Exit(1)
+		}
+		domains, err = domainfilter.Load(file)
+		_ = file.Close()
+		if err != nil {
+			slog.Error("Load domain rules failed", "error", err)
+			os.Exit(1)
+		}
+	}
 
 	// infra
 	db := infra.NewSQLDB(
@@ -55,9 +70,9 @@ func main() {
 
 	// handler
 	categoryHandler := handler.NewCategoryHandler(tagRepo)
-	postHandler := handler.NewPostHandler(postRepo, favoriteRepo, commentRepo)
-	commentHandler := handler.NewCommentHandler(commentRepo)
-	externalCommentHandler := handler.NewExternalCommentHandler(commentRepo)
+	postHandler := handler.NewPostHandler(postRepo, favoriteRepo, commentRepo, domains)
+	commentHandler := handler.NewCommentHandler(commentRepo, domains)
+	externalCommentHandler := handler.NewExternalCommentHandler(commentRepo, domains)
 	meHandler := handler.NewMeHandler(postRepo, favoriteRepo)
 
 	// router

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"auth/internal/domainfilter"
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
@@ -11,10 +12,13 @@ import (
 	"github.com/go-chi/render"
 )
 
-type externalCommentHandler struct{ repo repository.CommentRepository }
+type externalCommentHandler struct {
+	repo    repository.CommentRepository
+	domains *domainfilter.Filter
+}
 
-func NewExternalCommentHandler(repo repository.CommentRepository) *externalCommentHandler {
-	return &externalCommentHandler{repo: repo}
+func NewExternalCommentHandler(repo repository.CommentRepository, domains *domainfilter.Filter) *externalCommentHandler {
+	return &externalCommentHandler{repo: repo, domains: domains}
 }
 
 func (h *externalCommentHandler) RegisterRoutes(router chi.Router) {
@@ -110,6 +114,9 @@ func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return err
 	}
+	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
+		return err
+	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
 	comment, err := h.repo.Create(repository.CreateCommentInput{
 		SubjectType:    subjectType,
@@ -166,6 +173,9 @@ func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) 
 	}
 	input, err := httpx.Body[commentInput](r)
 	if err != nil {
+		return err
+	}
+	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
 		return err
 	}
 	comment, err := h.repo.Update(subjectType, id, input.Content)

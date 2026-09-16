@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"auth/internal/domainfilter"
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
@@ -12,10 +13,13 @@ import (
 	"github.com/go-chi/render"
 )
 
-type commentHandler struct{ repo repository.CommentRepository }
+type commentHandler struct {
+	repo    repository.CommentRepository
+	domains *domainfilter.Filter
+}
 
-func NewCommentHandler(repo repository.CommentRepository) *commentHandler {
-	return &commentHandler{repo: repo}
+func NewCommentHandler(repo repository.CommentRepository, domains *domainfilter.Filter) *commentHandler {
+	return &commentHandler{repo: repo, domains: domains}
 }
 
 func (h *commentHandler) RegisterRoutes(router chi.Router) {
@@ -92,6 +96,9 @@ func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
 	}
 	input, err := httpx.Body[commentInput](r)
 	if err != nil {
+		return err
+	}
+	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
 		return err
 	}
 	comment, err := h.repo.Update(repository.CommentSubjectPost, id, input.Content)

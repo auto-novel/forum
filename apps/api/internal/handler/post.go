@@ -8,6 +8,7 @@ import (
 	"time"
 
 	forumcategory "auth/internal/category"
+	"auth/internal/domainfilter"
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
@@ -83,14 +84,21 @@ type postHandler struct {
 	postRepo     repository.PostRepository
 	favoriteRepo repository.FavoriteRepository
 	commentRepo  repository.CommentRepository
+	domains      *domainfilter.Filter
 }
 
 func NewPostHandler(
 	postRepo repository.PostRepository,
 	favoriteRepo repository.FavoriteRepository,
 	commentRepo repository.CommentRepository,
+	domains *domainfilter.Filter,
 ) *postHandler {
-	return &postHandler{postRepo: postRepo, favoriteRepo: favoriteRepo, commentRepo: commentRepo}
+	return &postHandler{
+		postRepo:     postRepo,
+		favoriteRepo: favoriteRepo,
+		commentRepo:  commentRepo,
+		domains:      domains,
+	}
 }
 
 func (h *postHandler) RegisterRoutes(router chi.Router) {
@@ -206,7 +214,7 @@ type postInput struct {
 	TagIDs     []int64 `json:"tagIds"`
 }
 
-func validatePost(input postInput) error {
+func (h *postHandler) validatePost(input postInput) error {
 	if input.CategoryID <= 0 {
 		return httpx.BadRequest("categoryId 必须为正整数")
 	}
@@ -219,7 +227,10 @@ func validatePost(input postInput) error {
 	if !uniquePositiveIDs(input.TagIDs) {
 		return httpx.BadRequest("tagIds 必须为不重复的正整数")
 	}
-	return nil
+	if err := checkDomainText(h.domains, "title", input.Title); err != nil {
+		return err
+	}
+	return checkDomainText(h.domains, "content", input.Content)
 }
 
 func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
@@ -227,7 +238,7 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := validatePost(input); err != nil {
+	if err := h.validatePost(input); err != nil {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
@@ -276,7 +287,7 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := validatePost(input); err != nil {
+	if err := h.validatePost(input); err != nil {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
@@ -377,6 +388,9 @@ func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) erro
 	}
 	input, err := httpx.Body[commentInput](r)
 	if err != nil {
+		return err
+	}
+	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)

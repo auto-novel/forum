@@ -99,7 +99,7 @@ func TestAnnouncementsPublishingRequiresAdmin(t *testing.T) {
 				t.Run(fmt.Sprintf("%s/%s/%d", method, role, categoryID), func(t *testing.T) {
 					repo := &writePostRepository{}
 					router := chi.NewRouter()
-					NewPostHandler(repo, noFavoriteRepository{}, nil).RegisterRoutes(router)
+					NewPostHandler(repo, noFavoriteRepository{}, nil, nil).RegisterRoutes(router)
 					path := "/"
 					wantStatus := http.StatusCreated
 					if method == http.MethodPatch {
