@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -31,6 +32,18 @@ func (h *commentHandler) RegisterRoutes(router chi.Router) {
 type commentInput struct {
 	Content string `json:"content"`
 	RootID  *int64 `json:"rootId"`
+}
+
+type commentUpdateInput struct {
+	Content string          `json:"content"`
+	RootID  json.RawMessage `json:"rootId"`
+}
+
+func validateCommentUpdate(input commentUpdateInput, domains *domainfilter.Filter) error {
+	if len(input.RootID) > 0 {
+		return httpx.BadRequest("rootId 不能修改")
+	}
+	return validateComment(commentInput{Content: input.Content}, domains)
 }
 
 func validateComment(input commentInput, domains *domainfilter.Filter) error {
@@ -110,11 +123,11 @@ func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	input, err := httpx.Body[commentInput](r)
+	input, err := httpx.Body[commentUpdateInput](r)
 	if err != nil {
 		return err
 	}
-	if err := validateComment(input, h.domains); err != nil {
+	if err := validateCommentUpdate(input, h.domains); err != nil {
 		return err
 	}
 	comment, err := h.repo.Update(repository.CommentSubjectPost, id, input.Content)

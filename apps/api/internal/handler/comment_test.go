@@ -36,6 +36,32 @@ func TestValidateComment(t *testing.T) {
 	}
 }
 
+func TestValidateCommentUpdate(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		body    string
+		wantErr bool
+	}{
+		{"content only", `{"content":"更新内容"}`, false},
+		{"root ID", `{"content":"更新内容","rootId":1}`, true},
+		{"null root ID", `{"content":"更新内容","rootId":null}`, true},
+		{"blank content", `{"content":" \n\t"}`, true},
+		{"long content", `{"content":"` + strings.Repeat("字", 1001) + `"}`, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPatch, "/comment/1", strings.NewReader(tc.body))
+			request.Header.Set("Content-Type", "application/json")
+			input, err := httpx.Body[commentUpdateInput](request)
+			if err == nil {
+				err = validateCommentUpdate(input, nil)
+			}
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("comment update error = %v, want error %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
 func TestCommentResponsesMaskModeratedContent(t *testing.T) {
 	for _, tc := range []struct {
 		name    string

@@ -171,11 +171,11 @@ func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return err
 	}
-	input, err := httpx.Body[commentInput](r)
+	input, err := httpx.Body[commentUpdateInput](r)
 	if err != nil {
 		return err
 	}
-	if err := validateComment(input, h.domains); err != nil {
+	if err := validateCommentUpdate(input, h.domains); err != nil {
 		return err
 	}
 	comment, err := h.repo.Update(subjectType, id, input.Content)
