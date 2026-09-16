@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/url"
 	"strings"
+	"unicode/utf8"
 
 	"auth/internal/domainfilter"
 	"auth/internal/httpx"
@@ -57,7 +58,7 @@ func repoError(err error, message string) error {
 }
 
 func validText(value string, min, max int) bool {
-	length := len([]rune(strings.TrimSpace(value)))
+	length := utf8.RuneCountInString(strings.TrimSpace(value))
 	return length >= min && length <= max
 }
 

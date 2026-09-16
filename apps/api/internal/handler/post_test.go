@@ -19,6 +19,33 @@ type listPostRepository struct {
 	items []repository.PostDetails
 }
 
+func TestValidatePostTextLimits(t *testing.T) {
+	handler := &postHandler{}
+	for _, tc := range []struct {
+		name    string
+		title   string
+		content string
+		wantErr bool
+	}{
+		{"minimum lengths", "标题", "文", false},
+		{"maximum lengths", strings.Repeat("题", 100), strings.Repeat("文", 20000), false},
+		{"short title", "题", "正文", true},
+		{"long title", strings.Repeat("题", 101), "正文", true},
+		{"blank title", " \n\t", "正文", true},
+		{"empty content", "标题", "", true},
+		{"blank content", "标题", " \n\t", true},
+		{"long content", "标题", strings.Repeat("文", 20001), true},
+		{"long content with padding", "标题", strings.Repeat("文", 20000) + " ", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := handler.validatePost(postInput{CategoryID: 1, Title: tc.title, Content: tc.content})
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("validatePost() error = %v, want error %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
 func (r listPostRepository) List(repository.PostFilter, int64, int64) (int64, []repository.PostDetails, error) {
 	return int64(len(r.items)), r.items, nil
 }

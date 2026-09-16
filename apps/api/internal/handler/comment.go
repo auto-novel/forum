@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"unicode/utf8"
 
 	"auth/internal/domainfilter"
 	"auth/internal/httpx"
@@ -33,8 +34,8 @@ type commentInput struct {
 }
 
 func validateComment(input commentInput, domains *domainfilter.Filter) error {
-	if !validText(input.Content, 1, 100000) || len([]rune(input.Content)) > 100000 {
-		return httpx.BadRequest("content 不能为空且不能超过 100000 字")
+	if !validText(input.Content, 1, 1000) || utf8.RuneCountInString(input.Content) > 1000 {
+		return httpx.BadRequest("content 不能为空且不能超过 1000 字")
 	}
 	if input.RootID != nil && *input.RootID <= 0 {
 		return httpx.BadRequest("rootId 必须为正整数")

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	forumcategory "auth/internal/category"
 	"auth/internal/domainfilter"
@@ -218,11 +219,11 @@ func (h *postHandler) validatePost(input postInput) error {
 	if input.CategoryID <= 0 {
 		return httpx.BadRequest("categoryId 必须为正整数")
 	}
-	if !validText(input.Title, 1, 500) {
-		return httpx.BadRequest("title 长度必须为 1 到 500")
+	if !validText(input.Title, 2, 100) {
+		return httpx.BadRequest("title 长度必须为 2 到 100 字")
 	}
-	if !validText(input.Content, 1, 1000000) {
-		return httpx.BadRequest("content 不能为空且不能超过 1000000 字")
+	if !validText(input.Content, 1, 20000) || utf8.RuneCountInString(input.Content) > 20000 {
+		return httpx.BadRequest("content 不能为空且不能超过 20000 字")
 	}
 	if !uniquePositiveIDs(input.TagIDs) {
 		return httpx.BadRequest("tagIds 必须为不重复的正整数")

@@ -21,10 +21,10 @@ func TestValidateComment(t *testing.T) {
 		wantErr bool
 	}{
 		{"normal", commentInput{Content: "评论", RootID: &positive}, false},
-		{"max length", commentInput{Content: strings.Repeat("字", 100000)}, false},
+		{"max length", commentInput{Content: strings.Repeat("字", 1000)}, false},
 		{"empty", commentInput{Content: " \n\t"}, true},
-		{"too long", commentInput{Content: strings.Repeat("字", 100001)}, true},
-		{"too long with padding", commentInput{Content: strings.Repeat("字", 100000) + " "}, true},
+		{"too long", commentInput{Content: strings.Repeat("字", 1001)}, true},
+		{"too long with padding", commentInput{Content: strings.Repeat("字", 1000) + " "}, true},
 		{"invalid root", commentInput{Content: "评论", RootID: &zero}, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
