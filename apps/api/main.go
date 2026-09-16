@@ -37,19 +37,16 @@ func main() {
 
 	// authn
 	httpx.AccessTokenSecret = env("ACCESS_TOKEN_SECRET", "secret")
-	var domains *domainfilter.Filter
-	if path := os.Getenv("DOMAIN_FILTER_FILE"); path != "" {
-		file, err := os.Open(path)
-		if err != nil {
-			slog.Error("Open domain rules failed", "error", err)
-			os.Exit(1)
-		}
-		domains, err = domainfilter.Load(file)
-		_ = file.Close()
-		if err != nil {
-			slog.Error("Load domain rules failed", "error", err)
-			os.Exit(1)
-		}
+	file, err := os.Open("domain-blacklist.txt")
+	if err != nil {
+		slog.Error("Open domain rules failed", "error", err)
+		os.Exit(1)
+	}
+	domains, err := domainfilter.Load(file)
+	_ = file.Close()
+	if err != nil {
+		slog.Error("Load domain rules failed", "error", err)
+		os.Exit(1)
 	}
 
 	// infra

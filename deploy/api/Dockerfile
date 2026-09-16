@@ -12,5 +12,6 @@ RUN go build -o api
 FROM alpine:3.22.1
 WORKDIR /app
 COPY --from=builder /app/api /app/api
+COPY apps/api/domain-blacklist.txt /app/domain-blacklist.txt
 EXPOSE 8080
 CMD ["./api"]

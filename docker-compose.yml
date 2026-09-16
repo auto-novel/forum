@@ -22,7 +22,6 @@ services:
     restart: unless-stopped
     environment:
       - ACCESS_TOKEN_SECRET
-      - DOMAIN_FILTER_FILE
       - DB_HOST=postgresql
       - DB_PORT=5432
       - DB_PASSWORD=${POSTGRES_PASSWORD}
