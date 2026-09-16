@@ -123,7 +123,6 @@ async function submitPost() {
           submitting-label="发布中…"
           title-placeholder="用一句话概括你想讨论的内容"
           content-placeholder="详细说明你想分享或讨论的内容…"
-          show-title-count
           @category-change="changeCategory"
           @submit="submitPost"
         />

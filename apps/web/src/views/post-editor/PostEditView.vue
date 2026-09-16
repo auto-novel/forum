@@ -180,7 +180,6 @@ void categoryStore.initialize().then(() => {
             submitting-label="保存中…"
             title-placeholder="用一句话概括你想讨论的内容"
             content-placeholder="详细说明你想分享或讨论的内容…"
-            show-title-count
             show-cancel
             @category-change="changeCategory"
             @submit="save"

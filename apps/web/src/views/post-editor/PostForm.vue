@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, useId } from 'vue';
 
 import type { PostTag } from '@/api';
 import AppButton from '@/components/AppButton.vue';
@@ -18,13 +18,11 @@ const props = withDefaults(
     submittingLabel: string;
     titlePlaceholder?: string;
     contentPlaceholder?: string;
-    showTitleCount?: boolean;
     showCancel?: boolean;
   }>(),
   {
     titlePlaceholder: '',
     contentPlaceholder: '使用 Markdown 输入内容…',
-    showTitleCount: false,
     showCancel: false,
   },
 );
@@ -38,9 +36,26 @@ const title = defineModel<string>('title', { required: true });
 const category = defineModel<string>('category', { required: true });
 const content = defineModel<string>('content', { required: true });
 const tagIds = defineModel<number[]>('tagIds', { required: true });
+const contentHintId = useId();
+const titleLength = computed(() => Array.from(title.value.trim()).length);
+const contentLength = computed(() => Array.from(content.value).length);
+const titleHint = computed(() => {
+  if (titleLength.value < 2) return '标题至少需要 2 字';
+  if (titleLength.value > 100) return '标题不能超过 100 字';
+  return '';
+});
+const contentHint = computed(() => {
+  if (!content.value.trim()) return '请输入正文';
+  if (contentLength.value > 20000) return '正文不能超过 20000 字';
+  return '';
+});
 const canSubmit = computed(
   () =>
-    Boolean(title.value.trim() && content.value.trim()) && !props.submitting,
+    titleLength.value >= 2 &&
+    titleLength.value <= 100 &&
+    Boolean(content.value.trim()) &&
+    contentLength.value <= 20000 &&
+    !props.submitting,
 );
 
 function submit() {
@@ -58,15 +73,26 @@ function submit() {
         id="post-title"
         v-model="title"
         type="text"
-        maxlength="500"
         class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="titlePlaceholder"
         :disabled="submitting"
         required
+        :aria-describedby="titleHint ? 'post-title-hint' : undefined"
+        :aria-invalid="
+          titleLength > 100 || (titleLength > 0 && titleLength < 2) || undefined
+        "
       />
-      <p v-if="showTitleCount" class="mt-1 text-right text-xs text-muted">
-        {{ title.length }} / 500
-      </p>
+      <div class="mt-1 flex items-center justify-between gap-3 text-xs">
+        <p
+          v-if="titleHint"
+          id="post-title-hint"
+          :class="title ? 'text-orange-700' : 'text-muted'"
+          aria-live="polite"
+        >
+          {{ titleHint }}
+        </p>
+        <p class="ml-auto text-muted">{{ titleLength }} / 100</p>
+      </div>
     </div>
 
     <div>
@@ -130,7 +156,20 @@ function submit() {
         :placeholder="contentPlaceholder"
         :rows="14"
         :disabled="submitting"
+        :described-by="contentHint ? contentHintId : undefined"
+        :invalid="contentLength > 20000"
       />
+      <div class="mt-1 flex items-center justify-between gap-3 text-xs">
+        <p
+          v-if="contentHint"
+          :id="contentHintId"
+          :class="content ? 'text-orange-700' : 'text-muted'"
+          aria-live="polite"
+        >
+          {{ contentHint }}
+        </p>
+        <p class="ml-auto text-muted">{{ contentLength }} / 20000</p>
+      </div>
     </div>
 
     <div

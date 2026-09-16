@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, useId, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
 import AppButton from '@/components/AppButton.vue';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import { useCommentValidation } from '@/composables/useCommentValidation';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
@@ -35,6 +36,12 @@ const commentStore = useCommentStore();
 const editing = ref(false);
 const content = ref(props.comment.content);
 const submitting = ref(false);
+const commentHintId = useId();
+const {
+  length: commentLength,
+  hint: commentHint,
+  canSubmit: canSave,
+} = useCommentValidation(content, submitting);
 const showModeratedContent = ref(false);
 
 const isPublished = computed(() => props.comment.status === 0);
@@ -72,7 +79,7 @@ function startEditing() {
 
 async function saveEdit() {
   const value = content.value.trim();
-  if (!value || submitting.value) return;
+  if (!canSave.value) return;
   submitting.value = true;
   try {
     await commentStore.updateComment(props.comment.id, value);
@@ -138,7 +145,20 @@ async function saveEdit() {
         mode="comment"
         :rows="5"
         :disabled="submitting"
+        :described-by="commentHint ? commentHintId : undefined"
+        :invalid="commentLength > 1000"
       />
+      <div class="mt-2 flex items-center justify-between gap-3 text-xs">
+        <p
+          v-if="commentHint"
+          :id="commentHintId"
+          :class="content ? 'text-orange-700' : 'text-muted'"
+          aria-live="polite"
+        >
+          {{ commentHint }}
+        </p>
+        <p class="ml-auto text-muted">{{ commentLength }} / 1000</p>
+      </div>
       <div class="mt-3 flex items-center justify-between gap-3">
         <MarkdownHelpDialog mode="comment" />
         <div class="flex gap-2">
@@ -150,11 +170,7 @@ async function saveEdit() {
           >
             取消
           </AppButton>
-          <AppButton
-            type="submit"
-            size="xs"
-            :disabled="!content.trim() || submitting"
-          >
+          <AppButton type="submit" size="xs" :disabled="!canSave">
             {{ submitting ? '保存中…' : '保存' }}
           </AppButton>
         </div>

@@ -17,6 +17,8 @@ const props = withDefaults(
     mode: MarkdownMode;
     placeholder?: string;
     disabled?: boolean;
+    describedBy?: string;
+    invalid?: boolean;
     maxlength?: number;
     rows?: number;
   }>(),
@@ -212,6 +214,8 @@ defineExpose({ focus });
         :maxlength="maxlength"
         :placeholder="placeholder"
         :disabled="disabled"
+        :aria-describedby="describedBy"
+        :aria-invalid="invalid || undefined"
         spellcheck="false"
       />
     </div>
