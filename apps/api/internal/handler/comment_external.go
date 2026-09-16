@@ -114,7 +114,7 @@ func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return err
 	}
-	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
+	if err := validateComment(input, h.domains); err != nil {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
@@ -175,7 +175,7 @@ func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		return err
 	}
-	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
+	if err := validateComment(input, h.domains); err != nil {
 		return err
 	}
 	comment, err := h.repo.Update(subjectType, id, input.Content)

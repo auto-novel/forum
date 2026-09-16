@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"auth/internal/httpx"
@@ -10,6 +11,30 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func TestValidateComment(t *testing.T) {
+	zero := int64(0)
+	positive := int64(1)
+	for _, tc := range []struct {
+		name    string
+		input   commentInput
+		wantErr bool
+	}{
+		{"normal", commentInput{Content: "评论", RootID: &positive}, false},
+		{"max length", commentInput{Content: strings.Repeat("字", 100000)}, false},
+		{"empty", commentInput{Content: " \n\t"}, true},
+		{"too long", commentInput{Content: strings.Repeat("字", 100001)}, true},
+		{"too long with padding", commentInput{Content: strings.Repeat("字", 100000) + " "}, true},
+		{"invalid root", commentInput{Content: "评论", RootID: &zero}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateComment(tc.input, nil)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("validateComment() error = %v, want error %v", err, tc.wantErr)
+			}
+		})
+	}
+}
 
 func TestCommentResponsesMaskModeratedContent(t *testing.T) {
 	for _, tc := range []struct {

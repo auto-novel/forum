@@ -27,6 +27,21 @@ func (h *commentHandler) RegisterRoutes(router chi.Router) {
 	router.With(httpx.RequireAccessToken).Delete("/{id}", httpx.EH(h.delete))
 }
 
+type commentInput struct {
+	Content string `json:"content"`
+	RootID  *int64 `json:"rootId"`
+}
+
+func validateComment(input commentInput, domains *domainfilter.Filter) error {
+	if !validText(input.Content, 1, 100000) || len([]rune(input.Content)) > 100000 {
+		return httpx.BadRequest("content 不能为空且不能超过 100000 字")
+	}
+	if input.RootID != nil && *input.RootID <= 0 {
+		return httpx.BadRequest("rootId 必须为正整数")
+	}
+	return checkDomainText(domains, "content", input.Content)
+}
+
 type commentResponse struct {
 	ID             int64     `json:"id"`
 	PostID         int64     `json:"postId"`
@@ -98,7 +113,7 @@ func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
+	if err := validateComment(input, h.domains); err != nil {
 		return err
 	}
 	comment, err := h.repo.Update(repository.CommentSubjectPost, id, input.Content)

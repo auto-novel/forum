@@ -376,11 +376,6 @@ func (h *postHandler) listComments(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-type commentInput struct {
-	Content string `json:"content" validate:"required,max=100000"`
-	RootID  *int64 `json:"rootId" validate:"omitempty,gt=0"`
-}
-
 func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) error {
 	postID, err := httpx.ParseParamPositiveInt(r, "id")
 	if err != nil {
@@ -390,7 +385,7 @@ func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return err
 	}
-	if err := checkDomainText(h.domains, "content", input.Content); err != nil {
+	if err := validateComment(input, h.domains); err != nil {
 		return err
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
