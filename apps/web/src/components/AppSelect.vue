@@ -19,7 +19,6 @@ defineProps<{
   ariaLabel?: string;
   disabled?: boolean;
   required?: boolean;
-  active?: boolean;
   rounded?: boolean;
 }>();
 
@@ -44,11 +43,8 @@ function handleChange(value: AcceptableValue) {
       <SelectTrigger
         :id="id"
         :aria-label="ariaLabel"
-        class="flex min-h-10 w-full min-w-0 items-center justify-between gap-2 border border-border px-3 text-left text-sm font-normal outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
-        :class="[
-          rounded ? 'rounded-md' : 'rounded-sm',
-          active ? 'bg-primary/5 text-primary' : 'bg-transparent text-ink',
-        ]"
+        class="flex min-h-10 w-full min-w-0 items-center justify-between gap-2 border border-border bg-transparent px-3 text-left text-sm font-normal text-ink outline-none transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+        :class="rounded ? 'rounded-md' : 'rounded-sm'"
       >
         <SelectValue class="min-w-0 truncate" />
         <ExpandMoreOutlined

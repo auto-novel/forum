@@ -89,7 +89,6 @@ watch(
       v-model="tagInput"
       :options="tagOptions"
       aria-label="按标签过滤"
-      :active="Boolean(tagInput)"
       class="min-w-0 flex-1 sm:w-32 sm:flex-none"
       @change="apply"
     />
@@ -98,7 +97,6 @@ watch(
       v-model="sortInput"
       :options="sortOptions"
       aria-label="帖子排序"
-      :active="sortInput !== 'active'"
       class="min-w-0 flex-1 sm:w-32 sm:flex-none"
       @change="apply"
     />
