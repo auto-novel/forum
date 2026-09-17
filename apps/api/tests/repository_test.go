@@ -257,6 +257,33 @@ func TestJetRepositories(t *testing.T) {
 	if err := postRepo.SetStatus(post.ID, repository.StatusHidden); err != nil {
 		t.Fatal(err)
 	}
+	for _, tc := range []struct {
+		name   string
+		filter repository.PostFilter
+		want   int64
+	}{
+		{"public", repository.PostFilter{}, 0},
+		{"admin all", repository.PostFilter{Status: repository.PostStatusAll}, 1},
+		{"admin hidden", repository.PostFilter{Status: repository.StatusHidden}, 1},
+		{"admin deleted", repository.PostFilter{Status: repository.StatusDeleted}, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			total, items, err := postRepo.List(tc.filter, 20, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if total != tc.want || int64(len(items)) != tc.want {
+				t.Fatalf("total=%d items=%d, want=%d", total, len(items), tc.want)
+			}
+		})
+	}
+	if err := postRepo.SetStatus(post.ID, repository.StatusDeleted); err != nil {
+		t.Fatal(err)
+	}
+	deletedTotal, deletedPosts, err := postRepo.List(repository.PostFilter{Status: repository.StatusDeleted}, 20, 0)
+	if err != nil || deletedTotal != 1 || len(deletedPosts) != 1 || deletedPosts[0].ID != post.ID {
+		t.Fatalf("deleted post filter: total=%d items=%#v err=%v", deletedTotal, deletedPosts, err)
+	}
 	if err := postRepo.SetStatus(post.ID, repository.StatusPublished); err != nil {
 		t.Fatal(err)
 	}

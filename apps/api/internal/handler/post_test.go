@@ -20,6 +20,46 @@ type listPostRepository struct {
 	items []repository.PostDetails
 }
 
+type capturingPostRepository struct {
+	repository.PostRepository
+	filter repository.PostFilter
+}
+
+func (r *capturingPostRepository) List(filter repository.PostFilter, _, _ int64) (int64, []repository.PostDetails, error) {
+	r.filter = filter
+	return 0, nil, nil
+}
+
+func TestAdminPostListStatusFilter(t *testing.T) {
+	for _, tc := range []struct {
+		query      string
+		wantStatus int16
+		wantError  bool
+	}{
+		{"", repository.PostStatusAll, false},
+		{"?status=all", repository.PostStatusAll, false},
+		{"?status=0", repository.StatusPublished, false},
+		{"?status=1", repository.StatusHidden, false},
+		{"?status=2", repository.StatusDeleted, false},
+		{"?status=3", 0, true},
+		{"?status=", 0, true},
+		{"?status=1&status=2", 0, true},
+	} {
+		repo := &capturingPostRepository{}
+		h := NewPostHandler(repo, nil, nil, nil)
+		err := h.listAdminPosts(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/admin/post/"+tc.query, nil))
+		if (err != nil) != tc.wantError {
+			t.Fatalf("query %q: error=%v, wantError=%v", tc.query, err, tc.wantError)
+		}
+		if tc.wantError {
+			continue
+		}
+		if repo.filter.Status != tc.wantStatus {
+			t.Fatalf("query %q: unexpected filter: %#v", tc.query, repo.filter)
+		}
+	}
+}
+
 func TestValidatePostTextLimits(t *testing.T) {
 	handler := &postHandler{}
 	for _, tc := range []struct {

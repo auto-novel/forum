@@ -23,6 +23,7 @@ const (
 	PostSortNewest   = "newest"
 	PostSortViews    = "views"
 	PostSortComments = "comments"
+	PostStatusAll    = -1
 )
 
 type PostFilter struct {
@@ -30,6 +31,7 @@ type PostFilter struct {
 	Sort                     string
 	TagIDs                   []int64
 	AuthorID, FavoriteUserID int64
+	Status                   int16
 }
 
 type CreatePostInput struct {
@@ -75,7 +77,10 @@ func integerExpressions(ids []int64) []Expression {
 }
 
 func (filter PostFilter) condition() BoolExpression {
-	expressions := []BoolExpression{table.Post.Status.EQ(Int16(StatusPublished))}
+	expressions := []BoolExpression{RawBool("TRUE")}
+	if filter.Status != PostStatusAll {
+		expressions = append(expressions, table.Post.Status.EQ(Int16(filter.Status)))
+	}
 	if filter.CategorySlug != "" {
 		category, ok := forumcategory.FindBySlug(filter.CategorySlug)
 		if !ok {
