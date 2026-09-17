@@ -38,10 +38,15 @@ const favoriteLoading = ref(false);
 const actionLoading = ref(false);
 const confirmationAction = ref<'delete' | 'hide'>();
 const userModerationAction = ref<'strike' | 'ban'>();
-
 const isAdmin = computed(() => authUser.value?.role === 'admin');
 const isOwner = computed(() => authUser.value?.id === props.post.authorId);
 const canManagePost = computed(() => isOwner.value || isAdmin.value);
+const canDelete = computed(
+  () =>
+    isAdmin.value ||
+    (isOwner.value &&
+      Date.now() <= new Date(props.post.createdAt).getTime() + 20 * 60_000),
+);
 const canModerateAuthor = computed(() => isAdmin.value && !isOwner.value);
 const moderationEvidence = computed(() =>
   [
@@ -213,6 +218,7 @@ watch(
             </ActionMenuItem>
           </template>
           <ActionMenuItem
+            v-if="canDelete"
             danger
             :disabled="actionLoading"
             @activate="confirmationAction = 'delete'"

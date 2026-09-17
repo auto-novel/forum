@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"auth/internal/repository"
 )
@@ -155,5 +156,59 @@ func TestAnnouncementsPublishingRequiresAdmin(t *testing.T) {
 				})
 			}
 		}
+	}
+}
+
+type deletePostRepository struct {
+	repository.PostRepository
+	post    repository.PostDetails
+	deleted bool
+}
+
+func (r *deletePostRepository) Find(int64, bool) (*repository.PostDetails, error) {
+	return &r.post, nil
+}
+
+func (r *deletePostRepository) SetStatus(id int64, status int16) error {
+	r.deleted = true
+	if id != r.post.ID || status != repository.StatusDeleted {
+		return fmt.Errorf("unexpected post status update: id=%d status=%d", id, status)
+	}
+	return nil
+}
+
+func TestPostDeletionWindow(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		role       string
+		userID     int64
+		age        time.Duration
+		wantStatus int
+	}{
+		{"author within window", "member", 1, 19 * time.Minute, http.StatusNoContent},
+		{"author after window", "member", 1, 21 * time.Minute, http.StatusForbidden},
+		{"admin after window", "admin", 2, 21 * time.Minute, http.StatusNoContent},
+		{"other user within window", "member", 2, 19 * time.Minute, http.StatusForbidden},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := &deletePostRepository{post: repository.PostDetails{Post: repository.Post{
+				ID: 42, AuthorID: 1, CreatedAt: time.Now().Add(-tc.age),
+			}}}
+			router := chi.NewRouter()
+			NewPostHandler(repo, nil, nil, nil).RegisterRoutes(router)
+			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+				"sub": "tester", "uid": tc.userID, "role": tc.role,
+			}).SignedString([]byte(httpx.AccessTokenSecret))
+			if err != nil {
+				t.Fatal(err)
+			}
+			request := httptest.NewRequest(http.MethodDelete, "/42/", nil)
+			request.Header.Set("Authorization", "Bearer "+token)
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, request)
+			if recorder.Code != tc.wantStatus || repo.deleted != (tc.wantStatus == http.StatusNoContent) {
+				t.Fatalf("status=%d want=%d deleted=%v body=%s", recorder.Code, tc.wantStatus, repo.deleted, recorder.Body.String())
+			}
+		})
 	}
 }

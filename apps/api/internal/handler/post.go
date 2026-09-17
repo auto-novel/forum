@@ -263,24 +263,24 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *postHandler) ownedID(r *http.Request) (int64, error) {
+func (h *postHandler) ownedPost(r *http.Request) (*repository.PostDetails, error) {
 	id, err := httpx.ParseParamPositiveInt(r, "id")
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	post, err := h.postRepo.Find(id, false)
 	if err != nil {
-		return 0, repoError(err, "查询帖子失败")
+		return nil, repoError(err, "查询帖子失败")
 	}
 	principal, _ := httpx.AuthenticatedPrincipal(r)
 	if post.AuthorID != principal.UserID && !principal.IsAdmin() {
-		return 0, httpx.Forbidden("只能修改自己的帖子")
+		return nil, httpx.Forbidden("只能修改自己的帖子")
 	}
-	return id, nil
+	return post, nil
 }
 
 func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
-	id, err := h.ownedID(r)
+	ownedPost, err := h.ownedPost(r)
 	if err != nil {
 		return err
 	}
@@ -295,7 +295,7 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 	if input.CategoryID == forumcategory.AnnouncementsID && !principal.IsAdmin() {
 		return httpx.Forbidden("站务公告仅管理员可以发帖")
 	}
-	post, err := h.postRepo.Update(id, repository.UpdatePostInput{
+	post, err := h.postRepo.Update(ownedPost.ID, repository.UpdatePostInput{
 		CategoryID: input.CategoryID,
 		Title:      strings.TrimSpace(input.Title),
 		Content:    input.Content,
@@ -313,11 +313,15 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) delete(w http.ResponseWriter, r *http.Request) error {
-	id, err := h.ownedID(r)
+	post, err := h.ownedPost(r)
 	if err != nil {
 		return err
 	}
-	if err := h.postRepo.SetStatus(id, repository.StatusDeleted); err != nil {
+	principal, _ := httpx.AuthenticatedPrincipal(r)
+	if !principal.IsAdmin() && time.Now().After(post.CreatedAt.Add(20*time.Minute)) {
+		return httpx.Forbidden("帖子只能在发布后 20 分钟内删除")
+	}
+	if err := h.postRepo.SetStatus(post.ID, repository.StatusDeleted); err != nil {
 		return repoError(err, "删除帖子失败")
 	}
 	w.WriteHeader(http.StatusNoContent)
