@@ -19,10 +19,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: () => ({
+      redirect: {
         name: 'posts',
-        params: { slug: defaultCategorySlug() },
-      }),
+        params: { slug: 'announcements' },
+      },
     },
     {
       path: '/c/:slug',
