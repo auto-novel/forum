@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ExpandMoreOutlined, SearchOutlined } from '@vicons/material';
+import { SearchOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
 
 import { type PostSort } from '@/api';
+import AppSelect from '@/components/AppSelect.vue';
 import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{
@@ -21,6 +22,16 @@ const queryInput = ref(props.query);
 const tagInput = ref(props.tagId ? String(props.tagId) : '');
 const sortInput = ref<PostSort>(props.sort);
 const tags = computed(() => categoryStore.tagsByCategoryId(props.categoryId));
+const tagOptions = computed(() => [
+  { label: '全部标签', value: '' },
+  ...tags.value.map((tag) => ({ label: tag.name, value: String(tag.id) })),
+]);
+const sortOptions = [
+  { label: '最近活跃', value: 'active' },
+  { label: '最新发布', value: 'newest' },
+  { label: '浏览最多', value: 'views' },
+  { label: '评论最多', value: 'comments' },
+];
 
 function syncInputs() {
   queryInput.value = props.query;
@@ -73,51 +84,23 @@ watch(
       </span>
     </label>
 
-    <label
+    <AppSelect
       v-if="tags.length"
-      class="relative min-w-0 flex-1 sm:w-32 sm:flex-none"
-    >
-      <span class="sr-only">按标签过滤</span>
-      <select
-        v-model="tagInput"
-        class="min-h-10 w-full appearance-none truncate rounded-sm border border-border pr-9 pl-3 text-sm font-normal outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-        :class="
-          tagInput ? 'bg-primary/5 text-primary' : 'bg-transparent text-ink'
-        "
-        @change="apply"
-      >
-        <option value="">全部标签</option>
-        <option v-for="tag in tags" :key="tag.id" :value="String(tag.id)">
-          {{ tag.name }}
-        </option>
-      </select>
-      <ExpandMoreOutlined
-        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted"
-        aria-hidden="true"
-      />
-    </label>
+      v-model="tagInput"
+      :options="tagOptions"
+      aria-label="按标签过滤"
+      :active="Boolean(tagInput)"
+      class="min-w-0 flex-1 sm:w-32 sm:flex-none"
+      @change="apply"
+    />
 
-    <label class="relative min-w-0 flex-1 sm:w-32 sm:flex-none">
-      <span class="sr-only">帖子排序</span>
-      <select
-        v-model="sortInput"
-        class="min-h-10 w-full appearance-none truncate rounded-sm border border-border pr-9 pl-3 text-sm font-normal outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-        :class="
-          sortInput !== 'active'
-            ? 'bg-primary/5 text-primary'
-            : 'bg-transparent text-ink'
-        "
-        @change="apply"
-      >
-        <option value="active">最近活跃</option>
-        <option value="newest">最新发布</option>
-        <option value="views">浏览最多</option>
-        <option value="comments">评论最多</option>
-      </select>
-      <ExpandMoreOutlined
-        class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted"
-        aria-hidden="true"
-      />
-    </label>
+    <AppSelect
+      v-model="sortInput"
+      :options="sortOptions"
+      aria-label="帖子排序"
+      :active="sortInput !== 'active'"
+      class="min-w-0 flex-1 sm:w-32 sm:flex-none"
+      @change="apply"
+    />
   </form>
 </template>

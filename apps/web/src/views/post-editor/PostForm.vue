@@ -3,6 +3,7 @@ import { computed, defineAsyncComponent, useId } from 'vue';
 
 import type { PostTag } from '@/api';
 import AppButton from '@/components/AppButton.vue';
+import AppSelect from '@/components/AppSelect.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 
 const MarkdownHelpDialog = defineAsyncComponent(
@@ -36,6 +37,12 @@ const title = defineModel<string>('title', { required: true });
 const category = defineModel<string>('category', { required: true });
 const content = defineModel<string>('content', { required: true });
 const tagIds = defineModel<number[]>('tagIds', { required: true });
+const categoryOptions = computed(() =>
+  props.categories.map((categoryOption) => ({
+    label: categoryOption.title,
+    value: categoryOption.slug,
+  })),
+);
 const contentHintId = useId();
 const titleLength = computed(() => Array.from(title.value.trim()).length);
 const contentLength = computed(() => Array.from(content.value).length);
@@ -102,22 +109,15 @@ function submit() {
       >
         分类
       </label>
-      <select
+      <AppSelect
         id="post-category"
         v-model="category"
-        class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+        :options="categoryOptions"
         :disabled="submitting"
+        rounded
         required
         @change="emit('categoryChange')"
-      >
-        <option
-          v-for="categoryOption in categories"
-          :key="categoryOption.id"
-          :value="categoryOption.slug"
-        >
-          {{ categoryOption.title }}
-        </option>
-      </select>
+      />
     </div>
 
     <fieldset :disabled="submitting">
