@@ -13,10 +13,10 @@ import {
   unlockPost,
   unpinPost,
 } from '@/api';
-import AppButton from '@/components/AppButton.vue';
-import ActionMenu from '@/components/ActionMenu.vue';
-import ActionMenuItem from '@/components/ActionMenuItem.vue';
-import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import AppButton from '@/ui/AppButton.vue';
+import ActionMenu from '@/ui/ActionMenu.vue';
+import ActionMenuItem from '@/ui/ActionMenuItem.vue';
+import ConfirmDialog from '@/ui/ConfirmDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { getApiErrorMessage } from '@/utils/apiError';
 

@@ -8,7 +8,7 @@ import {
   PaginationRoot,
 } from 'reka-ui';
 
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 
 defineProps<{
   page: number;

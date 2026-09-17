@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { authUser, updatePost, type Post } from '@/api';
-import AppButton from '@/components/AppButton.vue';
-import AsyncContent from '@/components/AsyncContent.vue';
+import AppButton from '@/ui/AppButton.vue';
+import AsyncContent from '@/ui/AsyncContent.vue';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';

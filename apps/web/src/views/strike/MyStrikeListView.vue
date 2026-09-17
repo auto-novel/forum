@@ -5,8 +5,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { authApi, authUser } from '@/api';
-import AsyncContent from '@/components/AsyncContent.vue';
-import PaginationControls from '@/components/PaginationControls.vue';
+import AsyncContent from '@/ui/AsyncContent.vue';
+import PaginationControls from '@/ui/PaginationControls.vue';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const PAGE_SIZE = 20;

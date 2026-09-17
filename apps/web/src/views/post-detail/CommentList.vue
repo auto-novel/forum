@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 
 import type { PostComment } from '@/api';
-import AsyncContent from '@/components/AsyncContent.vue';
-import PaginationControls from '@/components/PaginationControls.vue';
+import AsyncContent from '@/ui/AsyncContent.vue';
+import PaginationControls from '@/ui/PaginationControls.vue';
 
 import CommentListItem from './CommentListItem.vue';
 

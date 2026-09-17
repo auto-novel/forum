@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from 'reka-ui';
 
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 
 import type { MarkdownMode } from './renderMarkdown';
 

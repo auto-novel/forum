@@ -2,8 +2,8 @@
 import { nextTick, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
-import AsyncContent from '@/components/AsyncContent.vue';
-import PaginationControls from '@/components/PaginationControls.vue';
+import AsyncContent from '@/ui/AsyncContent.vue';
+import PaginationControls from '@/ui/PaginationControls.vue';
 
 import PostListItem from './PostListItem.vue';
 

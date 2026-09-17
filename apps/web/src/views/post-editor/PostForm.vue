@@ -2,8 +2,8 @@
 import { computed, defineAsyncComponent, useId } from 'vue';
 
 import type { PostTag } from '@/api';
-import AppButton from '@/components/AppButton.vue';
-import AppSelect from '@/components/AppSelect.vue';
+import AppButton from '@/ui/AppButton.vue';
+import AppSelect from '@/ui/AppSelect.vue';
 import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 

@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 import { useCategoryStore } from '@/stores/category';
 import { usePostListQuery } from '@/stores/post';
 import PostFilters from './PostFilters.vue';

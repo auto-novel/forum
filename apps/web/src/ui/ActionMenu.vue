@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui';
 
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 
 withDefaults(
   defineProps<{

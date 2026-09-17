@@ -2,7 +2,7 @@
 import { Inventory2Outlined } from '@vicons/material';
 import { computed } from 'vue';
 
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 
 const props = withDefaults(
   defineProps<{

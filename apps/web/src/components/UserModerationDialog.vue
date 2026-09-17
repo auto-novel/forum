@@ -11,7 +11,7 @@ import {
 } from 'reka-ui';
 
 import { authApi, deleteCommentsByAuthor } from '@/api';
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';

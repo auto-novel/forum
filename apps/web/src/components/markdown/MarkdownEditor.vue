@@ -7,7 +7,7 @@ import {
 } from '@vicons/material';
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 
 import type { MarkdownMode } from './renderMarkdown';
 import MarkdownContent from './MarkdownContent.vue';

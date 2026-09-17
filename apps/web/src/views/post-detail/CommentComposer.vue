@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, ref, useId, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
-import AppButton from '@/components/AppButton.vue';
+import AppButton from '@/ui/AppButton.vue';
 import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { useCommentValidation } from '@/composables/useCommentValidation';

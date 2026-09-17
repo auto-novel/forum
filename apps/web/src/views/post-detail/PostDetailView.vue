@@ -4,8 +4,8 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { type Post, type PostComment } from '@/api';
-import AppButton from '@/components/AppButton.vue';
-import AsyncContent from '@/components/AsyncContent.vue';
+import AppButton from '@/ui/AppButton.vue';
+import AsyncContent from '@/ui/AsyncContent.vue';
 import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
 import { useCommentPageQuery, useCommentStore } from '@/stores/comment';
