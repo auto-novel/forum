@@ -5,12 +5,68 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+type editableCommentRepository struct {
+	repository.CommentRepository
+	comment repository.Comment
+	updated bool
+}
+
+func (r *editableCommentRepository) Find(int16, int64) (*repository.Comment, error) {
+	return &r.comment, nil
+}
+
+func (r *editableCommentRepository) Update(_ int16, _ int64, content string) (*repository.Comment, error) {
+	r.updated = true
+	r.comment.Content = content
+	return &r.comment, nil
+}
+
+func TestAdminCanEditCommentAfterWindow(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		role       string
+		userID     int64
+		age        time.Duration
+		wantStatus int
+	}{
+		{"author within window", "member", 1, 19 * time.Minute, http.StatusOK},
+		{"author after window", "member", 1, 21 * time.Minute, http.StatusForbidden},
+		{"admin after window", "admin", 2, 21 * time.Minute, http.StatusOK},
+		{"admin editing own old comment", "admin", 1, 21 * time.Minute, http.StatusOK},
+		{"other member within window", "member", 2, 19 * time.Minute, http.StatusForbidden},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := &editableCommentRepository{comment: repository.Comment{
+				ID: 7, SubjectKey: "42", AuthorID: 1, CreatedAt: time.Now().Add(-tc.age),
+			}}
+			router := chi.NewRouter()
+			NewCommentHandler(repo, nil).RegisterRoutes(router)
+			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+				"sub": "tester", "uid": tc.userID, "role": tc.role,
+			}).SignedString([]byte(httpx.AccessTokenSecret))
+			if err != nil {
+				t.Fatal(err)
+			}
+			request := httptest.NewRequest(http.MethodPatch, "/7", strings.NewReader(`{"content":"更新内容"}`))
+			request.Header.Set("Authorization", "Bearer "+token)
+			request.Header.Set("Content-Type", "application/json")
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, request)
+			if recorder.Code != tc.wantStatus || repo.updated != (tc.wantStatus == http.StatusOK) {
+				t.Fatalf("status=%d want=%d updated=%v body=%s", recorder.Code, tc.wantStatus, repo.updated, recorder.Body.String())
+			}
+		})
+	}
+}
 
 func TestValidateComment(t *testing.T) {
 	zero := int64(0)

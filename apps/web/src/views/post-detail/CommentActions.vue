@@ -47,7 +47,7 @@ const isAdmin = computed(() => authUser.value?.role === 'admin');
 const isOwner = computed(() => authUser.value?.id === props.comment.authorId);
 const canReply = computed(() => Boolean(authUser.value) && !props.locked);
 const canEdit = computed(
-  () => (isOwner.value || isAdmin.value) && now.value <= modificationDeadline,
+  () => isAdmin.value || (isOwner.value && now.value <= modificationDeadline),
 );
 const canModerateAuthor = computed(() => isAdmin.value && !isOwner.value);
 const hasMenu = computed(() => canEdit.value || isAdmin.value);
