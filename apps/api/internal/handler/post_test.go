@@ -47,6 +47,26 @@ func TestValidatePostTextLimits(t *testing.T) {
 	}
 }
 
+func TestValidatePostTagLimit(t *testing.T) {
+	handler := &postHandler{}
+	for _, tc := range []struct {
+		name    string
+		tagIDs  []int64
+		wantErr bool
+	}{
+		{"no tags", nil, false},
+		{"three tags", []int64{1, 2, 3}, false},
+		{"four tags", []int64{1, 2, 3, 4}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := handler.validatePost(postInput{CategoryID: 1, Title: "标题", Content: "正文", TagIDs: tc.tagIDs})
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("validatePost() error = %v, want error %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
 func (r listPostRepository) List(repository.PostFilter, int64, int64) (int64, []repository.PostDetails, error) {
 	return int64(len(r.items)), r.items, nil
 }

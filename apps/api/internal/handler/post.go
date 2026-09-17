@@ -228,6 +228,9 @@ func (h *postHandler) validatePost(input postInput) error {
 	if !uniquePositiveIDs(input.TagIDs) {
 		return httpx.BadRequest("tagIds 必须为不重复的正整数")
 	}
+	if len(input.TagIDs) > 3 {
+		return httpx.BadRequest("一个帖子最多只能添加 3 个标签")
+	}
 	if err := checkDomainText(h.domains, "title", input.Title); err != nil {
 		return err
 	}

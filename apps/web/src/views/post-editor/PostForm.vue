@@ -46,6 +46,7 @@ const categoryOptions = computed(() =>
 const contentHintId = useId();
 const titleLength = computed(() => Array.from(title.value.trim()).length);
 const contentLength = computed(() => Array.from(content.value).length);
+const maxTags = 3;
 const titleHint = computed(() => {
   if (titleLength.value < 2) return '标题至少需要 2 字';
   if (titleLength.value > 100) return '标题不能超过 100 字';
@@ -62,6 +63,7 @@ const canSubmit = computed(
     titleLength.value <= 100 &&
     Boolean(content.value.trim()) &&
     contentLength.value <= 20000 &&
+    tagIds.value.length <= maxTags &&
     !props.submitting,
 );
 
@@ -121,7 +123,9 @@ function submit() {
     </div>
 
     <fieldset :disabled="submitting">
-      <legend class="mb-2 text-sm font-semibold text-ink">标签</legend>
+      <legend class="mb-2 text-sm font-semibold text-ink">
+        标签（最多 3 个）
+      </legend>
       <div v-if="tags.length" class="flex flex-wrap gap-2">
         <label
           v-for="tag in tags"
@@ -130,7 +134,9 @@ function submit() {
           :class="
             tagIds.includes(tag.id)
               ? 'border-primary bg-primary-soft text-primary'
-              : 'border-border text-muted hover:border-primary hover:text-primary'
+              : tagIds.length >= maxTags
+                ? 'cursor-not-allowed border-border text-muted opacity-50'
+                : 'border-border text-muted hover:border-primary hover:text-primary'
           "
         >
           <input
@@ -138,6 +144,7 @@ function submit() {
             type="checkbox"
             class="sr-only"
             :value="tag.id"
+            :disabled="tagIds.length >= maxTags && !tagIds.includes(tag.id)"
           />
           {{ tag.name }}
         </label>
