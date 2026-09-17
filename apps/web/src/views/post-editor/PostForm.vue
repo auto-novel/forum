@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, useId } from 'vue';
 import type { PostTag } from '@/api';
 import AppButton from '@/components/AppButton.vue';
 import AppSelect from '@/components/AppSelect.vue';
+import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 
 const MarkdownHelpDialog = defineAsyncComponent(
@@ -74,6 +75,8 @@ function submit() {
 
 <template>
   <form class="space-y-5" @submit.prevent="submit">
+    <CommunityRulesReminder />
+
     <div>
       <label for="post-title" class="mb-2 block text-sm font-semibold text-ink">
         标题
