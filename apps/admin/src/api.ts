@@ -83,6 +83,66 @@ interface PostListParams {
   category?: string;
 }
 
+const TAG_CACHE_MAX_AGE = 60 * 60 * 1000;
+const TAG_CACHE_KEY_PREFIX = 'forum:admin:tags:v1:';
+
+interface TagCache {
+  fetchedAt: number;
+  items: Tag[];
+}
+
+function tagCacheKey(categoryId: number) {
+  return `${TAG_CACHE_KEY_PREFIX}${categoryId}`;
+}
+
+function readTagCache(categoryId: number): Tag[] | undefined {
+  try {
+    const value = JSON.parse(
+      localStorage.getItem(tagCacheKey(categoryId)) ?? 'null',
+    ) as TagCache | null;
+    if (
+      !value ||
+      !Number.isFinite(value.fetchedAt) ||
+      value.fetchedAt <= 0 ||
+      Date.now() - value.fetchedAt > TAG_CACHE_MAX_AGE ||
+      value.fetchedAt > Date.now() ||
+      !Array.isArray(value.items) ||
+      !value.items.every(
+        (tag) =>
+          tag &&
+          Number.isSafeInteger(tag.id) &&
+          typeof tag.name === 'string' &&
+          Number.isFinite(tag.color) &&
+          typeof tag.isActive === 'boolean' &&
+          Number.isFinite(tag.sortOrder),
+      )
+    )
+      return;
+    return value.items;
+  } catch {
+    // Storage is optional; fall back to the API.
+  }
+}
+
+function writeTagCache(categoryId: number, items: Tag[]) {
+  try {
+    localStorage.setItem(
+      tagCacheKey(categoryId),
+      JSON.stringify({ fetchedAt: Date.now(), items } satisfies TagCache),
+    );
+  } catch {
+    // Storage is optional; keep the fetched result for this request.
+  }
+}
+
+function clearTagCache(categoryId: number) {
+  try {
+    localStorage.removeItem(tagCacheKey(categoryId));
+  } catch {
+    // A blocked storage API does not affect the write request.
+  }
+}
+
 function endpoint(path: string) {
   return new URL(path, new URL('/api/v1/', window.location.origin));
 }
@@ -96,32 +156,44 @@ export function createForumApi(authApi: AuthApi) {
     getCategories() {
       return client.get(endpoint('category/')).json<CategoryListItem[]>();
     },
-    getTags(categoryId: number) {
-      return client
+    async getTags(categoryId: number) {
+      const cached = readTagCache(categoryId);
+      if (cached) return cached;
+      const tags = await client
         .get(endpoint(`admin/category/${categoryId}/tag`))
         .json<Tag[]>();
+      writeTagCache(categoryId, tags);
+      return tags;
     },
-    createTag(categoryId: number, request: TagRequest) {
-      return client
+    async createTag(categoryId: number, request: TagRequest) {
+      const tag = await client
         .post(endpoint(`admin/category/${categoryId}/tag`), { json: request })
         .json<Tag>();
+      clearTagCache(categoryId);
+      return tag;
     },
-    updateTag(categoryId: number, id: number, request: TagRequest) {
-      return client
+    async updateTag(categoryId: number, id: number, request: TagRequest) {
+      const tag = await client
         .put(endpoint(`admin/category/${categoryId}/tag/${id}`), {
           json: request,
         })
         .json<Tag>();
+      clearTagCache(categoryId);
+      return tag;
     },
-    activateTag(categoryId: number, id: number) {
-      return client
+    async activateTag(categoryId: number, id: number) {
+      const result = await client
         .put(endpoint(`admin/category/${categoryId}/tag/${id}/active`))
         .text();
+      clearTagCache(categoryId);
+      return result;
     },
-    deactivateTag(categoryId: number, id: number) {
-      return client
+    async deactivateTag(categoryId: number, id: number) {
+      const result = await client
         .delete(endpoint(`admin/category/${categoryId}/tag/${id}/active`))
         .text();
+      clearTagCache(categoryId);
+      return result;
     },
     getPosts(params: PostListParams) {
       return client
