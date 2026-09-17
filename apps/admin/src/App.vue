@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   ArticleOutlined,
-  CategoryOutlined,
+  LocalOfferOutlined,
   CommentOutlined,
   DashboardOutlined,
 } from '@vicons/material';
@@ -24,10 +24,10 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(DashboardOutlined),
   },
   {
-    label: '分类管理',
+    label: '标签管理',
     key: '/categories',
     to: '/categories',
-    icon: renderIcon(CategoryOutlined),
+    icon: renderIcon(LocalOfferOutlined),
   },
   {
     label: '帖子管理',

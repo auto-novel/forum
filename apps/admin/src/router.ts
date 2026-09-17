@@ -28,7 +28,7 @@ const router = createRouter({
           path: 'categories',
           name: 'categories',
           component: () => import('@/views/categories/CategoriesView.vue'),
-          meta: { title: '分类管理' },
+          meta: { title: '标签管理' },
         },
         {
           path: 'posts',

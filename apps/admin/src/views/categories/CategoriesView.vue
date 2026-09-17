@@ -1,19 +1,28 @@
 <script setup lang="ts">
-import { NAlert, NSpace, NText } from 'naive-ui';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { NAlert, NEmpty, NSkeleton, NSpace } from 'naive-ui';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useForumApi, type Category, type Tag } from '@/api';
 
-import CategoryList from './CategoryList.vue';
 import TagFormModal from './TagFormModal.vue';
 import TagList from './TagList.vue';
 
+const categoryDisplay = [
+  { slug: 'announcements', title: '站务公告' },
+  { slug: 'novel', title: '小说讨论' },
+  { slug: 'feedback', title: '意见反馈' },
+];
+const categoryOrder = (slug: string) => {
+  const index = categoryDisplay.findIndex((item) => item.slug === slug);
+  return index < 0 ? categoryDisplay.length : index;
+};
+
 const api = useForumApi();
 const categories = ref<Category[]>([]);
-const tags = ref<Tag[]>([]);
+const tagsByCategory = reactive<Record<number, Tag[]>>({});
+const tagsLoadingByCategory = reactive<Record<number, boolean>>({});
 const selectedCategoryId = ref<number>();
 const loading = ref(true);
-const tagsLoading = ref(false);
 const saving = ref(false);
 const activeUpdatingTagId = ref<number>();
 const errorMessage = ref('');
@@ -21,9 +30,15 @@ const successMessage = ref('');
 const tagModalOpen = ref(false);
 const editingTagId = ref<number>();
 const tagForm = reactive({ name: '', color: 0, sortOrder: 0 });
-
-const selectedCategory = computed(() =>
-  categories.value.find((category) => category.id === selectedCategoryId.value),
+const displayedCategories = computed(() =>
+  [...categories.value]
+    .sort((left, right) => categoryOrder(left.slug) - categoryOrder(right.slug))
+    .map((category) => ({
+      ...category,
+      title:
+        categoryDisplay.find((item) => item.slug === category.slug)?.title ??
+        category.slug,
+    })),
 );
 
 async function loadCategories() {
@@ -31,12 +46,10 @@ async function loadCategories() {
   errorMessage.value = '';
   try {
     categories.value = await api.getCategories();
-    if (
-      selectedCategoryId.value == null ||
-      !categories.value.some((item) => item.id === selectedCategoryId.value)
-    ) {
-      selectedCategoryId.value = categories.value[0]?.id;
-    }
+    loading.value = false;
+    await Promise.all(
+      categories.value.map((category) => loadTags(category.id)),
+    );
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
   } finally {
@@ -44,28 +57,26 @@ async function loadCategories() {
   }
 }
 
-async function loadTags(categoryId?: number) {
-  if (categoryId == null) {
-    tags.value = [];
-    return;
-  }
-  tagsLoading.value = true;
+async function loadTags(categoryId: number) {
+  tagsLoadingByCategory[categoryId] = true;
   try {
-    tags.value = await api.getTags(categoryId);
+    tagsByCategory[categoryId] = await api.getTags(categoryId);
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
   } finally {
-    tagsLoading.value = false;
+    tagsLoadingByCategory[categoryId] = false;
   }
 }
 
-function openCreateTag() {
+function openCreateTag(categoryId: number) {
+  selectedCategoryId.value = categoryId;
   editingTagId.value = undefined;
   Object.assign(tagForm, { name: '', color: 0, sortOrder: 0 });
   tagModalOpen.value = true;
 }
 
-function openEditTag(tag: Tag) {
+function openEditTag(categoryId: number, tag: Tag) {
+  selectedCategoryId.value = categoryId;
   editingTagId.value = tag.id;
   Object.assign(tagForm, {
     name: tag.name,
@@ -104,18 +115,17 @@ async function saveTag() {
   }
 }
 
-async function toggleTagActive(tag: Tag) {
-  if (selectedCategoryId.value == null) return;
+async function toggleTagActive(categoryId: number, tag: Tag) {
   activeUpdatingTagId.value = tag.id;
   errorMessage.value = '';
   try {
     if (tag.isActive) {
-      await api.deactivateTag(selectedCategoryId.value, tag.id);
+      await api.deactivateTag(categoryId, tag.id);
     } else {
-      await api.activateTag(selectedCategoryId.value, tag.id);
+      await api.activateTag(categoryId, tag.id);
     }
     successMessage.value = tag.isActive ? '标签已停用' : '标签已启用';
-    await loadTags(selectedCategoryId.value);
+    await loadTags(categoryId);
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
   } finally {
@@ -123,18 +133,11 @@ async function toggleTagActive(tag: Tag) {
   }
 }
 
-watch(selectedCategoryId, (id) => void loadTags(id));
 onMounted(loadCategories);
 </script>
 
 <template>
   <n-space vertical :size="16" class="categories-page">
-    <div class="page-actions">
-      <n-text depth="3">
-        分类由后端静态配置，共 {{ categories.length }} 个
-      </n-text>
-    </div>
-
     <n-alert
       v-if="successMessage"
       type="success"
@@ -152,21 +155,21 @@ onMounted(loadCategories);
       {{ errorMessage }}
     </n-alert>
 
-    <div class="workspace-grid">
-      <CategoryList
-        :categories="categories"
-        :loading="loading"
-        :selected-id="selectedCategoryId"
-        @select="selectedCategoryId = $event"
-      />
+    <div v-if="loading" class="skeleton-stack">
+      <n-skeleton v-for="index in 3" :key="index" height="120px" />
+    </div>
+    <n-empty v-else-if="!displayedCategories.length" description="暂无分类" />
+    <div v-else class="category-list">
       <TagList
-        :category="selectedCategory"
-        :tags="tags"
-        :loading="tagsLoading"
+        v-for="category in displayedCategories"
+        :key="category.id"
+        :category-name="category.title"
+        :tags="tagsByCategory[category.id] ?? []"
+        :loading="tagsLoadingByCategory[category.id] ?? false"
         :active-updating-id="activeUpdatingTagId"
-        @create="openCreateTag"
-        @edit="openEditTag"
-        @toggle-active="toggleTagActive"
+        @create="openCreateTag(category.id)"
+        @edit="openEditTag(category.id, $event)"
+        @toggle-active="toggleTagActive(category.id, $event)"
       />
     </div>
 
@@ -185,27 +188,13 @@ onMounted(loadCategories);
 
 <style scoped>
 .categories-page {
-  max-width: 1000px;
+  max-width: 840px;
   margin-inline: auto;
 }
 
-.page-actions {
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.workspace-grid {
+.category-list,
+.skeleton-stack {
   display: grid;
-  grid-template-columns: minmax(250px, 0.75fr) minmax(0, 1.6fr);
-  gap: 18px;
-}
-
-@media (max-width: 760px) {
-  .workspace-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  gap: 16px;
 }
 </style>

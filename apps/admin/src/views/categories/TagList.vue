@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import { AddOutlined, LocalOfferOutlined } from '@vicons/material';
-import {
-  NButton,
-  NCard,
-  NEmpty,
-  NIcon,
-  NSkeleton,
-  NTag,
-  NText,
-} from 'naive-ui';
+import { NButton, NEmpty, NSkeleton, NTag } from 'naive-ui';
 
-import type { Category, Tag } from '@/api';
+import type { Tag } from '@/api';
 
 defineProps<{
-  category?: Category;
+  categoryName: string;
   tags: Tag[];
   loading: boolean;
   activeUpdatingId?: number;
@@ -27,68 +18,47 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <n-card class="tag-panel" :bordered="false">
-    <template #header>
-      <div class="panel-header">
-        <div class="panel-title">
-          <n-text strong>{{ category?.slug ?? '标签' }}</n-text>
-          <n-text depth="3" class="panel-caption">
-            {{ tags.length }} 个标签
-          </n-text>
-        </div>
-        <n-button
-          size="small"
-          secondary
-          type="primary"
-          :disabled="!category"
-          @click="emit('create')"
-        >
-          <template #icon><n-icon :component="AddOutlined" /></template>
-          新建标签
-        </n-button>
-      </div>
-    </template>
+  <section class="tag-panel">
+    <div class="panel-header">
+      <h2>{{ categoryName }}</h2>
+      <n-button type="primary" :disabled="loading" @click="emit('create')">
+        新建标签
+      </n-button>
+    </div>
 
     <div v-if="loading" class="skeleton-stack">
-      <n-skeleton v-for="index in 4" :key="index" text :repeat="2" />
+      <n-skeleton v-for="index in 3" :key="index" text />
     </div>
-    <n-empty
-      v-else-if="!category || !tags.length"
-      :description="category ? '该分类暂无标签' : '暂无分类'"
-    />
-    <div v-else class="tag-list">
-      <div v-for="tag in tags" :key="tag.id" class="tag-row">
-        <span class="tag-symbol">
-          <n-icon :component="LocalOfferOutlined" />
-        </span>
+    <n-empty v-else-if="!tags.length" description="暂无标签" />
+    <ul v-else class="tag-list">
+      <li v-for="tag in tags" :key="tag.id" class="tag-row">
         <div class="tag-copy">
           <div class="tag-title">
-            <n-text strong>{{ tag.name }}</n-text>
+            <strong>{{ tag.name }}</strong>
             <n-tag :type="tag.isActive ? 'success' : 'default'" size="small">
               {{ tag.isActive ? '启用' : '停用' }}
             </n-tag>
           </div>
-          <n-text depth="3">
+          <span class="tag-detail">
             色号 {{ tag.color }} · 排序 {{ tag.sortOrder }}
-          </n-text>
+          </span>
         </div>
         <div class="tag-actions">
+          <n-button size="small" quaternary @click="emit('edit', tag)">
+            编辑
+          </n-button>
           <n-button
             size="small"
             quaternary
-            :type="tag.isActive ? 'error' : 'success'"
             :loading="activeUpdatingId === tag.id"
             @click="emit('toggleActive', tag)"
           >
             {{ tag.isActive ? '停用' : '启用' }}
           </n-button>
-          <n-button size="small" quaternary @click="emit('edit', tag)">
-            编辑
-          </n-button>
         </div>
-      </div>
-    </div>
-  </n-card>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped>
@@ -96,34 +66,34 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.panel-title,
-.tag-copy {
-  min-width: 0;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.panel-caption {
-  font-size: 12px;
+.panel-header h2 {
+  margin: 0;
+  font-size: 16px;
 }
 
 .tag-panel {
-  min-height: 360px;
+  padding: 20px;
+  border: 1px solid var(--n-border-color);
+  border-radius: 8px;
 }
 
 .tag-list {
-  display: grid;
-  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-copy {
+  min-width: 0;
+  flex: 1;
 }
 
 .tag-row {
-  min-height: 64px;
-  padding: 10px 4px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--n-border-color);
   display: flex;
   align-items: center;
@@ -134,31 +104,34 @@ const emit = defineEmits<{
   border-bottom: 0;
 }
 
-.tag-symbol {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  color: #2080f0;
-  background: rgba(32, 128, 240, 0.1);
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-
 .tag-title {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.tag-detail {
+  color: var(--n-text-color-3);
+  font-size: 12px;
+}
+
 .tag-actions {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex: none;
 }
 
 .skeleton-stack {
   display: grid;
   gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .tag-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 </style>
