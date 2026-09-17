@@ -22,15 +22,19 @@ const page = ref(1);
 const total = ref(0);
 const queryInput = ref('');
 const categoryInput = ref('');
+const statusInput = ref('');
 const query = ref('');
 const category = ref('');
+const status = ref('');
 const selectedPost = ref<PostSummary | null>(null);
 let requestId = 0;
 
 const categoryMap = computed(
   () => new Map(categories.value.map((item) => [item.id, item.slug])),
 );
-const hasFilters = computed(() => Boolean(query.value || category.value));
+const hasFilters = computed(() =>
+  Boolean(query.value || category.value || status.value),
+);
 
 async function loadPosts() {
   const currentRequestId = ++requestId;
@@ -42,6 +46,7 @@ async function loadPosts() {
       pageSize: PAGE_SIZE,
       query: query.value,
       category: category.value,
+      status: status.value,
     });
     if (currentRequestId !== requestId) return;
     posts.value = result.items;
@@ -59,6 +64,7 @@ async function loadPosts() {
 function search() {
   query.value = queryInput.value.trim();
   category.value = categoryInput.value;
+  status.value = statusInput.value;
   page.value = 1;
   void loadPosts();
 }
@@ -66,6 +72,7 @@ function search() {
 function resetFilters() {
   queryInput.value = '';
   categoryInput.value = '';
+  statusInput.value = '';
   search();
 }
 
@@ -101,6 +108,7 @@ onMounted(initialize);
     <PostFilters
       v-model:query="queryInput"
       v-model:category="categoryInput"
+      v-model:status="statusInput"
       :categories="categories"
       @search="search"
     />

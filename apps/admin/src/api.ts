@@ -81,6 +81,7 @@ interface PostListParams {
   pageSize: number;
   query?: string;
   category?: string;
+  status?: string;
 }
 
 const TAG_CACHE_MAX_AGE = 60 * 60 * 1000;
@@ -197,12 +198,13 @@ export function createForumApi(authApi: AuthApi) {
     },
     getPosts(params: PostListParams) {
       return client
-        .get(endpoint('post/'), {
+        .get(endpoint('admin/post/'), {
           searchParams: {
             page: params.page,
             page_size: params.pageSize,
             q: params.query || undefined,
             category: params.category || undefined,
+            status: params.status || undefined,
           },
         })
         .json<Page<PostSummary>>();

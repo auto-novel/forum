@@ -34,6 +34,22 @@ function formatDate(value: string) {
       <div class="post-badges">
         <n-tag size="small" :bordered="false">{{ categoryName }}</n-tag>
         <n-tag
+          v-if="post.status === 1"
+          size="small"
+          type="warning"
+          :bordered="false"
+        >
+          隐藏
+        </n-tag>
+        <n-tag
+          v-if="post.status === 2"
+          size="small"
+          type="error"
+          :bordered="false"
+        >
+          已删除
+        </n-tag>
+        <n-tag
           v-if="post.pinOrder != null"
           size="small"
           type="warning"

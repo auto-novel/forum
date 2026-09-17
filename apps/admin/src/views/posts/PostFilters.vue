@@ -12,6 +12,14 @@ const emit = defineEmits<{ search: [] }>();
 
 const query = defineModel<string>('query', { required: true });
 const category = defineModel<string>('category', { required: true });
+const status = defineModel<string>('status', { required: true });
+
+const statusOptions = [
+  { label: '全部', value: '' },
+  { label: '正常发布', value: '0' },
+  { label: '隐藏', value: '1' },
+  { label: '删除', value: '2' },
+];
 
 const categoryOptions = computed(() => [
   { label: '全部', value: '' },
@@ -23,6 +31,11 @@ const categoryOptions = computed(() => [
 
 function changeCategory(value: string) {
   category.value = value;
+  emit('search');
+}
+
+function changeStatus(value: string) {
+  status.value = value;
   emit('search');
 }
 </script>
@@ -48,6 +61,13 @@ function changeCategory(value: string) {
         :value="category"
         :options="categoryOptions"
         @update:value="changeCategory"
+      />
+    </FilterRow>
+    <FilterRow label="状态">
+      <FilterChoiceGroup
+        :value="status"
+        :options="statusOptions"
+        @update:value="changeStatus"
       />
     </FilterRow>
   </div>
