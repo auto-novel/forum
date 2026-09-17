@@ -1,12 +1,26 @@
 <script setup lang="ts">
+import { InfoOutlined } from '@vicons/material';
 import { RouterLink } from 'vue-router';
 </script>
 
 <template>
-  <RouterLink
-    :to="{ name: 'community-rules' }"
-    class="block rounded-md bg-primary-soft px-3 py-2 text-sm font-medium text-primary hover:text-primary-hover"
+  <div
+    class="flex items-center gap-2 rounded-md border border-primary/15 bg-primary-soft px-3 py-2 text-sm text-ink"
   >
-    发言请遵守社区守则
-  </RouterLink>
+    <InfoOutlined class="size-4 shrink-0 text-primary" aria-hidden="true" />
+    <p class="flex flex-wrap">
+      <span>发言请遵守</span>
+      <span class="inline-flex">
+        <span>《</span>
+        <RouterLink
+          :to="{ name: 'community-rules' }"
+          class="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          社区守则
+        </RouterLink>
+        <span>》</span>
+      </span>
+      <span>，累计三次违规即出局。</span>
+    </p>
+  </div>
 </template>
