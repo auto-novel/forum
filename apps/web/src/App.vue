@@ -2,6 +2,7 @@
 import {
   ArticleOutlined,
   ExploreOutlined,
+  FactCheckOutlined,
   ForumOutlined,
   GavelOutlined,
   MenuBookOutlined,
@@ -25,14 +26,20 @@ function categoryIcon(slug: string): Component {
   return ForumOutlined;
 }
 
-const navigationOptions = computed<WebKitMenuOption[]>(() =>
-  categoryStore.categories.map((category) => ({
+const navigationOptions = computed<WebKitMenuOption[]>(() => [
+  ...categoryStore.categories.map((category) => ({
     key: category.slug,
     label: category.title,
     icon: categoryIcon(category.slug),
     to: { name: 'posts', params: { slug: category.slug } },
   })),
-);
+  {
+    key: 'community-rules',
+    label: '社区守则',
+    icon: FactCheckOutlined,
+    to: { name: 'community-rules' },
+  },
+]);
 
 const accountOptions: WebKitMenuOption[] = [
   {
@@ -56,6 +63,8 @@ const accountOptions: WebKitMenuOption[] = [
 ];
 
 const selectedNavigationKey = computed(() => {
+  if (route.name === 'community-rules') return 'community-rules';
+
   if (route.name === 'posts' && typeof route.params.slug === 'string') {
     return route.params.slug;
   }

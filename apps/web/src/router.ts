@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import { useCategoryStore } from '@/stores/category';
 import { setPostListReturn } from '@/utils/postNavigation';
+import CommunityRulesView from '@/views/community-rules/CommunityRulesView.vue';
 import FavoritePostListView from '@/views/post-list/FavoritePostListView.vue';
 import MyPostListView from '@/views/post-list/MyPostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
@@ -40,6 +41,12 @@ const router = createRouter({
               params: { slug: categoryStore.defaultCategory.slug },
             };
       },
+    },
+    {
+      path: '/rules',
+      name: 'community-rules',
+      component: CommunityRulesView,
+      meta: { title: '社区守则' },
     },
     {
       path: '/favorites',
