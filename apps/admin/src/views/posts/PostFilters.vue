@@ -6,6 +6,7 @@ import { computed } from 'vue';
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import FilterRow from '@/components/FilterRow.vue';
 import type { CategoryListItem, PostSort } from '@/api';
+import { categoryOrder, categoryTitle } from '@/category';
 
 const props = defineProps<{ categories: CategoryListItem[] }>();
 const emit = defineEmits<{ search: [] }>();
@@ -26,17 +27,20 @@ const statusOptions = [
 
 const categoryOptions = computed(() => [
   { label: '全部', value: '' },
-  ...props.categories.map((item) => ({
-    label: item.slug,
-    value: item.slug,
-  })),
+  ...[...props.categories]
+    .sort((left, right) => categoryOrder(left.slug) - categoryOrder(right.slug))
+    .map((item) => ({
+      label: categoryTitle(item.slug),
+      value: item.slug,
+    })),
 ]);
 const tagOptions = computed(() =>
-  props.categories
+  [...props.categories]
+    .sort((left, right) => categoryOrder(left.slug) - categoryOrder(right.slug))
     .filter((item) => !category.value || item.slug === category.value)
     .flatMap((item) =>
       item.tags.map((tag) => ({
-        label: `${tag.name} · ${item.slug}`,
+        label: `${tag.name} · ${categoryTitle(item.slug)}`,
         value: tag.id,
       })),
     ),

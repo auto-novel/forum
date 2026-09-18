@@ -9,6 +9,7 @@ import {
   type PostSort,
   type PostSummary,
 } from '@/api';
+import { categoryTitle } from '@/category';
 
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
@@ -41,7 +42,10 @@ const selectedPost = ref<PostSummary | null>(null);
 let requestId = 0;
 
 const categoryMap = computed(
-  () => new Map(categories.value.map((item) => [item.id, item.slug])),
+  () =>
+    new Map(
+      categories.value.map((item) => [item.id, categoryTitle(item.slug)]),
+    ),
 );
 const hasFilters = computed(() =>
   Boolean(

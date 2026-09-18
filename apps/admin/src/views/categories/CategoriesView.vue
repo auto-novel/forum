@@ -3,19 +3,10 @@ import { NAlert, NEmpty, NSkeleton, NSpace } from 'naive-ui';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useForumApi, type Category, type Tag } from '@/api';
+import { categoryOrder, categoryTitle } from '@/category';
 
 import TagFormModal from './TagFormModal.vue';
 import TagList from './TagList.vue';
-
-const categoryDisplay = [
-  { slug: 'announcements', title: '站务公告' },
-  { slug: 'novel', title: '小说讨论' },
-  { slug: 'feedback', title: '意见反馈' },
-];
-const categoryOrder = (slug: string) => {
-  const index = categoryDisplay.findIndex((item) => item.slug === slug);
-  return index < 0 ? categoryDisplay.length : index;
-};
 
 const api = useForumApi();
 const categories = ref<Category[]>([]);
@@ -35,9 +26,7 @@ const displayedCategories = computed(() =>
     .sort((left, right) => categoryOrder(left.slug) - categoryOrder(right.slug))
     .map((category) => ({
       ...category,
-      title:
-        categoryDisplay.find((item) => item.slug === category.slug)?.title ??
-        category.slug,
+      title: categoryTitle(category.slug),
     })),
 );
 
