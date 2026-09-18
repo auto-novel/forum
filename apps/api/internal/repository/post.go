@@ -28,6 +28,7 @@ const (
 
 type PostFilter struct {
 	CategorySlug, Search     string
+	AuthorName               string
 	Sort                     string
 	TagIDs                   []int64
 	AuthorID, FavoriteUserID int64
@@ -91,6 +92,12 @@ func (filter PostFilter) condition() BoolExpression {
 	}
 	if filter.AuthorID > 0 {
 		expressions = append(expressions, table.Post.AuthorID.EQ(Int64(filter.AuthorID)))
+	}
+	if filter.AuthorName != "" {
+		expressions = append(expressions, RawBool(
+			`"post"."author_username" ILIKE :authorPattern`,
+			RawArgs{":authorPattern": "%" + filter.AuthorName + "%"},
+		))
 	}
 	if filter.FavoriteUserID > 0 {
 		expressions = append(expressions, table.PostFavorite.UserID.EQ(Int64(filter.FavoriteUserID)))

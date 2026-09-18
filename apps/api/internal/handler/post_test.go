@@ -86,6 +86,33 @@ func TestAdminPostListAuthorFilter(t *testing.T) {
 	}
 }
 
+func TestAdminPostListAuthorNameFilter(t *testing.T) {
+	for _, tc := range []struct {
+		query    string
+		wantName string
+	}{
+		{"", ""},
+		{"?author_name=alice", "alice"},
+		{"?author_name=%20Alice%20", "Alice"},
+		{"?author_name=小明", "小明"},
+		{"?author_name=%20%20", ""},
+		{"?author_name=alice&author_id=42&status=1", "alice"},
+	} {
+		repo := &capturingPostRepository{}
+		h := NewPostHandler(repo, nil, nil, nil)
+		err := h.listAdminPosts(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/admin/post/"+tc.query, nil))
+		if err != nil {
+			t.Fatalf("query %q: %v", tc.query, err)
+		}
+		if repo.filter.AuthorName != tc.wantName {
+			t.Fatalf("query %q: unexpected filter: %#v", tc.query, repo.filter)
+		}
+		if strings.Contains(tc.query, "author_id=42") && (repo.filter.AuthorID != 42 || repo.filter.Status != 1) {
+			t.Fatalf("combined filters lost: %#v", repo.filter)
+		}
+	}
+}
+
 func TestValidatePostTextLimits(t *testing.T) {
 	handler := &postHandler{}
 	for _, tc := range []struct {

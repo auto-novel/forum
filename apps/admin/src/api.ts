@@ -86,6 +86,7 @@ interface PostListParams {
   status?: string;
   tagId?: number | null;
   authorId?: number | null;
+  authorName?: string;
   sort?: PostSort;
 }
 
@@ -212,6 +213,7 @@ export function createForumApi(authApi: AuthApi) {
             status: params.status || undefined,
             tag: params.tagId ?? undefined,
             author_id: params.authorId ?? undefined,
+            author_name: params.authorName || undefined,
             sort: params.sort,
           },
         })

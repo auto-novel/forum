@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SearchOutlined } from '@vicons/material';
-import { NIcon, NInput, NInputNumber, NSelect } from 'naive-ui';
+import { NIcon, NInput, NSelect } from 'naive-ui';
 import { computed } from 'vue';
 
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
@@ -15,7 +15,7 @@ const query = defineModel<string>('query', { required: true });
 const category = defineModel<string>('category', { required: true });
 const status = defineModel<string>('status', { required: true });
 const tagId = defineModel<number | null>('tagId', { required: true });
-const authorId = defineModel<number | null>('authorId', { required: true });
+const authorName = defineModel<string>('authorName', { required: true });
 const sort = defineModel<PostSort>('sort', { required: true });
 
 const statusOptions = [
@@ -93,6 +93,27 @@ function changeSort(value: string) {
       </n-input>
     </FilterRow>
 
+    <FilterRow label="作者">
+      <n-input
+        v-model:value="authorName"
+        class="query-input"
+        clearable
+        placeholder="搜索作者名字"
+        @change="emit('search')"
+      />
+    </FilterRow>
+
+    <FilterRow label="标签">
+      <n-select
+        v-model:value="tagId"
+        class="query-input"
+        :options="tagOptions"
+        clearable
+        filterable
+        placeholder="全部标签"
+        @update:value="emit('search')"
+      />
+    </FilterRow>
     <FilterRow label="分类">
       <FilterChoiceGroup
         :value="category"
@@ -107,32 +128,6 @@ function changeSort(value: string) {
         @update:value="changeStatus"
       />
     </FilterRow>
-    <div class="secondary-filters">
-      <FilterRow label="标签">
-        <n-select
-          v-model:value="tagId"
-          class="field-input"
-          :options="tagOptions"
-          clearable
-          filterable
-          placeholder="全部标签"
-          @update:value="emit('search')"
-        />
-      </FilterRow>
-      <FilterRow label="作者">
-        <n-input-number
-          v-model:value="authorId"
-          class="field-input"
-          :min="1"
-          :precision="0"
-          :show-button="false"
-          clearable
-          placeholder="输入作者 ID"
-          @change="emit('search')"
-          @keyup.enter="emit('search')"
-        />
-      </FilterRow>
-    </div>
     <FilterRow label="排序">
       <FilterChoiceGroup
         :value="sort"
@@ -150,24 +145,7 @@ function changeSort(value: string) {
   gap: 12px;
 }
 
-.secondary-filters {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 24px;
-  max-width: 680px;
-}
-
-@media (max-width: 680px) {
-  .secondary-filters {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 .query-input {
   width: min(400px, 100%);
-}
-
-.field-input {
-  width: 100%;
 }
 </style>

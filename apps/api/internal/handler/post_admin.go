@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"auth/internal/httpx"
 	"auth/internal/repository"
@@ -25,6 +26,7 @@ func (h *postHandler) listAdminPosts(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 	filter.Status = repository.PostStatusAll
+	filter.AuthorName = strings.TrimSpace(r.URL.Query().Get("author_name"))
 	if values, ok := r.URL.Query()["author_id"]; ok {
 		if len(values) != 1 {
 			return httpx.BadRequest("author_id 必须为正整数")

@@ -30,13 +30,13 @@ const queryInput = ref('');
 const categoryInput = ref('');
 const statusInput = ref('');
 const tagIdInput = ref<number | null>(null);
-const authorIdInput = ref<number | null>(null);
+const authorNameInput = ref('');
 const sortInput = ref<PostSort>('active');
 const query = ref('');
 const category = ref('');
 const status = ref('');
 const tagId = ref<number | null>(null);
-const authorId = ref<number | null>(null);
+const authorName = ref('');
 const sort = ref<PostSort>('active');
 let requestId = 0;
 
@@ -52,7 +52,7 @@ const hasFilters = computed(() =>
     category.value ||
     status.value ||
     tagId.value ||
-    authorId.value,
+    authorName.value,
   ),
 );
 
@@ -68,7 +68,7 @@ async function loadPosts() {
       category: category.value,
       status: status.value,
       tagId: tagId.value,
-      authorId: authorId.value,
+      authorName: authorName.value,
       sort: sort.value,
     });
     if (currentRequestId !== requestId) return;
@@ -89,7 +89,7 @@ function search() {
   category.value = categoryInput.value;
   status.value = statusInput.value;
   tagId.value = tagIdInput.value;
-  authorId.value = authorIdInput.value;
+  authorName.value = authorNameInput.value.trim();
   sort.value = sortInput.value;
   page.value = 1;
   void loadPosts();
@@ -100,7 +100,7 @@ function resetFilters() {
   categoryInput.value = '';
   statusInput.value = '';
   tagIdInput.value = null;
-  authorIdInput.value = null;
+  authorNameInput.value = '';
   sortInput.value = 'active';
   search();
 }
@@ -177,7 +177,7 @@ onMounted(initialize);
       v-model:category="categoryInput"
       v-model:status="statusInput"
       v-model:tag-id="tagIdInput"
-      v-model:author-id="authorIdInput"
+      v-model:author-name="authorNameInput"
       v-model:sort="sortInput"
       :categories="categories"
       @search="search"
