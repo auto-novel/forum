@@ -71,7 +71,8 @@ function formatDate(value: string) {
       <n-text strong class="post-title">{{ post.title }}</n-text>
       <div class="post-footer">
         <n-text depth="3">
-          {{ post.authorUsername }} · {{ formatDate(post.activeAt) }}
+          {{ post.authorUsername }} (ID {{ post.authorId }}) ·
+          {{ formatDate(post.activeAt) }}
         </n-text>
         <div class="post-metrics">
           <span>

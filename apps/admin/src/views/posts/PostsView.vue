@@ -3,7 +3,12 @@ import { NAlert, NButton, NSpace, NText } from 'naive-ui';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useForumApi, type Category, type PostSummary } from '@/api';
+import {
+  useForumApi,
+  type CategoryListItem,
+  type PostSort,
+  type PostSummary,
+} from '@/api';
 
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
@@ -12,7 +17,7 @@ import PostModerationModal from './PostModerationModal.vue';
 const PAGE_SIZE = 20;
 const api = useForumApi();
 const router = useRouter();
-const categories = ref<Category[]>([]);
+const categories = ref<CategoryListItem[]>([]);
 const posts = ref<PostSummary[]>([]);
 const loading = ref(true);
 const moderationSaving = ref(false);
@@ -23,9 +28,15 @@ const total = ref(0);
 const queryInput = ref('');
 const categoryInput = ref('');
 const statusInput = ref('');
+const tagIdInput = ref<number | null>(null);
+const authorIdInput = ref<number | null>(null);
+const sortInput = ref<PostSort>('active');
 const query = ref('');
 const category = ref('');
 const status = ref('');
+const tagId = ref<number | null>(null);
+const authorId = ref<number | null>(null);
+const sort = ref<PostSort>('active');
 const selectedPost = ref<PostSummary | null>(null);
 let requestId = 0;
 
@@ -33,7 +44,13 @@ const categoryMap = computed(
   () => new Map(categories.value.map((item) => [item.id, item.slug])),
 );
 const hasFilters = computed(() =>
-  Boolean(query.value || category.value || status.value),
+  Boolean(
+    query.value ||
+    category.value ||
+    status.value ||
+    tagId.value ||
+    authorId.value,
+  ),
 );
 
 async function loadPosts() {
@@ -47,6 +64,9 @@ async function loadPosts() {
       query: query.value,
       category: category.value,
       status: status.value,
+      tagId: tagId.value,
+      authorId: authorId.value,
+      sort: sort.value,
     });
     if (currentRequestId !== requestId) return;
     posts.value = result.items;
@@ -65,6 +85,9 @@ function search() {
   query.value = queryInput.value.trim();
   category.value = categoryInput.value;
   status.value = statusInput.value;
+  tagId.value = tagIdInput.value;
+  authorId.value = authorIdInput.value;
+  sort.value = sortInput.value;
   page.value = 1;
   void loadPosts();
 }
@@ -73,6 +96,9 @@ function resetFilters() {
   queryInput.value = '';
   categoryInput.value = '';
   statusInput.value = '';
+  tagIdInput.value = null;
+  authorIdInput.value = null;
+  sortInput.value = 'active';
   search();
 }
 
@@ -109,6 +135,9 @@ onMounted(initialize);
       v-model:query="queryInput"
       v-model:category="categoryInput"
       v-model:status="statusInput"
+      v-model:tag-id="tagIdInput"
+      v-model:author-id="authorIdInput"
+      v-model:sort="sortInput"
       :categories="categories"
       @search="search"
     />

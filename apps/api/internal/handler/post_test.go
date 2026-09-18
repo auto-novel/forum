@@ -60,6 +60,32 @@ func TestAdminPostListStatusFilter(t *testing.T) {
 	}
 }
 
+func TestAdminPostListAuthorFilter(t *testing.T) {
+	for _, tc := range []struct {
+		query     string
+		wantID    int64
+		wantError bool
+	}{
+		{"", 0, false},
+		{"?author_id=42", 42, false},
+		{"?author_id=0", 0, true},
+		{"?author_id=-1", 0, true},
+		{"?author_id=abc", 0, true},
+		{"?author_id=", 0, true},
+		{"?author_id=1&author_id=2", 0, true},
+	} {
+		repo := &capturingPostRepository{}
+		h := NewPostHandler(repo, nil, nil, nil)
+		err := h.listAdminPosts(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/admin/post/"+tc.query, nil))
+		if (err != nil) != tc.wantError {
+			t.Fatalf("query %q: error=%v, wantError=%v", tc.query, err, tc.wantError)
+		}
+		if !tc.wantError && repo.filter.AuthorID != tc.wantID {
+			t.Fatalf("query %q: unexpected filter: %#v", tc.query, repo.filter)
+		}
+	}
+}
+
 func TestValidatePostTextLimits(t *testing.T) {
 	handler := &postHandler{}
 	for _, tc := range []struct {

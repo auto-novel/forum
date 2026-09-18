@@ -25,6 +25,16 @@ func (h *postHandler) listAdminPosts(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 	filter.Status = repository.PostStatusAll
+	if values, ok := r.URL.Query()["author_id"]; ok {
+		if len(values) != 1 {
+			return httpx.BadRequest("author_id 必须为正整数")
+		}
+		authorID, err := strconv.ParseInt(values[0], 10, 64)
+		if err != nil || authorID <= 0 {
+			return httpx.BadRequest("author_id 必须为正整数")
+		}
+		filter.AuthorID = authorID
+	}
 	if values, ok := r.URL.Query()["status"]; ok {
 		if len(values) != 1 {
 			return httpx.BadRequest("status 必须为 all、0、1 或 2")

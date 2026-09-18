@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { SearchOutlined } from '@vicons/material';
-import { NIcon, NInput } from 'naive-ui';
+import { NIcon, NInput, NInputNumber, NSelect } from 'naive-ui';
 import { computed } from 'vue';
 
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import FilterRow from '@/components/FilterRow.vue';
-import type { Category } from '@/api';
+import type { CategoryListItem, PostSort } from '@/api';
 
-const props = defineProps<{ categories: Category[] }>();
+const props = defineProps<{ categories: CategoryListItem[] }>();
 const emit = defineEmits<{ search: [] }>();
 
 const query = defineModel<string>('query', { required: true });
 const category = defineModel<string>('category', { required: true });
 const status = defineModel<string>('status', { required: true });
+const tagId = defineModel<number | null>('tagId', { required: true });
+const authorId = defineModel<number | null>('authorId', { required: true });
+const sort = defineModel<PostSort>('sort', { required: true });
 
 const statusOptions = [
   { label: '全部', value: '' },
@@ -28,14 +31,44 @@ const categoryOptions = computed(() => [
     value: item.slug,
   })),
 ]);
+const tagOptions = computed(() =>
+  props.categories
+    .filter((item) => !category.value || item.slug === category.value)
+    .flatMap((item) =>
+      item.tags.map((tag) => ({
+        label: `${tag.name} · ${item.slug}`,
+        value: tag.id,
+      })),
+    ),
+);
+const sortOptions: { label: string; value: PostSort }[] = [
+  { label: '最近活跃', value: 'active' },
+  { label: '最新发布', value: 'newest' },
+  { label: '浏览最多', value: 'views' },
+  { label: '评论最多', value: 'comments' },
+];
 
 function changeCategory(value: string) {
   category.value = value;
+  if (
+    tagId.value != null &&
+    !props.categories.some(
+      (item) =>
+        (value === '' || item.slug === value) &&
+        item.tags.some((tag) => tag.id === tagId.value),
+    )
+  )
+    tagId.value = null;
   emit('search');
 }
 
 function changeStatus(value: string) {
   status.value = value;
+  emit('search');
+}
+
+function changeSort(value: string) {
+  sort.value = value as PostSort;
   emit('search');
 }
 </script>
@@ -70,6 +103,37 @@ function changeStatus(value: string) {
         @update:value="changeStatus"
       />
     </FilterRow>
+    <FilterRow label="标签">
+      <n-select
+        v-model:value="tagId"
+        class="field-input"
+        :options="tagOptions"
+        clearable
+        filterable
+        placeholder="全部标签"
+        @update:value="emit('search')"
+      />
+    </FilterRow>
+    <FilterRow label="作者">
+      <n-input-number
+        v-model:value="authorId"
+        class="field-input"
+        :min="1"
+        :precision="0"
+        :show-button="false"
+        clearable
+        placeholder="输入作者 ID"
+        @change="emit('search')"
+        @keyup.enter="emit('search')"
+      />
+    </FilterRow>
+    <FilterRow label="排序">
+      <FilterChoiceGroup
+        :value="sort"
+        :options="sortOptions"
+        @update:value="changeSort"
+      />
+    </FilterRow>
   </div>
 </template>
 
@@ -82,5 +146,9 @@ function changeStatus(value: string) {
 
 .query-input {
   width: min(400px, 100%);
+}
+
+.field-input {
+  width: min(280px, 100%);
 }
 </style>

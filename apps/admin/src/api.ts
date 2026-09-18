@@ -25,6 +25,8 @@ export interface CategoryListItem extends Category {
   tags: CategoryTag[];
 }
 
+export type PostSort = 'active' | 'newest' | 'views' | 'comments';
+
 export interface Tag {
   id: number;
   name: string;
@@ -82,6 +84,9 @@ interface PostListParams {
   query?: string;
   category?: string;
   status?: string;
+  tagId?: number | null;
+  authorId?: number | null;
+  sort?: PostSort;
 }
 
 const TAG_CACHE_MAX_AGE = 60 * 60 * 1000;
@@ -205,6 +210,9 @@ export function createForumApi(authApi: AuthApi) {
             q: params.query || undefined,
             category: params.category || undefined,
             status: params.status || undefined,
+            tag: params.tagId ?? undefined,
+            author_id: params.authorId ?? undefined,
+            sort: params.sort,
           },
         })
         .json<Page<PostSummary>>();
