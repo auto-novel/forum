@@ -89,6 +89,17 @@ export default defineConfig(({ command, mode }) => {
       ),
     },
     plugins: [vue(), tailwindcss()],
+    build: {
+      cssCodeSplit: false,
+      rolldownOptions: {
+        output: {
+          manualChunks: (id) =>
+            id.replaceAll('\\', '/').includes('/node_modules/')
+              ? 'vendor'
+              : undefined,
+        },
+      },
+    },
     optimizeDeps: {
       exclude: ['@novelia/auth-api', '@novelia/web-kit'],
     },
