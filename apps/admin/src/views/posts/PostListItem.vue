@@ -10,6 +10,7 @@ import {
   NIcon,
   NInputNumber,
   NPopconfirm,
+  NPopover,
   NSpin,
   NTag,
   NText,
@@ -112,78 +113,107 @@ function formatDate(value: string) {
         </div>
       </div>
       <div class="post-actions">
-        <n-spin v-if="saving" size="small" />
-        <span class="action-label">状态</span>
-        <n-button
-          size="small"
-          :type="post.status === 0 ? 'primary' : 'default'"
-          :disabled="actionsDisabled || post.status === 0"
-          @click="emit('setStatus', post, 0)"
-        >
-          正常发布
-        </n-button>
-        <n-button
-          size="small"
-          :type="post.status === 1 ? 'warning' : 'default'"
-          :disabled="actionsDisabled || post.status === 1"
-          @click="emit('setStatus', post, 1)"
-        >
-          隐藏
-        </n-button>
-        <n-popconfirm
-          v-if="post.status !== 2"
-          positive-text="确认删除"
-          negative-text="取消"
-          @positive-click="emit('setStatus', post, 2)"
-        >
-          <template #trigger>
-            <n-button size="small" type="error" :disabled="actionsDisabled">
-              删除
-            </n-button>
-          </template>
-          确定将帖子「{{ post.title }}」标记为已删除？
-        </n-popconfirm>
-        <n-button v-else size="small" type="error" disabled>已删除</n-button>
-        <span class="action-divider" />
-        <n-button
-          size="small"
-          :disabled="actionsDisabled"
-          @click="emit('setCommentsLocked', post, !post.commentsLocked)"
-        >
-          {{ post.commentsLocked ? '解锁评论' : '锁定评论' }}
-        </n-button>
-        <span class="action-divider" />
-        <span class="action-label">置顶顺序</span>
-        <n-input-number
-          v-model:value="pinOrderInput"
-          class="pin-input"
-          size="small"
-          :min="-2147483648"
-          :max="2147483647"
-          :precision="0"
-          :show-button="false"
-          :disabled="actionsDisabled"
-          placeholder="顺序"
-        />
-        <n-button
-          size="small"
-          :disabled="
-            actionsDisabled ||
-            pinOrderInput == null ||
-            pinOrderInput === (post.pinOrder ?? null)
-          "
-          @click="emit('setPinOrder', post, pinOrderInput)"
-        >
-          {{ post.pinOrder == null ? '置顶' : '更新' }}
-        </n-button>
-        <n-button
-          v-if="post.pinOrder != null"
-          size="small"
-          :disabled="actionsDisabled"
-          @click="emit('setPinOrder', post, null)"
-        >
-          取消置顶
-        </n-button>
+        <div class="action-group">
+          <n-button
+            quaternary
+            size="small"
+            :disabled="actionsDisabled"
+            @click="emit('setCommentsLocked', post, !post.commentsLocked)"
+          >
+            {{ post.commentsLocked ? '解锁' : '锁定' }}
+          </n-button>
+          <n-popover
+            trigger="click"
+            placement="bottom-start"
+            :disabled="actionsDisabled"
+          >
+            <template #trigger>
+              <n-button quaternary size="small" :disabled="actionsDisabled">
+                {{ post.pinOrder == null ? '置顶' : '置顶设置' }}
+              </n-button>
+            </template>
+            <div class="pin-settings">
+              <n-text strong>置顶设置</n-text>
+              <label :for="`pin-order-${post.id}`" class="action-label">
+                置顶顺序
+              </label>
+              <n-input-number
+                v-model:value="pinOrderInput"
+                :input-props="{ id: `pin-order-${post.id}` }"
+                size="small"
+                :min="-2147483648"
+                :max="2147483647"
+                :precision="0"
+                :show-button="false"
+                :disabled="actionsDisabled"
+                placeholder="输入顺序"
+              />
+              <div class="pin-actions">
+                <n-button
+                  v-if="post.pinOrder != null"
+                  quaternary
+                  size="small"
+                  :disabled="actionsDisabled"
+                  @click="emit('setPinOrder', post, null)"
+                >
+                  取消置顶
+                </n-button>
+                <n-button
+                  secondary
+                  type="primary"
+                  size="small"
+                  :disabled="
+                    actionsDisabled ||
+                    pinOrderInput == null ||
+                    pinOrderInput === (post.pinOrder ?? null)
+                  "
+                  @click="emit('setPinOrder', post, pinOrderInput)"
+                >
+                  保存
+                </n-button>
+              </div>
+            </div>
+          </n-popover>
+        </div>
+        <div class="action-group status-actions">
+          <n-spin v-if="saving" size="small" />
+          <n-button
+            v-if="post.status !== 0"
+            quaternary
+            size="small"
+            :disabled="actionsDisabled"
+            @click="emit('setStatus', post, 0)"
+          >
+            恢复
+          </n-button>
+          <n-button
+            v-if="post.status !== 1"
+            quaternary
+            size="small"
+            :disabled="actionsDisabled"
+            @click="emit('setStatus', post, 1)"
+          >
+            隐藏
+          </n-button>
+          <n-popconfirm
+            v-if="post.status !== 2"
+            positive-text="确认删除"
+            negative-text="取消"
+            @positive-click="emit('setStatus', post, 2)"
+          >
+            <template #trigger>
+              <n-button
+                quaternary
+                size="small"
+                type="error"
+                :disabled="actionsDisabled"
+              >
+                删除
+              </n-button>
+            </template>
+            确定将帖子「{{ post.title }}」标记为已删除？
+          </n-popconfirm>
+        </div>
       </div>
     </div>
   </div>
@@ -212,15 +242,29 @@ function formatDate(value: string) {
 
 .post-badges,
 .post-metrics,
-.post-actions {
+.action-group {
   display: flex;
   align-items: center;
   gap: 7px;
 }
 
 .post-actions {
+  display: flex;
   flex-wrap: wrap;
-  margin-top: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 4px;
+  margin-left: -10px;
+}
+
+.action-group {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.status-actions {
+  margin-left: auto;
 }
 
 .action-label {
@@ -229,20 +273,27 @@ function formatDate(value: string) {
   white-space: nowrap;
 }
 
-.action-divider {
-  width: 1px;
-  height: 18px;
-  margin-inline: 5px;
-  background: var(--n-border-color);
+.pin-settings {
+  display: flex;
+  width: 220px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.pin-input {
-  width: 96px;
+.pin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.post-badges {
+  flex-wrap: wrap;
 }
 
 .post-title {
   font-size: 17px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .post-footer {
