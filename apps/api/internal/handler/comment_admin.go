@@ -2,14 +2,18 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"auth/internal/httpx"
 	"auth/internal/repository"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 )
 
 func (h *commentHandler) RegisterAdminRoutes(router chi.Router) {
+	router.Get("/", httpx.EH(h.listAdmin))
 	router.Put("/{id}/status", httpx.EH(h.setStatus))
 	router.Delete("/author/{authorId}", httpx.EH(h.deleteAllByAuthor))
 }
@@ -58,5 +62,54 @@ func (h *commentHandler) deleteAllByAuthor(w http.ResponseWriter, r *http.Reques
 		return httpx.InternalError(err, "删除用户评论失败")
 	}
 	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (h *commentHandler) listAdmin(w http.ResponseWriter, r *http.Request) error {
+	query := r.URL.Query()
+	pagination, err := parsePagination(query, 20, 100)
+	if err != nil {
+		return err
+	}
+	filter := repository.CommentFilter{
+		Search:     strings.TrimSpace(query.Get("q")),
+		AuthorName: strings.TrimSpace(query.Get("author_name")),
+		Status:     repository.CommentStatusAll,
+	}
+	if values, ok := query["post_id"]; ok {
+		if len(values) != 1 {
+			return httpx.BadRequest("post_id 必须为正整数")
+		}
+		id, err := strconv.ParseInt(values[0], 10, 64)
+		if err != nil || id <= 0 {
+			return httpx.BadRequest("post_id 必须为正整数")
+		}
+		filter.PostID = id
+	}
+	if values, ok := query["status"]; ok {
+		if len(values) != 1 {
+			return httpx.BadRequest("status 必须为 all、0、1 或 2")
+		}
+		if values[0] != "all" {
+			status, err := strconv.ParseInt(values[0], 10, 16)
+			if err != nil || !validStatus(int16(status)) {
+				return httpx.BadRequest("status 必须为 all、0、1 或 2")
+			}
+			filter.Status = int16(status)
+		}
+	}
+	total, items, err := h.repo.ListAdmin(filter, pagination.Limit, pagination.Offset)
+	if err != nil {
+		return httpx.InternalError(err, "查询评论失败")
+	}
+	responses := make([]commentResponse, len(items))
+	for i, item := range items {
+		response, err := newCommentResponse(r, item)
+		if err != nil {
+			return httpx.InternalError(err, "转换评论数据失败")
+		}
+		responses[i] = response
+	}
+	render.JSON(w, r, page[commentResponse]{Total: total, Items: responses})
 	return nil
 }

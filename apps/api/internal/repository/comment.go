@@ -28,7 +28,16 @@ type CreateCommentInput struct {
 	Attr           string
 }
 
+type CommentFilter struct {
+	Search, AuthorName string
+	PostID             int64
+	Status             int16
+}
+
+const CommentStatusAll int16 = -1
+
 type CommentRepository interface {
+	ListAdmin(filter CommentFilter, limit, offset int64) (int64, []Comment, error)
 	List(subjectType int16, subjectKey string, limit, offset int64) (int64, []Comment, error)
 	Find(subjectType int16, id int64) (*Comment, error)
 	Create(input CreateCommentInput) (*Comment, error)
@@ -64,6 +73,30 @@ func (r *commentRepository) List(subjectType int16, subjectKey string, limit, of
 		return 0, nil, err
 	}
 	return count.Count, dest, nil
+}
+
+func (r *commentRepository) ListAdmin(filter CommentFilter, limit, offset int64) (int64, []Comment, error) {
+	condition := table.Comment.SubjectType.EQ(Int16(CommentSubjectPost))
+	if filter.PostID > 0 {
+		condition = condition.AND(table.Comment.SubjectKey.EQ(String(PostSubjectKey(filter.PostID))))
+	}
+	if filter.Status != CommentStatusAll {
+		condition = condition.AND(table.Comment.Status.EQ(Int16(filter.Status)))
+	}
+	if filter.Search != "" {
+		condition = condition.AND(RawBool(`"comment"."content" ILIKE :contentPattern`, RawArgs{":contentPattern": "%" + filter.Search + "%"}))
+	}
+	if filter.AuthorName != "" {
+		condition = condition.AND(RawBool(`"comment"."author_username" ILIKE :authorPattern`, RawArgs{":authorPattern": "%" + filter.AuthorName + "%"}))
+	}
+	var count struct{ Count int64 }
+	if err := SELECT(COUNT(STAR)).FROM(table.Comment).WHERE(condition).Query(r.db, &count); err != nil {
+		return 0, nil, err
+	}
+	var dest []Comment
+	err := SELECT(table.Comment.AllColumns).FROM(table.Comment).WHERE(condition).
+		ORDER_BY(table.Comment.CreatedAt.DESC(), table.Comment.ID.DESC()).LIMIT(limit).OFFSET(offset).Query(r.db, &dest)
+	return count.Count, dest, err
 }
 
 func (r *commentRepository) Find(subjectType int16, id int64) (*Comment, error) {

@@ -1,0 +1,85 @@
+package handler
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"auth/internal/httpx"
+	"auth/internal/repository"
+	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type adminCommentRepository struct {
+	repository.CommentRepository
+	filter        repository.CommentFilter
+	limit, offset int64
+	called        bool
+}
+
+func (r *adminCommentRepository) ListAdmin(filter repository.CommentFilter, limit, offset int64) (int64, []repository.Comment, error) {
+	r.called = true
+	r.filter, r.limit, r.offset = filter, limit, offset
+	return 1, []repository.Comment{{ID: 5, SubjectKey: "42", SubjectType: repository.CommentSubjectPost, Content: "隐藏评论原文", Status: repository.StatusHidden}}, nil
+}
+
+func TestAdminCommentList(t *testing.T) {
+	for _, tc := range []struct {
+		name, role, query string
+		wantStatus        int
+		wantFilter        repository.CommentFilter
+		limit, offset     int64
+	}{
+		{name: "anonymous", wantStatus: http.StatusUnauthorized},
+		{name: "member", role: "member", wantStatus: http.StatusForbidden},
+		{name: "all posts", role: "admin", wantStatus: http.StatusOK, wantFilter: repository.CommentFilter{Status: repository.CommentStatusAll}, limit: 20},
+		{name: "combined filters", role: "admin", query: "?q=%20内容%20&author_name=%20小明%20&post_id=42&status=1&page=2&page_size=10", wantStatus: http.StatusOK, wantFilter: repository.CommentFilter{Search: "内容", AuthorName: "小明", PostID: 42, Status: repository.StatusHidden}, limit: 10, offset: 10},
+		{name: "published", role: "admin", query: "?status=0", wantStatus: http.StatusOK, wantFilter: repository.CommentFilter{Status: repository.StatusPublished}, limit: 20},
+		{name: "deleted", role: "admin", query: "?status=2", wantStatus: http.StatusOK, wantFilter: repository.CommentFilter{Status: repository.StatusDeleted}, limit: 20},
+		{name: "explicit all", role: "admin", query: "?status=all", wantStatus: http.StatusOK, wantFilter: repository.CommentFilter{Status: repository.CommentStatusAll}, limit: 20},
+		{name: "bad post", role: "admin", query: "?post_id=0", wantStatus: http.StatusBadRequest},
+		{name: "empty post", role: "admin", query: "?post_id=", wantStatus: http.StatusBadRequest},
+		{name: "multiple posts", role: "admin", query: "?post_id=1&post_id=2", wantStatus: http.StatusBadRequest},
+		{name: "bad status", role: "admin", query: "?status=3", wantStatus: http.StatusBadRequest},
+		{name: "multiple statuses", role: "admin", query: "?status=0&status=1", wantStatus: http.StatusBadRequest},
+		{name: "bad pagination", role: "admin", query: "?page=0", wantStatus: http.StatusBadRequest},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := &adminCommentRepository{}
+			router := chi.NewRouter()
+			router.Use(httpx.RequireAdmin)
+			NewCommentHandler(repo, nil).RegisterAdminRoutes(router)
+			request := httptest.NewRequest(http.MethodGet, "/"+tc.query, nil)
+			if tc.role != "" {
+				token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": "tester", "uid": 1, "role": tc.role}).SignedString([]byte(httpx.AccessTokenSecret))
+				if err != nil {
+					t.Fatal(err)
+				}
+				request.Header.Set("Authorization", "Bearer "+token)
+			}
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, request)
+			if recorder.Code != tc.wantStatus {
+				t.Fatalf("status=%d want=%d body=%s", recorder.Code, tc.wantStatus, recorder.Body.String())
+			}
+			if tc.wantStatus != http.StatusOK {
+				if repo.called {
+					t.Fatal("invalid or unauthorized request reached repository")
+				}
+				return
+			}
+			if repo.filter != tc.wantFilter || repo.limit != tc.limit || repo.offset != tc.offset {
+				t.Fatalf("unexpected query: %#v limit=%d offset=%d", repo.filter, repo.limit, repo.offset)
+			}
+			var response page[commentResponse]
+			if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+				t.Fatal(err)
+			}
+			if response.Total != 1 || len(response.Items) != 1 || response.Items[0].Content != "隐藏评论原文" || response.Items[0].PostID != 42 {
+				t.Fatalf("unexpected response: %#v", response)
+			}
+		})
+	}
+}
