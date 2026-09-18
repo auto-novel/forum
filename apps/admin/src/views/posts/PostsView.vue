@@ -13,7 +13,6 @@ import { categoryTitle } from '@/category';
 
 import PostFilters from './PostFilters.vue';
 import PostList from './PostList.vue';
-import PostModerationModal from './PostModerationModal.vue';
 
 const PAGE_SIZE = 20;
 const api = useForumApi();
@@ -21,8 +20,9 @@ const router = useRouter();
 const categories = ref<CategoryListItem[]>([]);
 const posts = ref<PostSummary[]>([]);
 const loading = ref(true);
-const moderationSaving = ref(false);
+const busyPostId = ref<number | null>(null);
 const errorMessage = ref('');
+const actionErrorMessage = ref('');
 const successMessage = ref('');
 const page = ref(1);
 const total = ref(0);
@@ -38,7 +38,6 @@ const status = ref('');
 const tagId = ref<number | null>(null);
 const authorId = ref<number | null>(null);
 const sort = ref<PostSort>('active');
-const selectedPost = ref<PostSummary | null>(null);
 let requestId = 0;
 
 const categoryMap = computed(
@@ -115,10 +114,48 @@ function reviewComments(post: PostSummary) {
   void router.push({ name: 'comments', query: { post: post.id } });
 }
 
-async function handleModerationSuccess(message: string) {
-  selectedPost.value = null;
-  successMessage.value = message;
-  await loadPosts();
+async function runAction(
+  post: PostSummary,
+  action: () => Promise<string>,
+  message: string,
+) {
+  if (busyPostId.value !== null) return;
+  busyPostId.value = post.id;
+  actionErrorMessage.value = '';
+  successMessage.value = '';
+  try {
+    await action();
+    successMessage.value = `帖子「${post.title}」${message}`;
+    await loadPosts();
+  } catch (error) {
+    actionErrorMessage.value =
+      error instanceof Error ? error.message : String(error);
+  } finally {
+    busyPostId.value = null;
+  }
+}
+
+function setStatus(post: PostSummary, status: number) {
+  void runAction(post, () => api.setPostStatus(post.id, status), '状态已更新');
+}
+
+function setCommentsLocked(post: PostSummary, locked: boolean) {
+  void runAction(
+    post,
+    () => (locked ? api.lockPost(post.id) : api.unlockPost(post.id)),
+    locked ? '评论已锁定' : '评论已解锁',
+  );
+}
+
+function setPinOrder(post: PostSummary, pinOrder: number | null) {
+  void runAction(
+    post,
+    () =>
+      pinOrder == null
+        ? api.unpinPost(post.id)
+        : api.pinPost(post.id, pinOrder),
+    pinOrder == null ? '已取消置顶' : '置顶顺序已更新',
+  );
 }
 
 async function initialize() {
@@ -160,6 +197,14 @@ onMounted(initialize);
         <n-button size="small" @click="loadPosts">重新加载</n-button>
       </n-space>
     </n-alert>
+    <n-alert
+      v-if="actionErrorMessage"
+      type="error"
+      closable
+      @close="actionErrorMessage = ''"
+    >
+      {{ actionErrorMessage }}
+    </n-alert>
 
     <PostList
       v-if="!errorMessage"
@@ -170,18 +215,13 @@ onMounted(initialize);
       :page-size="PAGE_SIZE"
       :has-filters="hasFilters"
       :category-names="categoryMap"
+      :busy-post-id="busyPostId"
       @update-page="changePage"
       @reset-filters="resetFilters"
-      @moderate="selectedPost = $event"
+      @set-status="setStatus"
+      @set-comments-locked="setCommentsLocked"
+      @set-pin-order="setPinOrder"
       @review-comments="reviewComments"
-    />
-
-    <PostModerationModal
-      v-model:saving="moderationSaving"
-      :post="selectedPost"
-      @close="selectedPost = null"
-      @success="handleModerationSuccess"
-      @error="errorMessage = $event"
     />
   </n-space>
 </template>

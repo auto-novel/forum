@@ -24,12 +24,15 @@ const props = defineProps<{
   pageSize: number;
   hasFilters: boolean;
   categoryNames: Map<number, string>;
+  busyPostId: number | null;
 }>();
 
 const emit = defineEmits<{
   updatePage: [page: number];
   resetFilters: [];
-  moderate: [post: PostSummary];
+  setStatus: [post: PostSummary, status: number];
+  setCommentsLocked: [post: PostSummary, locked: boolean];
+  setPinOrder: [post: PostSummary, pinOrder: number | null];
   reviewComments: [post: PostSummary];
 }>();
 
@@ -67,7 +70,15 @@ const rangeEnd = computed(() =>
               :category-name="
                 categoryNames.get(post.categoryId) ?? `分类 ${post.categoryId}`
               "
-              @moderate="emit('moderate', $event)"
+              :actions-disabled="busyPostId !== null || loading"
+              :saving="busyPostId === post.id"
+              @set-status="(item, status) => emit('setStatus', item, status)"
+              @set-comments-locked="
+                (item, locked) => emit('setCommentsLocked', item, locked)
+              "
+              @set-pin-order="
+                (item, pinOrder) => emit('setPinOrder', item, pinOrder)
+              "
               @review-comments="emit('reviewComments', $event)"
             />
           </n-list-item>
