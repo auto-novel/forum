@@ -8,7 +8,7 @@ import {
   PaginationRoot,
 } from 'reka-ui';
 
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 
 defineProps<{
   page: number;
@@ -32,7 +32,7 @@ defineEmits<{
     @update:page="$emit('change', $event)"
   >
     <PaginationPrev as-child>
-      <AppButton variant="outline" size="sm">上一页</AppButton>
+      <XButton variant="outline" size="sm">上一页</XButton>
     </PaginationPrev>
 
     <span class="text-xs text-muted sm:hidden">
@@ -48,13 +48,13 @@ defineEmits<{
           :value="item.value"
           as-child
         >
-          <AppButton
+          <XButton
             variant="ghost"
             size="icon-sm"
             class="text-xs font-medium data-[selected]:bg-primary data-[selected]:text-white data-[selected]:hover:bg-primary-hover data-[selected]:hover:text-white"
           >
             {{ item.value }}
-          </AppButton>
+          </XButton>
         </PaginationListItem>
         <PaginationEllipsis
           v-else
@@ -66,7 +66,7 @@ defineEmits<{
     </PaginationList>
 
     <PaginationNext as-child>
-      <AppButton variant="outline" size="sm">下一页</AppButton>
+      <XButton variant="outline" size="sm">下一页</XButton>
     </PaginationNext>
   </PaginationRoot>
 </template>

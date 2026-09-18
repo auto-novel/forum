@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from 'reka-ui';
 
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 
 withDefaults(
   defineProps<{
@@ -52,15 +52,15 @@ function confirm() {
         </AlertDialogDescription>
         <div class="mt-6 flex justify-end gap-3">
           <AlertDialogCancel as-child>
-            <AppButton variant="outline" :disabled="loading">取消</AppButton>
+            <XButton variant="outline" :disabled="loading">取消</XButton>
           </AlertDialogCancel>
-          <AppButton
+          <XButton
             :variant="danger ? 'danger' : 'primary'"
             :disabled="loading"
             @click="confirm"
           >
             {{ loading ? '处理中…' : confirmLabel }}
-          </AppButton>
+          </XButton>
         </div>
       </AlertDialogContent>
     </AlertDialogPortal>

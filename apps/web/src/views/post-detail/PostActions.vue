@@ -13,10 +13,10 @@ import {
   unlockPost,
   unpinPost,
 } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
-import ActionMenu from '@/ui/ActionMenu.vue';
-import ActionMenuItem from '@/ui/ActionMenuItem.vue';
-import ConfirmDialog from '@/ui/ConfirmDialog.vue';
+import XButton from '@/ui/XButton.vue';
+import XActionMenu from '@/ui/XActionMenu.vue';
+import XActionMenuItem from '@/ui/XActionMenuItem.vue';
+import XConfirmDialog from '@/ui/XConfirmDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { getApiErrorMessage } from '@/utils/apiError';
 
@@ -185,7 +185,7 @@ watch(
 <template>
   <section class="relative border-t border-divider py-3" aria-label="帖子操作">
     <div class="flex flex-wrap items-center gap-2">
-      <AppButton
+      <XButton
         v-if="authUser"
         :variant="favorited ? 'ghost-active' : 'ghost'"
         size="sm"
@@ -196,55 +196,55 @@ watch(
         <StarFilled v-if="favorited" class="size-4" aria-hidden="true" />
         <StarBorderOutlined v-else class="size-4" aria-hidden="true" />
         {{ favoriteLoading ? '处理中…' : favorited ? '取消收藏' : '收藏' }}
-      </AppButton>
+      </XButton>
 
       <div v-if="canManagePost">
-        <ActionMenu>
-          <ActionMenuItem :disabled="actionLoading" @activate="editPost">
+        <XActionMenu>
+          <XActionMenuItem :disabled="actionLoading" @activate="editPost">
             编辑帖子
-          </ActionMenuItem>
+          </XActionMenuItem>
           <template v-if="isAdmin">
-            <ActionMenuItem :disabled="actionLoading" @activate="togglePin">
+            <XActionMenuItem :disabled="actionLoading" @activate="togglePin">
               {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
-            </ActionMenuItem>
-            <ActionMenuItem :disabled="actionLoading" @activate="toggleLock">
+            </XActionMenuItem>
+            <XActionMenuItem :disabled="actionLoading" @activate="toggleLock">
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
-            </ActionMenuItem>
-            <ActionMenuItem
+            </XActionMenuItem>
+            <XActionMenuItem
               :disabled="actionLoading"
               @activate="confirmationAction = 'hide'"
             >
               隐藏帖子
-            </ActionMenuItem>
+            </XActionMenuItem>
           </template>
-          <ActionMenuItem
+          <XActionMenuItem
             v-if="canDelete"
             danger
             :disabled="actionLoading"
             @activate="confirmationAction = 'delete'"
           >
             删除帖子
-          </ActionMenuItem>
+          </XActionMenuItem>
           <template v-if="canModerateAuthor">
-            <ActionMenuItem
+            <XActionMenuItem
               danger
               :disabled="actionLoading"
               @activate="userModerationAction = 'strike'"
             >
               处罚作者
-            </ActionMenuItem>
-            <ActionMenuItem
+            </XActionMenuItem>
+            <XActionMenuItem
               danger
               :disabled="actionLoading"
               @activate="userModerationAction = 'ban'"
             >
               封禁作者
-            </ActionMenuItem>
+            </XActionMenuItem>
           </template>
-        </ActionMenu>
+        </XActionMenu>
       </div>
     </div>
-    <ConfirmDialog
+    <XConfirmDialog
       :open="confirmationAction != null"
       :title="confirmation.title"
       :description="confirmation.description"

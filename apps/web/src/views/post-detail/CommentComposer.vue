@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, ref, useId, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { useCommentValidation } from '@/composables/useCommentValidation';
@@ -122,17 +122,17 @@ async function submitComment() {
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
         <MarkdownHelpDialog mode="comment" />
         <div class="flex items-center gap-2">
-          <AppButton
+          <XButton
             v-if="replyTo"
             variant="outline"
             :disabled="submitting"
             @click="emit('cancelReply')"
           >
             取消
-          </AppButton>
-          <AppButton type="submit" :disabled="!canSubmit">
+          </XButton>
+          <XButton type="submit" :disabled="!canSubmit">
             {{ submitting ? '发表中…' : '发表' }}
-          </AppButton>
+          </XButton>
         </div>
       </div>
     </form>

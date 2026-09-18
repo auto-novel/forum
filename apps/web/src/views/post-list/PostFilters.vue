@@ -3,7 +3,7 @@ import { SearchOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
 
 import { type PostSort } from '@/api';
-import AppSelect from '@/ui/AppSelect.vue';
+import XSelect from '@/ui/XSelect.vue';
 import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{
@@ -84,7 +84,7 @@ watch(
       </span>
     </label>
 
-    <AppSelect
+    <XSelect
       v-if="tags.length"
       v-model="tagInput"
       :options="tagOptions"
@@ -93,7 +93,7 @@ watch(
       @change="apply"
     />
 
-    <AppSelect
+    <XSelect
       v-model="sortInput"
       :options="sortOptions"
       aria-label="帖子排序"

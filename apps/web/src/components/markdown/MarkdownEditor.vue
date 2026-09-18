@@ -7,7 +7,7 @@ import {
 } from '@vicons/material';
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 
 import type { MarkdownMode } from './renderMarkdown';
 import MarkdownContent from './MarkdownContent.vue';
@@ -100,7 +100,7 @@ defineExpose({ focus });
   <div class="overflow-hidden rounded-md border border-border">
     <div class="flex flex-wrap items-stretch border-b border-border">
       <div class="flex flex-none" role="tablist" aria-label="Markdown 编辑模式">
-        <AppButton
+        <XButton
           variant="plain"
           size="none"
           :class="[
@@ -112,8 +112,8 @@ defineExpose({ focus });
           @click="activeTab = 'edit'"
         >
           编辑
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="plain"
           size="none"
           :class="[
@@ -125,7 +125,7 @@ defineExpose({ focus });
           @click="activeTab = 'preview'"
         >
           预览
-        </AppButton>
+        </XButton>
       </div>
 
       <div
@@ -133,7 +133,7 @@ defineExpose({ focus });
         class="order-last flex w-full items-center gap-0.5 overflow-x-auto border-t border-border p-1 sm:order-none sm:ml-auto sm:w-auto sm:border-t-0"
         aria-label="Markdown 格式工具"
       >
-        <AppButton
+        <XButton
           variant="toolbar"
           size="icon-sm"
           class="font-bold"
@@ -142,8 +142,8 @@ defineExpose({ focus });
           @mousedown.prevent="wrapSelection('**', '**', '粗体')"
         >
           B
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="toolbar"
           size="icon-sm"
           class="italic"
@@ -152,8 +152,8 @@ defineExpose({ focus });
           @mousedown.prevent="wrapSelection('*', '*', '斜体')"
         >
           I
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="toolbar"
           size="icon-sm"
           class="line-through"
@@ -162,8 +162,8 @@ defineExpose({ focus });
           @mousedown.prevent="wrapSelection('~~', '~~', '删除线')"
         >
           S
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="toolbar"
           size="icon-sm"
           title="链接"
@@ -171,8 +171,8 @@ defineExpose({ focus });
           @mousedown.prevent="wrapSelection('[', '](https://)', '链接文字')"
         >
           <LinkOutlined class="mx-auto size-4" aria-hidden="true" />
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="toolbar"
           size="icon-sm"
           title="剧透"
@@ -180,8 +180,8 @@ defineExpose({ focus });
           @mousedown.prevent="wrapSelection('!!', '!!', '剧透内容')"
         >
           <VisibilityOffOutlined class="mx-auto size-4" aria-hidden="true" />
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="toolbar"
           size="icon-sm"
           title="评分"
@@ -189,8 +189,8 @@ defineExpose({ focus });
           @mousedown.prevent="insertBlock('::: star 5', '', '')"
         >
           <StarBorderOutlined class="mx-auto size-4" aria-hidden="true" />
-        </AppButton>
-        <AppButton
+        </XButton>
+        <XButton
           variant="toolbar"
           size="icon-sm"
           title="折叠内容"
@@ -200,7 +200,7 @@ defineExpose({ focus });
           "
         >
           <UnfoldMoreOutlined class="mx-auto size-4" aria-hidden="true" />
-        </AppButton>
+        </XButton>
       </div>
     </div>
 

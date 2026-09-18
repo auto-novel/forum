@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui';
 
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 
 withDefaults(
   defineProps<{
@@ -25,7 +25,7 @@ withDefaults(
 <template>
   <DropdownMenuRoot>
     <DropdownMenuTrigger as-child>
-      <AppButton
+      <XButton
         variant="ghost"
         :size="compact ? 'icon-xs' : 'icon'"
         aria-label="更多操作"
@@ -35,7 +35,7 @@ withDefaults(
           :class="compact ? 'size-4' : 'size-5'"
           aria-hidden="true"
         />
-      </AppButton>
+      </XButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
       <DropdownMenuContent

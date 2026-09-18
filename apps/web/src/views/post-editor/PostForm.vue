@@ -2,8 +2,8 @@
 import { computed, defineAsyncComponent, useId } from 'vue';
 
 import type { PostTag } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
-import AppSelect from '@/ui/AppSelect.vue';
+import XButton from '@/ui/XButton.vue';
+import XSelect from '@/ui/XSelect.vue';
 import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 
@@ -114,7 +114,7 @@ function submit() {
       >
         分类
       </label>
-      <AppSelect
+      <XSelect
         id="post-category"
         v-model="category"
         :options="categoryOptions"
@@ -186,17 +186,17 @@ function submit() {
       class="flex flex-wrap items-center justify-end gap-3 border-t border-divider pt-5"
     >
       <div class="flex items-center gap-3">
-        <AppButton
+        <XButton
           v-if="showCancel"
           variant="outline"
           :disabled="submitting"
           @click="emit('cancel')"
         >
           取消
-        </AppButton>
-        <AppButton type="submit" :disabled="!canSubmit">
+        </XButton>
+        <XButton type="submit" :disabled="!canSubmit">
           {{ submitting ? submittingLabel : submitLabel }}
-        </AppButton>
+        </XButton>
       </div>
     </div>
   </form>

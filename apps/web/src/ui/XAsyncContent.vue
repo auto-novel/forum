@@ -2,7 +2,7 @@
 import { Inventory2Outlined } from '@vicons/material';
 import { computed } from 'vue';
 
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -84,9 +84,9 @@ const retryClass = computed(() => (props.size === 'compact' ? 'mt-4' : 'mt-5'));
         >
           {{ error }}
         </p>
-        <AppButton :class="retryClass" @click="$emit('retry')">
+        <XButton :class="retryClass" @click="$emit('retry')">
           {{ retryLabel }}
-        </AppButton>
+        </XButton>
       </div>
     </div>
 

@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { authUser, updatePost, type Post } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
-import AsyncContent from '@/ui/AsyncContent.vue';
+import XButton from '@/ui/XButton.vue';
+import XAsyncContent from '@/ui/XAsyncContent.vue';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCategoryStore } from '@/stores/category';
@@ -148,7 +148,7 @@ void categoryStore.initialize().then(() => {
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
-      <AsyncContent
+      <XAsyncContent
         :loading="loading"
         :error="error"
         size="large"
@@ -196,16 +196,16 @@ void categoryStore.initialize().then(() => {
                 : '登录后才能编辑帖子，请使用页面右上角的登录入口。'
             }}
           </p>
-          <AppButton
+          <XButton
             :as="RouterLink"
             :to="detailRoute"
             variant="outline"
             class="mt-5"
           >
             返回帖子详情
-          </AppButton>
+          </XButton>
         </section>
-      </AsyncContent>
+      </XAsyncContent>
     </div>
   </div>
 </template>

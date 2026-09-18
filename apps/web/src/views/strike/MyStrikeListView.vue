@@ -5,8 +5,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { authApi, authUser } from '@/api';
-import AsyncContent from '@/ui/AsyncContent.vue';
-import PaginationControls from '@/ui/PaginationControls.vue';
+import XAsyncContent from '@/ui/XAsyncContent.vue';
+import XPaginationControls from '@/ui/XPaginationControls.vue';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const PAGE_SIZE = 20;
@@ -102,7 +102,7 @@ onBeforeUnmount(() => requestId++);
       </section>
 
       <section v-else aria-live="polite">
-        <AsyncContent
+        <XAsyncContent
           :loading="loading"
           :error="error"
           :empty="!strikes.length"
@@ -178,9 +178,9 @@ onBeforeUnmount(() => requestId++);
               </p>
             </article>
           </div>
-        </AsyncContent>
+        </XAsyncContent>
 
-        <PaginationControls
+        <XPaginationControls
           v-if="!loading && !error && totalPages > 1"
           :page="page"
           :total-pages="totalPages"

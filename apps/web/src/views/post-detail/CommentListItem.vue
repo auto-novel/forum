@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, ref, useId, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { useCommentValidation } from '@/composables/useCommentValidation';
@@ -118,7 +118,7 @@ async function saveEdit() {
       />
     </header>
     <div v-if="!isPublished" class="mt-2">
-      <AppButton
+      <XButton
         v-if="isAdmin"
         variant="plain"
         size="none"
@@ -128,7 +128,7 @@ async function saveEdit() {
         @click="showModeratedContent = !showModeratedContent"
       >
         {{ statusLabel }}
-      </AppButton>
+      </XButton>
       <p v-else class="text-sm text-muted">{{ statusLabel }}</p>
       <div v-if="isAdmin" :id="`comment-${comment.id}-moderated-content`">
         <MarkdownContent
@@ -162,17 +162,17 @@ async function saveEdit() {
       <div class="mt-3 flex items-center justify-between gap-3">
         <MarkdownHelpDialog mode="comment" />
         <div class="flex gap-2">
-          <AppButton
+          <XButton
             variant="ghost"
             size="xs"
             :disabled="submitting"
             @click="editing = false"
           >
             取消
-          </AppButton>
-          <AppButton type="submit" size="xs" :disabled="!canSave">
+          </XButton>
+          <XButton type="submit" size="xs" :disabled="!canSave">
             {{ submitting ? '保存中…' : '保存' }}
-          </AppButton>
+          </XButton>
         </div>
       </div>
     </form>

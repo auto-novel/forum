@@ -2,10 +2,10 @@
 import { computed, defineAsyncComponent, onBeforeUnmount, ref } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
-import ActionMenu from '@/ui/ActionMenu.vue';
-import ActionMenuItem from '@/ui/ActionMenuItem.vue';
-import ConfirmDialog from '@/ui/ConfirmDialog.vue';
+import XButton from '@/ui/XButton.vue';
+import XActionMenu from '@/ui/XActionMenu.vue';
+import XActionMenuItem from '@/ui/XActionMenuItem.vue';
+import XConfirmDialog from '@/ui/XConfirmDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
@@ -121,7 +121,7 @@ function handleUserModerationOpenChange(open: boolean) {
 
 <template>
   <div v-if="hasActions" class="ml-auto flex items-center gap-1">
-    <AppButton
+    <XButton
       v-if="canReply"
       variant="ghost"
       size="xs"
@@ -129,44 +129,44 @@ function handleUserModerationOpenChange(open: boolean) {
       @click="emit('reply')"
     >
       回复
-    </AppButton>
-    <AppButton v-if="canEdit" variant="ghost" size="xs" @click="emit('edit')">
+    </XButton>
+    <XButton v-if="canEdit" variant="ghost" size="xs" @click="emit('edit')">
       编辑
-    </AppButton>
-    <ActionMenu v-if="hasMenu" compact side="bottom" align="end">
-      <ActionMenuItem
+    </XButton>
+    <XActionMenu v-if="hasMenu" compact side="bottom" align="end">
+      <XActionMenuItem
         v-if="isAdmin"
         :disabled="submitting"
         @activate="confirmationAction = 'hide'"
       >
         隐藏评论
-      </ActionMenuItem>
-      <ActionMenuItem
+      </XActionMenuItem>
+      <XActionMenuItem
         danger
         :disabled="submitting"
         @activate="confirmationAction = 'delete'"
       >
         删除评论
-      </ActionMenuItem>
+      </XActionMenuItem>
       <template v-if="canModerateAuthor">
-        <ActionMenuItem
+        <XActionMenuItem
           danger
           :disabled="submitting"
           @activate="userModerationAction = 'strike'"
         >
           处罚作者
-        </ActionMenuItem>
-        <ActionMenuItem
+        </XActionMenuItem>
+        <XActionMenuItem
           danger
           :disabled="submitting"
           @activate="userModerationAction = 'ban'"
         >
           封禁作者
-        </ActionMenuItem>
+        </XActionMenuItem>
       </template>
-    </ActionMenu>
+    </XActionMenu>
 
-    <ConfirmDialog
+    <XConfirmDialog
       :open="confirmationAction != null"
       :title="confirmation.title"
       :description="confirmation.description"

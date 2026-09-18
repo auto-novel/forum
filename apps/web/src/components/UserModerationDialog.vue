@@ -11,7 +11,7 @@ import {
 } from 'reka-ui';
 
 import { authApi, deleteCommentsByAuthor } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
@@ -181,24 +181,24 @@ async function submit() {
           </div>
 
           <div class="flex justify-end gap-3 pt-2">
-            <AppButton
+            <XButton
               variant="outline"
               :disabled="submitting"
               @click="updateOpen(false)"
             >
               取消
-            </AppButton>
-            <AppButton
+            </XButton>
+            <XButton
               type="submit"
               variant="danger"
               :disabled="!canSubmit || submitting"
             >
               {{ submitting ? '处理中…' : isStrike ? '确认处罚' : '确认封禁' }}
-            </AppButton>
+            </XButton>
           </div>
         </form>
 
-        <AppButton
+        <XButton
           class="absolute top-4 right-4"
           variant="subtle"
           size="icon-sm"
@@ -207,7 +207,7 @@ async function submit() {
           @click="updateOpen(false)"
         >
           <CloseOutlined class="size-5" aria-hidden="true" />
-        </AppButton>
+        </XButton>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

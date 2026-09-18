@@ -4,8 +4,8 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { type Post, type PostComment } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
-import AsyncContent from '@/ui/AsyncContent.vue';
+import XButton from '@/ui/XButton.vue';
+import XAsyncContent from '@/ui/XAsyncContent.vue';
 import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
 import { useCommentPageQuery, useCommentStore } from '@/stores/comment';
@@ -189,7 +189,7 @@ function returnToList() {
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
       <div class="mb-3 flex flex-wrap items-center gap-1.5">
-        <AppButton
+        <XButton
           variant="plain"
           size="none"
           class="min-h-9 rounded-sm text-xs font-medium text-primary hover:text-primary-hover"
@@ -199,7 +199,7 @@ function returnToList() {
         >
           <ArrowBackOutlined class="size-4" aria-hidden="true" />
           {{ post && !postError ? (category?.title ?? '未分类') : '返回列表' }}
-        </AppButton>
+        </XButton>
         <PostTagList
           v-if="post && !postLoading && !postError"
           class="min-w-0"
@@ -212,7 +212,7 @@ function returnToList() {
           class="h-3 w-24 animate-pulse rounded-sm bg-divider"
         />
       </div>
-      <AsyncContent
+      <XAsyncContent
         :loading="postLoading"
         :error="postError"
         size="large"
@@ -273,7 +273,7 @@ function returnToList() {
             </CommentList>
           </div>
         </template>
-      </AsyncContent>
+      </XAsyncContent>
     </div>
   </div>
 </template>

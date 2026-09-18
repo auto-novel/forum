@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 import { useCategoryStore } from '@/stores/category';
 import { usePostListQuery } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
@@ -146,7 +146,7 @@ function changePage(nextPage: number) {
           :sort="selectedSort"
           @apply="applyFilters"
         />
-        <AppButton
+        <XButton
           v-if="
             selectedCategory !== 'feedback' &&
             categoryStore.canPublish(selectedCategory)
@@ -160,7 +160,7 @@ function changePage(nextPage: number) {
         >
           <AddOutlined class="size-4" aria-hidden="true" />
           发表帖子
-        </AppButton>
+        </XButton>
       </div>
       <PostList
         :posts="posts"

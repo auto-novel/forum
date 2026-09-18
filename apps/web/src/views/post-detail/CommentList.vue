@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
-import AppButton from '@/ui/AppButton.vue';
+import XButton from '@/ui/XButton.vue';
 
 import type { PostComment } from '@/api';
-import AsyncContent from '@/ui/AsyncContent.vue';
-import PaginationControls from '@/ui/PaginationControls.vue';
+import XAsyncContent from '@/ui/XAsyncContent.vue';
+import XPaginationControls from '@/ui/XPaginationControls.vue';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -46,7 +46,7 @@ const emit = defineEmits<{
         评论
         <span class="text-muted">{{ commentsCount }}</span>
       </h2>
-      <AppButton
+      <XButton
         size="sm"
         aria-controls="comment-composer"
         :aria-expanded="composing"
@@ -54,12 +54,12 @@ const emit = defineEmits<{
       >
         <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
         {{ composing ? '取消评论' : '发表评论' }}
-      </AppButton>
+      </XButton>
     </header>
 
     <slot name="composer" />
 
-    <AsyncContent
+    <XAsyncContent
       :loading="loading"
       :error="error"
       :empty="!comments.length"
@@ -105,9 +105,9 @@ const emit = defineEmits<{
           @author-comments-deleted="emit('authorCommentsDeleted')"
         />
       </div>
-    </AsyncContent>
+    </XAsyncContent>
 
-    <PaginationControls
+    <XPaginationControls
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"

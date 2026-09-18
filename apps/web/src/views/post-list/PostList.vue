@@ -2,8 +2,8 @@
 import { nextTick, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
-import AsyncContent from '@/ui/AsyncContent.vue';
-import PaginationControls from '@/ui/PaginationControls.vue';
+import XAsyncContent from '@/ui/XAsyncContent.vue';
+import XPaginationControls from '@/ui/XPaginationControls.vue';
 
 import PostListItem from './PostListItem.vue';
 
@@ -45,7 +45,7 @@ const emit = defineEmits<{
 
 <template>
   <section aria-live="polite">
-    <AsyncContent
+    <XAsyncContent
       :loading="loading"
       :error="error"
       :empty="!posts.length"
@@ -67,9 +67,9 @@ const emit = defineEmits<{
       <div class="divide-y divide-divider">
         <PostListItem v-for="post in posts" :key="post.id" :post="post" />
       </div>
-    </AsyncContent>
+    </XAsyncContent>
 
-    <PaginationControls
+    <XPaginationControls
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
