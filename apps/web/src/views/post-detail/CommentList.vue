@@ -5,7 +5,7 @@ import XButton from '@/ui/XButton.vue';
 
 import type { PostComment } from '@/api';
 import XAsyncContent from '@/ui/XAsyncContent.vue';
-import XPaginationControls from '@/ui/XPaginationControls.vue';
+import XPagination from '@/ui/XPagination.vue';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -107,7 +107,7 @@ const emit = defineEmits<{
       </div>
     </XAsyncContent>
 
-    <XPaginationControls
+    <XPagination
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"

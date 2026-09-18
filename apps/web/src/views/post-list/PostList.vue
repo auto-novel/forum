@@ -3,7 +3,7 @@ import { nextTick, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
 import XAsyncContent from '@/ui/XAsyncContent.vue';
-import XPaginationControls from '@/ui/XPaginationControls.vue';
+import XPagination from '@/ui/XPagination.vue';
 
 import PostListItem from './PostListItem.vue';
 
@@ -69,7 +69,7 @@ const emit = defineEmits<{
       </div>
     </XAsyncContent>
 
-    <XPaginationControls
+    <XPagination
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"

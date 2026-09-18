@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { authApi, authUser } from '@/api';
 import XAsyncContent from '@/ui/XAsyncContent.vue';
-import XPaginationControls from '@/ui/XPaginationControls.vue';
+import XPagination from '@/ui/XPagination.vue';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const PAGE_SIZE = 20;
@@ -180,7 +180,7 @@ onBeforeUnmount(() => requestId++);
           </div>
         </XAsyncContent>
 
-        <XPaginationControls
+        <XPagination
           v-if="!loading && !error && totalPages > 1"
           :page="page"
           :total-pages="totalPages"
