@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, useId } from 'vue';
+import { computed, useId } from 'vue';
 
 import type { PostTag } from '@/api';
 import XButton from '@/ui/XButton.vue';
 import XSelect from '@/ui/XSelect.vue';
 import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-
-const MarkdownHelpDialog = defineAsyncComponent(
-  () => import('@/components/markdown/MarkdownHelpDialog.vue'),
-);
+import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 
 const props = withDefaults(
   defineProps<{

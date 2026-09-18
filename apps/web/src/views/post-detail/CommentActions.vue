@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
 import XButton from '@/ui/XButton.vue';
 import XActionMenu from '@/ui/XActionMenu.vue';
 import XActionMenuItem from '@/ui/XActionMenuItem.vue';
 import XConfirmDialog from '@/ui/XConfirmDialog.vue';
+import UserModerationDialog from '@/components/UserModerationDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { getApiErrorMessage } from '@/utils/apiError';
-
-const UserModerationDialog = defineAsyncComponent(
-  () => import('@/components/UserModerationDialog.vue'),
-);
 
 const props = defineProps<{
   comment: PostComment;

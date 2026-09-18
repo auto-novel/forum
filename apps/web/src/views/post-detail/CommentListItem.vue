@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, useId, watch } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
 import XButton from '@/ui/XButton.vue';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
+import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 import { useCommentValidation } from '@/composables/useCommentValidation';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { notifyError, notifySuccess } from '@/notifications';
@@ -14,9 +15,6 @@ import { getApiErrorMessage } from '@/utils/apiError';
 import CommentActions from './CommentActions.vue';
 import CommentComposer from './CommentComposer.vue';
 
-const MarkdownHelpDialog = defineAsyncComponent(
-  () => import('@/components/markdown/MarkdownHelpDialog.vue'),
-);
 const props = defineProps<{
   comment: PostComment;
   locked: boolean;

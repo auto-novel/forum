@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { StarBorderOutlined, StarFilled } from '@vicons/material';
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import {
   authUser,
@@ -17,12 +17,9 @@ import XButton from '@/ui/XButton.vue';
 import XActionMenu from '@/ui/XActionMenu.vue';
 import XActionMenuItem from '@/ui/XActionMenuItem.vue';
 import XConfirmDialog from '@/ui/XConfirmDialog.vue';
+import UserModerationDialog from '@/components/UserModerationDialog.vue';
 import { notifyError, notifySuccess } from '@/notifications';
 import { getApiErrorMessage } from '@/utils/apiError';
-
-const UserModerationDialog = defineAsyncComponent(
-  () => import('@/components/UserModerationDialog.vue'),
-);
 
 const props = defineProps<{ post: Post }>();
 

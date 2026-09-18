@@ -2,6 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import { AdminLoginView } from '@novelia/admin-kit';
 
+import CategoriesView from '@/views/categories/CategoriesView.vue';
+import CommentsView from '@/views/comments/CommentsView.vue';
+import OverviewView from '@/views/overview/OverviewView.vue';
+import PostsView from '@/views/posts/PostsView.vue';
+
 const APP_TITLE = '论坛服务管理后台';
 
 const router = createRouter({
@@ -21,25 +26,25 @@ const router = createRouter({
         {
           path: 'overview',
           name: 'overview',
-          component: () => import('@/views/overview/OverviewView.vue'),
+          component: OverviewView,
           meta: { title: '概览' },
         },
         {
           path: 'categories',
           name: 'categories',
-          component: () => import('@/views/categories/CategoriesView.vue'),
+          component: CategoriesView,
           meta: { title: '标签管理' },
         },
         {
           path: 'posts',
           name: 'posts',
-          component: () => import('@/views/posts/PostsView.vue'),
+          component: PostsView,
           meta: { title: '帖子管理' },
         },
         {
           path: 'comments',
           name: 'comments',
-          component: () => import('@/views/comments/CommentsView.vue'),
+          component: CommentsView,
           meta: { title: '评论管理' },
         },
       ],
