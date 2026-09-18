@@ -1,40 +1,79 @@
 <script setup lang="ts">
-import { SearchOutlined } from '@vicons/material';
-import { NButton, NIcon, NInputNumber } from 'naive-ui';
-
+import { NButton, NInput, NInputNumber } from 'naive-ui';
 import FilterRow from '@/components/FilterRow.vue';
+import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 
-const emit = defineEmits<{ search: [] }>();
+const emit = defineEmits<{ search: []; reset: [] }>();
+const query = defineModel<string>('query', { required: true });
+const authorName = defineModel<string>('authorName', { required: true });
 const postId = defineModel<number | null>('postId', { required: true });
+const status = defineModel<string>('status', { required: true });
+const statusOptions = [
+  { label: '全部', value: '' },
+  { label: '正常发布', value: '0' },
+  { label: '隐藏', value: '1' },
+  { label: '删除', value: '2' },
+];
+function changeStatus(value: string) {
+  status.value = value;
+  emit('search');
+}
 </script>
 
 <template>
-  <FilterRow label="帖子">
-    <div class="post-filter">
+  <div class="filters">
+    <FilterRow label="搜索">
+      <n-input
+        v-model:value="query"
+        class="field-input"
+        clearable
+        placeholder="搜索评论内容"
+        @change="emit('search')"
+      />
+    </FilterRow>
+    <FilterRow label="作者">
+      <n-input
+        v-model:value="authorName"
+        class="field-input"
+        clearable
+        placeholder="搜索作者名字"
+        @change="emit('search')"
+      />
+    </FilterRow>
+    <FilterRow label="帖子">
       <n-input-number
         v-model:value="postId"
+        class="field-input"
         :min="1"
+        :max="Number.MAX_SAFE_INTEGER"
+        :precision="0"
         :show-button="false"
-        placeholder="输入帖子 ID"
-        @keyup.enter="emit('search')"
+        clearable
+        placeholder="全部帖子，可输入帖子 ID"
+        @change="emit('search')"
       />
-      <n-button
-        type="primary"
-        :disabled="postId == null"
-        @click="emit('search')"
-      >
-        <template #icon><n-icon :component="SearchOutlined" /></template>
-        查询
+    </FilterRow>
+    <FilterRow label="状态">
+      <FilterChoiceGroup
+        :value="status"
+        :options="statusOptions"
+        @update:value="changeStatus"
+      />
+    </FilterRow>
+    <div>
+      <n-button size="small" quaternary @click="emit('reset')">
+        重置筛选
       </n-button>
     </div>
-  </FilterRow>
+  </div>
 </template>
 
 <style scoped>
-.post-filter {
-  width: min(400px, 100%);
+.filters {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 12px;
+}
+.field-input {
+  width: min(400px, 100%);
 }
 </style>

@@ -40,7 +40,7 @@ const router = createRouter({
           path: 'comments',
           name: 'comments',
           component: () => import('@/views/comments/CommentsView.vue'),
-          meta: { title: '评论审核' },
+          meta: { title: '评论管理' },
         },
       ],
     },

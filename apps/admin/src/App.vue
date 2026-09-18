@@ -36,7 +36,7 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(ArticleOutlined),
   },
   {
-    label: '评论审核',
+    label: '评论管理',
     key: '/comments',
     to: '/comments',
     icon: renderIcon(CommentOutlined),

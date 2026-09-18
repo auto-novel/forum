@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  NButton,
   NCard,
   NEmpty,
   NList,
@@ -12,7 +13,7 @@ import {
 } from 'naive-ui';
 import { computed } from 'vue';
 
-import type { Comment } from '@/api';
+import type { Comment, CommentStatus } from '@/api';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -23,27 +24,32 @@ const props = defineProps<{
   page: number;
   pageSize: number;
   postId?: number;
-  loaded: boolean;
+  hasFilters: boolean;
+  actionsDisabled: boolean;
 }>();
 
 const emit = defineEmits<{
   updatePage: [page: number];
-  moderate: [comment: Comment, status: 'hidden' | 'deleted'];
+  filterPost: [postId: number];
+  resetFilters: [];
+  moderate: [comment: Comment, status: CommentStatus];
 }>();
 
 const pageCount = computed(() =>
   Math.max(1, Math.ceil(props.total / props.pageSize)),
 );
 
-function forwardModeration(comment: Comment, status: 'hidden' | 'deleted') {
+function forwardModeration(comment: Comment, status: CommentStatus) {
   emit('moderate', comment, status);
 }
 </script>
 
 <template>
   <div class="comment-list">
-    <div v-if="loaded" class="list-summary">
-      <n-text depth="3">帖子 #{{ postId }}</n-text>
+    <div class="list-summary">
+      <n-text depth="3">
+        {{ postId ? `帖子 #${postId}` : '全部帖子' }} · 最新评论优先
+      </n-text>
       <n-tag size="small" type="success" :bordered="false">
         {{ total }} 条评论
       </n-tag>
@@ -58,16 +64,25 @@ function forwardModeration(comment: Comment, status: 'hidden' | 'deleted') {
       <n-spin v-else :show="loading">
         <n-list v-if="comments.length">
           <n-list-item v-for="comment in comments" :key="comment.id">
-            <CommentListItem :comment="comment" @moderate="forwardModeration" />
+            <CommentListItem
+              :comment="comment"
+              :actions-disabled="actionsDisabled"
+              @moderate="forwardModeration"
+              @filter-post="emit('filterPost', $event)"
+            />
           </n-list-item>
         </n-list>
         <n-empty
           v-else
           class="empty"
-          :description="
-            loaded ? '该帖子暂无公开评论' : '输入帖子 ID 后开始审核'
-          "
-        />
+          :description="hasFilters ? '没有符合筛选条件的评论' : '暂无评论'"
+        >
+          <template v-if="hasFilters" #extra>
+            <n-button size="small" @click="emit('resetFilters')">
+              重置筛选
+            </n-button>
+          </template>
+        </n-empty>
       </n-spin>
     </n-card>
 

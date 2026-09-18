@@ -2,11 +2,12 @@
 import { DeleteOutlineOutlined, VisibilityOffOutlined } from '@vicons/material';
 import { NButton, NIcon, NTag, NText } from 'naive-ui';
 
-import type { Comment } from '@/api';
+import type { Comment, CommentStatus } from '@/api';
 
-defineProps<{ comment: Comment }>();
+defineProps<{ comment: Comment; actionsDisabled: boolean }>();
 const emit = defineEmits<{
-  moderate: [comment: Comment, status: 'hidden' | 'deleted'];
+  filterPost: [postId: number];
+  moderate: [comment: Comment, status: CommentStatus];
 }>();
 
 function formatDate(value: string) {
@@ -30,19 +31,50 @@ function formatDate(value: string) {
         回复 #{{ comment.rootId }}
       </n-tag>
     </div>
-    <n-text class="comment-content">
-      {{
-        comment.status === 0
-          ? comment.content
-          : comment.status === 2
-            ? '该评论已删除'
-            : '该评论已隐藏'
-      }}
-    </n-text>
+    <div class="comment-context">
+      <n-tag
+        size="small"
+        :bordered="false"
+        :type="
+          comment.status === 0
+            ? 'success'
+            : comment.status === 1
+              ? 'warning'
+              : 'error'
+        "
+      >
+        {{ ['正常发布', '隐藏', '删除'][comment.status] }}
+      </n-tag>
+      <n-button
+        text
+        tag="a"
+        :href="`/p/${comment.postId}`"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        查看帖子 #{{ comment.postId }}
+      </n-button>
+      <n-button text type="primary" @click="emit('filterPost', comment.postId)">
+        仅看此帖
+      </n-button>
+    </div>
+    <n-text class="comment-content">{{ comment.content }}</n-text>
     <div class="comment-actions">
       <n-button
+        v-if="comment.status !== 0"
+        :disabled="actionsDisabled"
         size="small"
         secondary
+        type="success"
+        @click="emit('moderate', comment, 'published')"
+      >
+        恢复
+      </n-button>
+      <n-button
+        :disabled="actionsDisabled"
+        size="small"
+        secondary
+        v-if="comment.status !== 1"
         type="warning"
         @click="emit('moderate', comment, 'hidden')"
       >
@@ -52,8 +84,10 @@ function formatDate(value: string) {
         隐藏
       </n-button>
       <n-button
+        :disabled="actionsDisabled"
         size="small"
         secondary
+        v-if="comment.status !== 2"
         type="error"
         @click="emit('moderate', comment, 'deleted')"
       >
@@ -98,7 +132,15 @@ function formatDate(value: string) {
   overflow-wrap: anywhere;
 }
 
+.comment-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
 .comment-actions {
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 </style>

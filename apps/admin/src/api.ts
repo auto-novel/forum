@@ -72,6 +72,17 @@ export interface Comment {
   updatedAt: string;
 }
 
+export type CommentStatus = 'published' | 'hidden' | 'deleted';
+
+export interface CommentListParams {
+  page: number;
+  pageSize: number;
+  query?: string;
+  authorName?: string;
+  postId?: number | null;
+  status?: string;
+}
+
 interface TagRequest {
   name: string;
   color: number;
@@ -238,14 +249,21 @@ export function createForumApi(authApi: AuthApi) {
     unpinPost(id: number) {
       return client.delete(endpoint(`admin/post/${id}/pin`)).text();
     },
-    getComments(postId: number, page: number, pageSize: number) {
+    getComments(params: CommentListParams) {
       return client
-        .get(endpoint(`post/${postId}/comment`), {
-          searchParams: { page, page_size: pageSize },
+        .get(endpoint('admin/comment/'), {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+            q: params.query || undefined,
+            author_name: params.authorName || undefined,
+            post_id: params.postId ?? undefined,
+            status: params.status || undefined,
+          },
         })
         .json<Page<Comment>>();
     },
-    setCommentStatus(id: number, status: 'published' | 'hidden' | 'deleted') {
+    setCommentStatus(id: number, status: CommentStatus) {
       return client
         .put(endpoint(`admin/comment/${id}/status`), { json: { status } })
         .text();
