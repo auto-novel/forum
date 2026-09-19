@@ -2,7 +2,6 @@
 import { computed, ref, useId, watch } from 'vue';
 
 import { authUser, type PostComment } from '@/api';
-import XButton from '@/ui/XButton.vue';
 import CommunityRulesReminder from '@/components/CommunityRulesReminder.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
@@ -10,6 +9,7 @@ import { useCommentValidation } from '@/composables/useCommentValidation';
 import { notifyError, notifySuccess } from '@/notifications';
 import { useCommentStore } from '@/stores/comment';
 import { useDraftStore } from '@/stores/draft';
+import XButton from '@/ui/XButton.vue';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const props = defineProps<{
@@ -28,6 +28,12 @@ const draftStore = useDraftStore();
 const content = ref('');
 const submitting = ref(false);
 const commentHintId = useId();
+const commentPlaceholders = [
+  '允许别人喜欢你不喜欢的，也允许别人不喜欢你喜欢的',
+  '就事论事，请勿人身攻击',
+];
+const commentPlaceholder =
+  commentPlaceholders[Math.floor(Math.random() * commentPlaceholders.length)];
 const {
   length: commentLength,
   hint: commentHint,
@@ -97,9 +103,7 @@ async function submitComment() {
         mode="comment"
         :rows="3"
         :placeholder="
-          replyTo
-            ? `回复 @${replyTo.authorUsername}…`
-            : '友善交流，分享你的想法…'
+          replyTo ? `回复 @${replyTo.authorUsername}…` : commentPlaceholder
         "
         :disabled="submitting"
         :described-by="commentHint ? commentHintId : undefined"
