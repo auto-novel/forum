@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@novelia/auth-api': github:auto-novel/auth#e6909c2711d3e13c2da8a7d27505f3dc0880e24e&path:packages/auth-api
+  '@novelia/auth-api': github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/auth-api
 
 importers:
 
@@ -18,8 +18,8 @@ importers:
   apps/admin:
     dependencies:
       '@novelia/admin-kit':
-        specifier: github:auto-novel/auth#e6909c2711d3e13c2da8a7d27505f3dc0880e24e&path:packages/admin-kit
-        version: https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/admin-kit(@vicons/material@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@6.0.3)))(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
+        specifier: github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/admin-kit
+        version: https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/admin-kit(@vicons/material@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@6.0.3)))(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@vicons/material':
         specifier: ^0.13.0
         version: 0.13.0
@@ -61,11 +61,11 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(markdown-it@15.0.1)
       '@novelia/auth-api':
-        specifier: github:auto-novel/auth#e6909c2711d3e13c2da8a7d27505f3dc0880e24e&path:packages/auth-api
-        version: https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/auth-api
+        specifier: github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/auth-api
+        version: https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/auth-api
       '@novelia/web-kit':
-        specifier: github:auto-novel/auth#e6909c2711d3e13c2da8a7d27505f3dc0880e24e&path:packages/web-kit
-        version: https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
+        specifier: github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/web-kit
+        version: https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@pinia/colada':
         specifier: ^1.4.4
         version: 1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
@@ -224,8 +224,8 @@ packages:
       markdown-it:
         optional: true
 
-  '@novelia/admin-kit@https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/admin-kit':
-    resolution: {gitHosted: true, integrity: sha512-nAu5M45qGq3ODbKoBMXmIB58teTqzMp/Bx7Vde9ADx0VVcfaxSQx0EyvOwPzv/5/qJtL0J9jV+QaFcPXM50wNw==, path: packages/admin-kit, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e}
+  '@novelia/admin-kit@https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/admin-kit':
+    resolution: {gitHosted: true, integrity: sha512-AVPkmOKSFumo1v4q484VOfTcCwfDeyatPRHsLpK75U/y6esejz7nzkxhMXm+tAd/u8gQG+2VkY1IBCMl1cNiNA==, path: packages/admin-kit, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18}
     version: 0.1.0
     peerDependencies:
       '@vicons/material': ^0.13.0
@@ -233,12 +233,12 @@ packages:
       vue: ^3.5.41
       vue-router: ^5.2.0
 
-  '@novelia/auth-api@https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/auth-api':
-    resolution: {gitHosted: true, integrity: sha512-nAu5M45qGq3ODbKoBMXmIB58teTqzMp/Bx7Vde9ADx0VVcfaxSQx0EyvOwPzv/5/qJtL0J9jV+QaFcPXM50wNw==, path: packages/auth-api, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e}
+  '@novelia/auth-api@https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/auth-api':
+    resolution: {gitHosted: true, integrity: sha512-AVPkmOKSFumo1v4q484VOfTcCwfDeyatPRHsLpK75U/y6esejz7nzkxhMXm+tAd/u8gQG+2VkY1IBCMl1cNiNA==, path: packages/auth-api, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18}
     version: 0.1.0
 
-  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/web-kit':
-    resolution: {gitHosted: true, integrity: sha512-nAu5M45qGq3ODbKoBMXmIB58teTqzMp/Bx7Vde9ADx0VVcfaxSQx0EyvOwPzv/5/qJtL0J9jV+QaFcPXM50wNw==, path: packages/web-kit, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e}
+  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/web-kit':
+    resolution: {gitHosted: true, integrity: sha512-AVPkmOKSFumo1v4q484VOfTcCwfDeyatPRHsLpK75U/y6esejz7nzkxhMXm+tAd/u8gQG+2VkY1IBCMl1cNiNA==, path: packages/web-kit, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18}
     version: 0.1.0
     peerDependencies:
       '@vicons/material': ^0.13.0
@@ -1248,9 +1248,9 @@ snapshots:
     optionalDependencies:
       markdown-it: 15.0.1
 
-  '@novelia/admin-kit@https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/admin-kit(@vicons/material@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@6.0.3)))(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
+  '@novelia/admin-kit@https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/admin-kit(@vicons/material@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@6.0.3)))(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
-      '@novelia/auth-api': https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/auth-api
+      '@novelia/auth-api': https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/auth-api
       '@vicons/material': 0.13.0
       '@vue/tsconfig': 0.9.1(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       naive-ui: 2.45.3(vue@3.5.42(typescript@6.0.3))
@@ -1259,14 +1259,14 @@ snapshots:
       vue-router: 5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3))
       vue-tsc: 3.3.11(typescript@6.0.3)
 
-  '@novelia/auth-api@https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/auth-api':
+  '@novelia/auth-api@https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/auth-api':
     dependencies:
       ky: 2.1.0
       typescript: 6.0.3
 
-  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
+  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
-      '@novelia/auth-api': https://codeload.github.com/auto-novel/auth/tar.gz/e6909c2711d3e13c2da8a7d27505f3dc0880e24e#path:packages/auth-api
+      '@novelia/auth-api': https://codeload.github.com/auto-novel/auth/tar.gz/02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18#path:packages/auth-api
       '@vicons/material': 0.13.0
       '@vue/tsconfig': 0.9.1(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       tailwindcss: 4.3.3
