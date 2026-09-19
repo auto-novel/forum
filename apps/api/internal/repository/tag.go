@@ -16,6 +16,7 @@ type TagRepository interface {
 	ListByCategory(categoryID int64) ([]Tag, error)
 	ListActive() ([]Tag, error)
 	ListForPost(postID int64) ([]Tag, error)
+	ListForPosts(postIDs []int64) (map[int64][]Tag, error)
 	Create(categoryID int64, name string, color int16, sortOrder int32, attr string) (*Tag, error)
 	Update(id int64, name string, color int16, sortOrder int32) (*Tag, error)
 	SetActive(id int64, active bool) error
@@ -57,6 +58,29 @@ func (r *tagRepository) ListForPost(postID int64) ([]Tag, error) {
 	var dest []Tag
 	if err := stmt.Query(r.db, &dest); err != nil {
 		return nil, err
+	}
+	return dest, nil
+}
+
+func (r *tagRepository) ListForPosts(postIDs []int64) (map[int64][]Tag, error) {
+	dest := make(map[int64][]Tag, len(postIDs))
+	if len(postIDs) == 0 {
+		return dest, nil
+	}
+
+	var records []struct {
+		PostID int64
+		model.Tag
+	}
+	stmt := SELECT(table.PostTag.PostID.AS("PostID"), table.Tag.AllColumns).
+		FROM(table.PostTag.INNER_JOIN(table.Tag, table.PostTag.TagID.EQ(table.Tag.ID))).
+		WHERE(table.PostTag.PostID.IN(integerExpressions(postIDs)...)).
+		ORDER_BY(table.PostTag.PostID.ASC(), table.Tag.SortOrder.ASC(), table.Tag.ID.ASC())
+	if err := stmt.Query(r.db, &records); err != nil {
+		return nil, err
+	}
+	for _, record := range records {
+		dest[record.PostID] = append(dest[record.PostID], record.Tag)
 	}
 	return dest, nil
 }

@@ -164,13 +164,17 @@ func (r *postRepository) List(filter PostFilter, limit, offset int64) (int64, []
 	if err := stmt.Query(r.db, &records); err != nil {
 		return 0, nil, err
 	}
+	postIDs := make([]int64, len(records))
+	for i, record := range records {
+		postIDs[i] = record.ID
+	}
+	tagsByPostID, err := r.tagRepo.ListForPosts(postIDs)
+	if err != nil {
+		return 0, nil, err
+	}
 	dest := make([]PostDetails, len(records))
 	for i, record := range records {
-		tags, err := r.tagRepo.ListForPost(record.ID)
-		if err != nil {
-			return 0, nil, err
-		}
-		dest[i] = PostDetails{Post: record, Tags: tags}
+		dest[i] = PostDetails{Post: record, Tags: tagsByPostID[record.ID]}
 	}
 	return count.Count, dest, nil
 }

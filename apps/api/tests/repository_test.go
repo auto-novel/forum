@@ -323,6 +323,12 @@ func TestJetRepositories(t *testing.T) {
 	if len(newestPosts) < 2 || newestPosts[0].ID != secondPost.ID {
 		t.Fatalf("unexpected newest order: %#v", newestPosts)
 	}
+	if len(newestPosts[0].Tags) != 0 {
+		t.Fatalf("unexpected tags for untagged post: %#v", newestPosts[0].Tags)
+	}
+	if len(newestPosts[1].Tags) != 1 || newestPosts[1].Tags[0].ID != updatedTag.ID {
+		t.Fatalf("unexpected batched tags: %#v", newestPosts[1].Tags)
+	}
 	_, viewedPosts, err := postRepo.List(repository.PostFilter{Sort: repository.PostSortViews}, 20, 0)
 	if err != nil {
 		t.Fatal(err)
