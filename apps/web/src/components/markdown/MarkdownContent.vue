@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { renderMarkdown, type MarkdownMode } from './renderMarkdown';
+import { renderMarkdown, type MarkdownMode } from '@novelia/forum-api';
 
 const props = defineProps<{
   mode: MarkdownMode;

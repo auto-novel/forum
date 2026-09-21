@@ -9,7 +9,7 @@ import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import XButton from '@/ui/XButton.vue';
 
-import type { MarkdownMode } from './renderMarkdown';
+import type { MarkdownMode } from '@novelia/forum-api';
 import MarkdownContent from './MarkdownContent.vue';
 
 const props = withDefaults(

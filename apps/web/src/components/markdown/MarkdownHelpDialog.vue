@@ -13,7 +13,7 @@ import {
 
 import XButton from '@/ui/XButton.vue';
 
-import type { MarkdownMode } from './renderMarkdown';
+import type { MarkdownMode } from '@novelia/forum-api';
 
 defineProps<{
   mode: MarkdownMode;

@@ -9,8 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mdit/plugin-container": "^2.0.1",
-    "@mdit/plugin-spoiler": "^2.1.1",
+    "@novelia/forum-api": "workspace:*",
     "@novelia/auth-api": "github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/auth-api",
     "@novelia/web-kit": "github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/web-kit",
     "@pinia/colada": "^1.4.4",
@@ -18,8 +17,6 @@
     "@vicons/material": "^0.13.0",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
-    "dompurify": "^3.4.15",
-    "markdown-it": "^15.0.1",
     "pinia": "^4.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "reka-ui": "^2.10.4",

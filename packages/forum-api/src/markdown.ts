@@ -96,6 +96,7 @@ const markdownByMode = {
   comment: createMarkdown('comment'),
 };
 
+/** Renders and sanitizes forum Markdown for safe insertion into the DOM. */
 export function renderMarkdown(source: string, mode: MarkdownMode) {
   return DOMPurify.sanitize(markdownByMode[mode].render(source), {
     USE_PROFILES: { html: true },

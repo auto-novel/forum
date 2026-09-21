@@ -9,3 +9,4 @@ export {
   type ForumApiOptions,
   type UpdateCommentRequest,
 } from './api';
+export { renderMarkdown, type MarkdownMode } from './markdown';
