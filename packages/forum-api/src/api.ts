@@ -1,0 +1,98 @@
+import type { KyInstance } from 'ky';
+
+/** Resource types supported by the forum service. */
+export type CommentType = 'novel';
+
+export interface Comment {
+  id: number;
+  subjectKey: string;
+  rootId: number | null;
+  content: string;
+  authorId: number;
+  authorUsername: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentPage {
+  total: number;
+  items: Comment[];
+}
+
+export interface CommentListParams {
+  page: number;
+  pageSize: number;
+}
+
+export interface CreateCommentRequest {
+  content: string;
+  rootId?: number;
+}
+
+export interface UpdateCommentRequest {
+  content: string;
+}
+
+export interface ForumApiOptions {
+  /** ky instance configured with the caller's authentication strategy. */
+  client: KyInstance;
+  /** Forum service origin, for example `https://forum.example.com/`. */
+  url: string;
+  /** Resource type whose comments this instance manages. */
+  type: CommentType;
+}
+
+/**
+ * Creates a client for comments attached to third-party resources.
+ * A dedicated client is derived without altering the caller's ky instance.
+ */
+export function createForumApi(options: ForumApiOptions) {
+  const client = options.client.extend({
+    prefix: new URL(
+      `api/v1/external/comment/${options.type}/`,
+      options.url,
+    ).toString(),
+  });
+
+  return {
+    getComments(
+      subjectKey: string,
+      params: CommentListParams,
+      signal?: AbortSignal,
+    ) {
+      return client
+        .get(encodeURIComponent(subjectKey), {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+          },
+          signal,
+        })
+        .json<CommentPage>();
+    },
+    createComment(subjectKey: string, request: CreateCommentRequest) {
+      return client
+        .post(encodeURIComponent(subjectKey), {
+          json: request,
+        })
+        .json<Comment>();
+    },
+    updateComment(commentId: number, request: UpdateCommentRequest) {
+      return client.patch(String(commentId), { json: request }).json<Comment>();
+    },
+    deleteComment(commentId: number) {
+      return client.delete(String(commentId));
+    },
+    setCommentStatus(
+      commentId: number,
+      status: 'published' | 'hidden' | 'deleted',
+    ) {
+      return client.put(`${commentId}/status`, {
+        json: { status },
+      });
+    },
+  };
+}
+
+export type ForumApi = ReturnType<typeof createForumApi>;
