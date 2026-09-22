@@ -8,7 +8,6 @@ export type MarkdownMode = 'article' | 'comment';
 const COMMENT_DISABLED_RULES = [
   'blockquote',
   'code',
-  'entity',
   'fence',
   'heading',
   'hr',
