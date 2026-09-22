@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@novelia/forum-api": "workspace:*",
-    "@novelia/auth-api": "github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/auth-api",
-    "@novelia/web-kit": "github:auto-novel/auth#02eb5bbe3cb7abc2b2fd2dd0e36599a24d1e1a18&path:packages/web-kit",
+    "@novelia/auth-api": "github:auto-novel/auth#90f6980ebcbd1ba8a4690dba0e2abe98957ec100&path:packages/auth-api",
+    "@novelia/web-kit": "github:auto-novel/auth#90f6980ebcbd1ba8a4690dba0e2abe98957ec100&path:packages/web-kit",
     "@pinia/colada": "^1.4.4",
     "@tailwindcss/vite": "^4.3.3",
     "@vicons/material": "^0.13.0",
