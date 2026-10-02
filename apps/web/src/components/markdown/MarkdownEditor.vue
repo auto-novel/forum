@@ -9,7 +9,7 @@ import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { XButton } from '@novelia/web-kit';
 
-import type { MarkdownMode } from '@novelia/forum-api';
+import { handleMarkdownLinkPaste, type MarkdownMode } from '@novelia/forum-api';
 import MarkdownContent from './MarkdownContent.vue';
 
 const props = withDefaults(
@@ -86,63 +86,6 @@ function insertBlock(prefix: string, suffix: string, placeholder: string) {
   value.value = `${before}${insertion}${after}`;
   const selectionStart = start + leadingBreak.length + prefix.length;
   void restoreSelection(selectionStart, selectionStart + selected.length);
-}
-
-function handlePaste(event: ClipboardEvent) {
-  const element = textarea.value;
-  if (
-    !element ||
-    props.disabled ||
-    element.selectionStart === element.selectionEnd
-  )
-    return;
-
-  const pastedText = event.clipboardData?.getData('text/plain').trim();
-  if (!pastedText || !/^https?:\/\/\S+$/i.test(pastedText)) return;
-
-  let url: URL;
-  try {
-    url = new URL(pastedText);
-  } catch {
-    return;
-  }
-  if (!url.hostname || !['http:', 'https:'].includes(url.protocol)) return;
-
-  const { selectionStart, selectionEnd, value: currentValue } = element;
-  const selectedText = currentValue.slice(selectionStart, selectionEnd);
-  // Markdown links cannot reliably span block boundaries.
-  if (/[\r\n]/.test(selectedText)) return;
-
-  const label = selectedText.replace(/[\\[\]]/g, '\\$&');
-  const destination = url.href.replace(/[()]/g, (character) =>
-    character === '(' ? '%28' : '%29',
-  );
-  const link = `[${label}](${destination})`;
-  if (
-    element.maxLength >= 0 &&
-    currentValue.length - (selectionEnd - selectionStart) + link.length >
-      element.maxLength
-  ) {
-    return;
-  }
-
-  let inputFired = false;
-  const markInput = () => {
-    inputFired = true;
-  };
-  element.addEventListener('input', markInput, { once: true });
-  let inserted = false;
-  try {
-    inserted = document.execCommand('insertText', false, link);
-  } catch {
-    return;
-  } finally {
-    element.removeEventListener('input', markInput);
-  }
-  if (!inserted) return;
-
-  event.preventDefault();
-  if (!inputFired) element.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 function focus() {
@@ -274,7 +217,7 @@ defineExpose({ focus });
         :aria-describedby="describedBy"
         :aria-invalid="invalid || undefined"
         spellcheck="false"
-        @paste="handlePaste"
+        @paste="handleMarkdownLinkPaste($event, textarea)"
       />
     </div>
 
