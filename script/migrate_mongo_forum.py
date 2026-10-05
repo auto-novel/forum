@@ -29,7 +29,9 @@ except ImportError as error:
     ) from error
 
 
-CATEGORY_SLUGS = {"General": "novel", "Guide": "guide", "Support": "feedback"}
+# Keep in sync with apps/api/internal/category/category.go.
+# The former Guide category is now announcements; categories are not DB rows.
+CATEGORY_IDS = {"General": 100, "Guide": 1, "Support": 2}
 POST_SUBJECT = 0
 NOVEL_SUBJECT = 1
 PUBLISHED = 0
@@ -58,7 +60,8 @@ class SourceStats:
     missing_auth_user_ids: dict[str, str] = field(default_factory=dict)
     migratable_article_ids: set[str] = field(default_factory=set)
     migratable_root_comment_ids: set[str] = field(default_factory=set)
-    article_categories: Counter[str] = field(default_factory=Counter)
+    migratable_comment_ids: set[str] = field(default_factory=set)
+    article_categories: Counter[int] = field(default_factory=Counter)
     article_statuses: Counter[int] = field(default_factory=Counter)
     comment_statuses: Counter[int] = field(default_factory=Counter)
     comment_subjects: Counter[int] = field(default_factory=Counter)
@@ -357,7 +360,7 @@ def validate_articles(
             text(article.get("title"), f"article[{article_id}].title", 500)
             text(article.get("content"), f"article[{article_id}].content")
             category = article.get("category")
-            if category not in CATEGORY_SLUGS:
+            if category not in CATEGORY_IDS:
                 raise MigrationError(
                     f"article[{article_id}] 存在未知分类：{value_detail(category)}"
                 )
@@ -371,7 +374,7 @@ def validate_articles(
                 instant(article.get(field), f"article[{article_id}].{field}")
             article_active_at(article)
             stats.migratable_article_ids.add(article_id)
-            stats.article_categories[CATEGORY_SLUGS[category]] += 1
+            stats.article_categories[CATEGORY_IDS[category]] += 1
             stats.article_statuses[HIDDEN if hidden else PUBLISHED] += 1
             stats.articles += 1
 
@@ -561,6 +564,7 @@ def validate_comments(
                     stats.migratable_root_comment_ids.add(comment_id)
                 else:
                     stats.comment_levels["reply"] += 1
+                stats.migratable_comment_ids.add(comment_id)
                 stats.comments += 1
 
 
@@ -576,7 +580,7 @@ def validate_source(
     return stats
 
 
-def preflight_target(forum_dsn: str) -> dict[str, int]:
+def preflight_target(forum_dsn: str) -> None:
     with psycopg.connect(forum_dsn) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -602,15 +606,6 @@ def preflight_target(forum_dsn: str) -> dict[str, int]:
                 raise MigrationError(
                     f"目标表必须为空，当前 post={post_count}、comment={comment_count}"
                 )
-            cursor.execute(
-                "select slug, id from category where slug = any(%s)",
-                (list(CATEGORY_SLUGS.values()),),
-            )
-            category_ids = dict(cursor.fetchall())
-    missing = sorted(set(CATEGORY_SLUGS.values()) - category_ids.keys())
-    if missing:
-        raise MigrationError("forum 缺少分类：" + "、".join(missing))
-    return category_ids
 
 
 def load_id_map(
@@ -635,7 +630,6 @@ def insert_article(
     cursor: psycopg.Cursor,
     article: dict,
     author: tuple[int, str],
-    category_ids: dict[str, int],
 ) -> int:
     source_id = str(article["_id"])
     author_id, username = author
@@ -660,7 +654,7 @@ def insert_article(
         returning id
         """,
         (
-            category_ids[CATEGORY_SLUGS[article["category"]]],
+            CATEGORY_IDS[article["category"]],
             title,
             author_id,
             username,
@@ -693,8 +687,7 @@ def validate_migrated(cursor: psycopg.Cursor, stats: SourceStats) -> None:
         stats.article_categories,
         query_counts(
             cursor,
-            "select c.slug, count(*) from post p join category c "
-            "on c.id = p.category_id group by c.slug",
+            "select category_id, count(*) from post group by category_id",
         ),
     )
     require_counts(
@@ -768,7 +761,6 @@ def migrate(
     database: Database,
     forum_dsn: str,
     auth_dsn: str,
-    category_ids: dict[str, int],
     stats: SourceStats,
     batch_size: int,
     requested_mapping_path: str | None,
@@ -836,7 +828,6 @@ def migrate(
                                         cursor,
                                         article,
                                         authors[str(article["user"])],
-                                        category_ids,
                                     )
                                     mappings.append((source_id, target_id))
                                     write_mapping(
@@ -855,6 +846,16 @@ def migrate(
                                 for comments in mongo_batches(
                                     database, "comment-alt", batch_size, query=query
                                 ):
+                                    # Reuse preflight decisions, including malformed,
+                                    # orphaned and cross-subject comments it skipped.
+                                    comments = [
+                                        comment
+                                        for comment in comments
+                                        if str(comment["_id"])
+                                        in stats.migratable_comment_ids
+                                    ]
+                                    if not comments:
+                                        continue
                                     authors = resolve_authors(
                                         database,
                                         auth_cursor,
@@ -875,25 +876,6 @@ def migrate(
                                             f"comment[{source_id}].content",
                                             report_nul=False,
                                         )
-                                    comments = [
-                                        comment
-                                        for comment in comments
-                                        if str(comment["user"]) in authors
-                                        and (
-                                            not comment["site"].startswith(
-                                                "article-"
-                                            )
-                                            or comment["site"].removeprefix(
-                                                "article-"
-                                            )
-                                            in stats.migratable_article_ids
-                                        )
-                                        and (
-                                            comment.get("parent") is None
-                                            or str(comment["parent"])
-                                            in stats.migratable_root_comment_ids
-                                        )
-                                    ]
                                     article_sources = {
                                         value["site"].removeprefix("article-")
                                         for value in comments
@@ -1045,7 +1027,7 @@ def main() -> int:
             stats = validate_source(
                 database, args.auth_dsn, args.batch_size
             )
-            category_ids = preflight_target(args.forum_dsn)
+            preflight_target(args.forum_dsn)
             print(
                 f"预检通过：Mongo 用户 {stats.users}，"
                 f"文章 {stats.articles}，评论 {stats.comments}"
@@ -1072,7 +1054,6 @@ def main() -> int:
                 database,
                 args.forum_dsn,
                 args.auth_dsn,
-                category_ids,
                 stats,
                 args.batch_size,
                 args.mapping_file,
