@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
 from collections import Counter
@@ -36,6 +37,12 @@ POST_SUBJECT = 0
 NOVEL_SUBJECT = 1
 PUBLISHED = 0
 HIDDEN = 1
+FORUM_POST_URL = "https://forum.novelia.cc/p/"
+LEGACY_FORUM_LINK = re.compile(
+    r"https://(?:n\.novelia\.cc|books\.fishhawk\.top)/forum/"
+    r"([0-9a-f]{24})(?![a-z0-9_-])",
+    re.IGNORECASE,
+)
 
 
 class MigrationError(RuntimeError):
@@ -671,6 +678,72 @@ def insert_article(
     return cursor.fetchone()[0]
 
 
+def rewrite_forum_links(content: str, article_map: dict[str, int]) -> str:
+    def replace(match: re.Match[str]) -> str:
+        target_id = article_map.get(match.group(1).lower())
+        if target_id is None:
+            return match.group(0)
+        return f"{FORUM_POST_URL}{target_id}"
+
+    return LEGACY_FORUM_LINK.sub(replace, content)
+
+
+def rewrite_migrated_forum_links(cursor: psycopg.Cursor, batch_size: int) -> None:
+    # Run after all inserts so forward references and self-links have ID mappings.
+    missing_sources: set[str] = set()
+    updated_counts: dict[str, int] = {}
+    for table in ("post", "comment"):
+        last_id = 0
+        updated_count = 0
+        while True:
+            cursor.execute(
+                f"select id, content from {table} where id > %s "
+                "order by id limit %s",
+                (last_id, batch_size),
+            )
+            rows = cursor.fetchall()
+            if not rows:
+                break
+            last_id = rows[-1][0]
+            source_ids = {
+                match.group(1).lower()
+                for _, content in rows
+                for match in LEGACY_FORUM_LINK.finditer(content)
+            }
+            if not source_ids:
+                continue
+            cursor.execute(
+                "select source_id, target_id from migration_article_map "
+                "where source_id = any(%s)",
+                (sorted(source_ids),),
+            )
+            article_map = dict(cursor.fetchall())
+            missing_sources.update(source_ids - article_map.keys())
+            updates = []
+            for row_id, content in rows:
+                rewritten = rewrite_forum_links(content, article_map)
+                if rewritten != content:
+                    updates.append((rewritten, row_id))
+            if updates:
+                # Content normalization must not change historical timestamps.
+                cursor.executemany(
+                    f"update {table} set content = %s where id = %s", updates
+                )
+                updated_count += len(updates)
+        updated_counts[table] = updated_count
+    print(
+        f"内容链接更新：帖子 {updated_counts['post']}，"
+        f"评论 {updated_counts['comment']}"
+    )
+    if missing_sources:
+        print(
+            f"警告：内容链接引用了 {len(missing_sources)} 个未迁移帖子，"
+            "已保留原链接；前 20 个旧 ID："
+            + "、".join(sorted(missing_sources)[:20]),
+            file=sys.stderr,
+        )
+
+
 def query_counts(cursor: psycopg.Cursor, query: str) -> dict[Any, int]:
     cursor.execute(query)
     return {key: count for key, count in cursor.fetchall()}
@@ -1005,6 +1078,7 @@ def migrate(
                                     "迁移后评论总数不一致："
                                     f"实际 {comment_count}，预期 {stats.comments}"
                                 )
+                            rewrite_migrated_forum_links(cursor, batch_size)
                             validate_migrated(cursor, stats)
                             mapping_handle.flush()
                             os.fsync(mapping_handle.fileno())
