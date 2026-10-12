@@ -1,10 +1,5 @@
 import type { WebKitContext } from '@novelia/web-kit';
-
-let client: ReturnType<WebKitContext['createClient']>;
-
-export function initializeApi(apiClient: typeof client) {
-  client = apiClient;
-}
+import { inject, type InjectionKey } from 'vue';
 
 export interface Page<T> {
   total: number;
@@ -71,191 +66,205 @@ export interface PostComment {
   replies?: Page<PostComment>;
 }
 
-export function getPosts(
-  params: {
-    page: number;
-    pageSize: number;
-    category?: string;
-    query?: string;
-    tagIds?: number[];
-    sort?: PostSort;
-  },
-  signal?: AbortSignal,
-) {
-  return client
-    .get('post/', {
-      searchParams: {
-        page: params.page,
-        page_size: params.pageSize,
-        category: params.category,
-        q: params.query,
-        tag: params.tagIds?.join(','),
-        sort: params.sort,
-      },
-      signal,
-    })
-    .json<Page<PostSummary>>();
-}
-
-export function getFavoritePosts(
-  params: { page: number; pageSize: number },
-  signal?: AbortSignal,
-) {
-  return client
-    .get('me/favorite', {
-      searchParams: {
-        page: params.page,
-        page_size: params.pageSize,
-      },
-      signal,
-    })
-    .json<Page<PostSummary>>();
-}
-
-export function getMyPosts(
-  params: { page: number; pageSize: number },
-  signal?: AbortSignal,
-) {
-  return client
-    .get('me/post', {
-      searchParams: {
-        page: params.page,
-        page_size: params.pageSize,
-      },
-      signal,
-    })
-    .json<Page<PostSummary>>();
-}
-
-export function getPost(id: number, signal?: AbortSignal) {
-  return client.get(`post/${id}/`, { signal }).json<Post>();
-}
-
-export async function setPostFavorite(id: number, favorited: boolean) {
-  const path = `post/${id}/favorite`;
-  await (favorited ? client.put(path) : client.delete(path));
-}
-
-export function getCategories(signal?: AbortSignal) {
-  return client.get('category/', { signal }).json<CategoryListItem[]>();
-}
-
-export function createPost(input: {
-  categoryId: number;
-  title: string;
-  content: string;
-  tagIds: number[];
-}) {
-  return client.post('post/', { json: input }).json<Post>();
-}
-
-export function updatePost(
-  id: number,
-  input: {
-    categoryId: number;
-    title: string;
-    content: string;
-    tagIds: number[];
-  },
-) {
-  return client.patch(`post/${id}/`, { json: input }).json<Post>();
-}
-
-export async function deletePost(id: number) {
-  await client.delete(`post/${id}/`);
-}
-
-export async function setPostStatus(id: number, status: PostStatus) {
-  await client.put(`admin/post/${id}/status`, { json: { status } });
-}
-
-export async function lockPost(id: number) {
-  await client.put(`admin/post/${id}/lock`);
-}
-
-export async function unlockPost(id: number) {
-  await client.delete(`admin/post/${id}/lock`);
-}
-
-export async function pinPost(id: number, pinOrder: number) {
-  await client.put(`admin/post/${id}/pin`, { json: { pinOrder } });
-}
-
-export async function unpinPost(id: number) {
-  await client.delete(`admin/post/${id}/pin`);
-}
-
-export function getPostComments(
-  id: number,
-  params: { page: number; pageSize: number },
-  signal?: AbortSignal,
-) {
-  return client
-    .get(`post/${id}/comment`, {
-      searchParams: {
-        page: params.page,
-        page_size: params.pageSize,
-      },
-      signal,
-    })
-    .json<Page<PostComment>>();
-}
-
-export function getPostCommentReplies(
-  postId: number,
-  rootId: number,
-  params: { page: number; pageSize: number },
-  signal?: AbortSignal,
-) {
-  return client
-    .get(`post/${postId}/comment/${rootId}/reply`, {
-      searchParams: {
-        page: params.page,
-        page_size: params.pageSize,
-      },
-      signal,
-    })
-    .json<Page<PostComment>>();
-}
-
-export function createPostComment(
-  id: number,
-  input: { content: string; rootId?: number },
-) {
-  return client.post(`post/${id}/comment`, { json: input }).json<PostComment>();
-}
-
-export function updatePostComment(id: number, content: string) {
-  return client
-    .patch(`comment/${id}`, { json: { content } })
-    .json<PostComment>();
-}
-
-export async function deletePostComment(id: number) {
-  await client.delete(`comment/${id}`);
-}
-
-export async function setPostCommentStatus(
-  id: number,
-  status: CommentStatusName,
-) {
-  await client.put(`admin/comment/${id}/status`, { json: { status } });
-}
-
-export async function deleteCommentsByAuthor(authorId: number) {
-  await client.delete(`admin/comment/author/${authorId}`);
-}
-
 export interface BlacklistEntry {
   userId: number;
   createdAt: string;
 }
 
-export function getBlacklist(signal?: AbortSignal) {
-  return client.get('me/blacklist', { signal }).json<Page<BlacklistEntry>>();
+export function createForumApi(
+  client: ReturnType<WebKitContext['createClient']>,
+) {
+  return {
+    getPosts(
+      params: {
+        page: number;
+        pageSize: number;
+        category?: string;
+        query?: string;
+        tagIds?: number[];
+        sort?: PostSort;
+      },
+      signal?: AbortSignal,
+    ) {
+      return client
+        .get('post/', {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+            category: params.category,
+            q: params.query,
+            tag: params.tagIds?.join(','),
+            sort: params.sort,
+          },
+          signal,
+        })
+        .json<Page<PostSummary>>();
+    },
+
+    getFavoritePosts(
+      params: { page: number; pageSize: number },
+      signal?: AbortSignal,
+    ) {
+      return client
+        .get('me/favorite', {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+          },
+          signal,
+        })
+        .json<Page<PostSummary>>();
+    },
+
+    getMyPosts(
+      params: { page: number; pageSize: number },
+      signal?: AbortSignal,
+    ) {
+      return client
+        .get('me/post', {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+          },
+          signal,
+        })
+        .json<Page<PostSummary>>();
+    },
+
+    getPost(id: number, signal?: AbortSignal) {
+      return client.get(`post/${id}/`, { signal }).json<Post>();
+    },
+
+    async setPostFavorite(id: number, favorited: boolean) {
+      const path = `post/${id}/favorite`;
+      await (favorited ? client.put(path) : client.delete(path));
+    },
+
+    getCategories(signal?: AbortSignal) {
+      return client.get('category/', { signal }).json<CategoryListItem[]>();
+    },
+
+    createPost(input: {
+      categoryId: number;
+      title: string;
+      content: string;
+      tagIds: number[];
+    }) {
+      return client.post('post/', { json: input }).json<Post>();
+    },
+
+    updatePost(
+      id: number,
+      input: {
+        categoryId: number;
+        title: string;
+        content: string;
+        tagIds: number[];
+      },
+    ) {
+      return client.patch(`post/${id}/`, { json: input }).json<Post>();
+    },
+
+    async deletePost(id: number) {
+      await client.delete(`post/${id}/`);
+    },
+
+    async setPostStatus(id: number, status: PostStatus) {
+      await client.put(`admin/post/${id}/status`, { json: { status } });
+    },
+
+    async lockPost(id: number) {
+      await client.put(`admin/post/${id}/lock`);
+    },
+
+    async unlockPost(id: number) {
+      await client.delete(`admin/post/${id}/lock`);
+    },
+
+    async pinPost(id: number, pinOrder: number) {
+      await client.put(`admin/post/${id}/pin`, { json: { pinOrder } });
+    },
+
+    async unpinPost(id: number) {
+      await client.delete(`admin/post/${id}/pin`);
+    },
+
+    getPostComments(
+      id: number,
+      params: { page: number; pageSize: number },
+      signal?: AbortSignal,
+    ) {
+      return client
+        .get(`post/${id}/comment`, {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+          },
+          signal,
+        })
+        .json<Page<PostComment>>();
+    },
+
+    getPostCommentReplies(
+      postId: number,
+      rootId: number,
+      params: { page: number; pageSize: number },
+      signal?: AbortSignal,
+    ) {
+      return client
+        .get(`post/${postId}/comment/${rootId}/reply`, {
+          searchParams: {
+            page: params.page,
+            page_size: params.pageSize,
+          },
+          signal,
+        })
+        .json<Page<PostComment>>();
+    },
+
+    createPostComment(id: number, input: { content: string; rootId?: number }) {
+      return client
+        .post(`post/${id}/comment`, { json: input })
+        .json<PostComment>();
+    },
+
+    updatePostComment(id: number, content: string) {
+      return client
+        .patch(`comment/${id}`, { json: { content } })
+        .json<PostComment>();
+    },
+
+    async deletePostComment(id: number) {
+      await client.delete(`comment/${id}`);
+    },
+
+    async setPostCommentStatus(id: number, status: CommentStatusName) {
+      await client.put(`admin/comment/${id}/status`, { json: { status } });
+    },
+
+    async deleteCommentsByAuthor(authorId: number) {
+      await client.delete(`admin/comment/author/${authorId}`);
+    },
+
+    getBlacklist(signal?: AbortSignal) {
+      return client
+        .get('me/blacklist', { signal })
+        .json<Page<BlacklistEntry>>();
+    },
+
+    async setUserBlocked(userId: number, blocked: boolean) {
+      const path = `me/blacklist/${userId}`;
+      await (blocked ? client.put(path) : client.delete(path));
+    },
+  };
 }
 
-export async function setUserBlocked(userId: number, blocked: boolean) {
-  const path = `me/blacklist/${userId}`;
-  await (blocked ? client.put(path) : client.delete(path));
+export type ForumApi = ReturnType<typeof createForumApi>;
+
+export const forumApiKey: InjectionKey<ForumApi> = Symbol('ForumApi');
+
+export function useForumApi(): ForumApi {
+  const api = inject(forumApiKey);
+  if (!api) throw new Error('ForumApi has not been provided');
+  return api;
 }

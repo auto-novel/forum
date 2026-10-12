@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-import { updatePost, type Post } from '@/api';
+import { useForumApi, type Post } from '@/api';
 import { useWebKit, XButton } from '@novelia/web-kit';
 import { XAsyncContent } from '@novelia/web-kit';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
@@ -12,6 +12,7 @@ import { usePostQuery, usePostStore } from '@/stores/post';
 
 import PostForm from './PostForm.vue';
 
+const forumApi = useForumApi();
 const { whoami } = useWebKit();
 const route = useRoute();
 const router = useRouter();
@@ -101,7 +102,7 @@ async function save() {
   if (!post.value || submitting.value) return;
   submitting.value = true;
   try {
-    const updatedPost = await updatePost(post.value.id, {
+    const updatedPost = await forumApi.updatePost(post.value.id, {
       categoryId: selectedCategory.value.id,
       title: title.value.trim(),
       content: content.value,

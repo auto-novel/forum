@@ -25,14 +25,16 @@ const composableUrl = new URL(
 const mocks = {
   '@/api': `
     const f = globalThis.__blacklistManagementTest;
-    export const getBlacklist = signal => {
-      f.calls.push(['getBlacklist', signal]);
-      return f.listRequests.shift().promise;
-    };
-    export const setUserBlocked = (...args) => {
-      f.calls.push(['setUserBlocked', ...args]);
-      return f.removeRequests.shift().promise;
-    };
+    export const useForumApi = () => ({
+      getBlacklist: signal => {
+        f.calls.push(['getBlacklist', signal]);
+        return f.listRequests.shift().promise;
+      },
+      setUserBlocked: (...args) => {
+        f.calls.push(['setUserBlocked', ...args]);
+        return f.removeRequests.shift().promise;
+      },
+    });
   `,
   '@novelia/web-kit': `
     const f = globalThis.__blacklistManagementTest;

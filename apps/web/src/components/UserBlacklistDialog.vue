@@ -6,7 +6,7 @@ import {
   useWebKit,
   XConfirmDialog,
 } from '@novelia/web-kit';
-import { setUserBlocked } from '@/api';
+import { useForumApi } from '@/api';
 import { usePostStore } from '@/stores/post';
 import { useCommentStore } from '@/stores/comment';
 
@@ -16,6 +16,7 @@ const props = defineProps<{
   authorBlocked: boolean;
 }>();
 const emit = defineEmits<{ close: [] }>();
+const forumApi = useForumApi();
 const { whoami } = useWebKit();
 const posts = usePostStore();
 const comments = useCommentStore();
@@ -48,7 +49,7 @@ async function confirm() {
     requestContext === context && whoami.value.user?.id === viewerId;
   pending.value = true;
   try {
-    await setUserBlocked(userId, !blocked);
+    await forumApi.setUserBlocked(userId, !blocked);
     if (!isCurrent()) return;
     // Keep content caches in sync even if navigation closed this dialog.
     posts.refreshBlacklist(userId, !blocked);

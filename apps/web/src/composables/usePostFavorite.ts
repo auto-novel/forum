@@ -8,11 +8,12 @@ import {
 } from 'vue';
 import { getApiErrorMessage, Notify, useWebKit } from '@novelia/web-kit';
 
-import { setPostFavorite, type Post } from '@/api';
+import { useForumApi, type Post } from '@/api';
 import { usePostStore } from '@/stores/post';
 
 // Create once per detail page; both favorite buttons share this request lock.
 export function usePostFavorite(post: MaybeRefOrGetter<Post | undefined>) {
+  const forumApi = useForumApi();
   const { whoami } = useWebKit();
   const postStore = usePostStore();
   const loading = ref(false);
@@ -41,7 +42,7 @@ export function usePostFavorite(post: MaybeRefOrGetter<Post | undefined>) {
     const nextValue = !currentPost.favorited;
     loading.value = true;
     try {
-      await setPostFavorite(currentPost.id, nextValue);
+      await forumApi.setPostFavorite(currentPost.id, nextValue);
       const latestPost = toValue(post);
       if (requestContext !== context || !latestPost) return;
       // Merge into the latest data, preserving concurrent comment/management changes.

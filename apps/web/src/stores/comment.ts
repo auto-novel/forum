@@ -3,12 +3,7 @@ import { defineStore } from 'pinia';
 import { useQuery, useQueryCache, type UseQueryEntry } from '@pinia/colada';
 
 import {
-  createPostComment,
-  deletePostComment,
-  getPostCommentReplies,
-  getPostComments,
-  setPostCommentStatus,
-  updatePostComment,
+  useForumApi,
   type CommentStatus,
   type Page,
   type PostComment,
@@ -35,6 +30,7 @@ const repliesKey = (
 ) => [...commentsKey(), postId, 'replies', rootId, page, pageSize];
 
 export const useCommentStore = defineStore('comment', () => {
+  const forumApi = useForumApi();
   const cache = useQueryCache();
   const accessedAt = new WeakMap<UseQueryEntry, number>();
 
@@ -108,7 +104,7 @@ export const useCommentStore = defineStore('comment', () => {
     input: { content: string; rootId?: number },
   ) {
     const viewer = viewerKey.value;
-    const comment = await createPostComment(postId, input);
+    const comment = await forumApi.createPostComment(postId, input);
     if (viewer === viewerKey.value) {
       // The caller inserts the response before revalidating pagination.
       void cache.invalidateQueries({ key: [...commentsKey(), postId] }, false);
@@ -177,7 +173,7 @@ export const useCommentStore = defineStore('comment', () => {
 
   async function updateComment(id: number, content: string) {
     const viewer = viewerKey.value;
-    const comment = await updatePostComment(id, content);
+    const comment = await forumApi.updatePostComment(id, content);
     if (viewer === viewerKey.value) {
       updateCachedComments(
         (item) =>
@@ -214,20 +210,20 @@ export const useCommentStore = defineStore('comment', () => {
 
   async function deleteComment(id: number, asAdmin: boolean) {
     const viewer = viewerKey.value;
-    if (asAdmin) await setPostCommentStatus(id, 'deleted');
-    else await deletePostComment(id);
+    if (asAdmin) await forumApi.setPostCommentStatus(id, 'deleted');
+    else await forumApi.deletePostComment(id);
     if (viewer === viewerKey.value) applyStatus(id, 2);
   }
 
   async function hideComment(id: number) {
     const viewer = viewerKey.value;
-    await setPostCommentStatus(id, 'hidden');
+    await forumApi.setPostCommentStatus(id, 'hidden');
     if (viewer === viewerKey.value) applyStatus(id, 1);
   }
 
   async function unhideComment(id: number) {
     const viewer = viewerKey.value;
-    await setPostCommentStatus(id, 'published');
+    await forumApi.setPostCommentStatus(id, 'published');
     if (viewer === viewerKey.value) applyStatus(id, 0);
   }
 
@@ -249,6 +245,7 @@ export function useCommentPageQuery(
   page: MaybeRefOrGetter<number>,
   pageSize: number,
 ) {
+  const forumApi = useForumApi();
   const store = useCommentStore();
   const cache = useQueryCache();
   const query = useQuery({
@@ -260,7 +257,7 @@ export function useCommentPageQuery(
       try {
         const requestedPostId = toValue(postId);
         const viewer = viewerKey.value;
-        const result = await getPostComments(
+        const result = await forumApi.getPostComments(
           requestedPostId,
           { page: toValue(page), pageSize },
           signal,
@@ -327,6 +324,7 @@ export function useCommentReplyPageQuery(
   pageSize: number,
   enabled: MaybeRefOrGetter<boolean>,
 ) {
+  const forumApi = useForumApi();
   const query = useQuery({
     key: () =>
       repliesKey(toValue(postId), toValue(rootId), toValue(page), pageSize),
@@ -334,7 +332,7 @@ export function useCommentReplyPageQuery(
     staleTime: 60_000,
     gcTime: 5 * 60_000,
     query: ({ signal }) =>
-      getPostCommentReplies(
+      forumApi.getPostCommentReplies(
         toValue(postId),
         toValue(rootId),
         { page: toValue(page), pageSize },

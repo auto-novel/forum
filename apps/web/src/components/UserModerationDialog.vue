@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from 'reka-ui';
 
-import { deleteCommentsByAuthor } from '@/api';
+import { useForumApi } from '@/api';
 import { useWebKit, XButton } from '@novelia/web-kit';
 import { getApiErrorMessage, Notify } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
@@ -28,6 +28,7 @@ const emit = defineEmits<{
   commentsDeleted: [];
 }>();
 
+const forumApi = useForumApi();
 const { createStrike, banUser } = useWebKit();
 const reason = ref('');
 const commentStore = useCommentStore();
@@ -82,7 +83,7 @@ async function submit() {
       await banUser({ username: props.username, reason: value });
       if (removeComments.value) {
         try {
-          await deleteCommentsByAuthor(props.userId);
+          await forumApi.deleteCommentsByAuthor(props.userId);
           commentStore.registerDeletedCommentsByAuthor(props.userId);
           emit('commentsDeleted');
           Notify.success(`已封禁 @${props.username} 并删除其全部评论`);

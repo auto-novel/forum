@@ -3,7 +3,7 @@ import { PiniaColada } from '@pinia/colada';
 import { createApp } from 'vue';
 
 import App from './App.vue';
-import { initializeApi } from './api';
+import { createForumApi, forumApiKey } from './api';
 import router from './router';
 import { initializeSession } from './session';
 import { pinia } from './stores';
@@ -25,11 +25,13 @@ const webKit = createWebKit({
   },
 });
 initializeSession(webKit);
-initializeApi(
+const forumApi = createForumApi(
   webKit.createClient(new URL('/api/v1/', window.location.origin).toString()),
 );
 
-createApp(App)
+const app = createApp(App);
+app
+  .provide(forumApiKey, forumApi)
   .use(webKit)
   .use(pinia)
   .use(PiniaColada, {
@@ -41,7 +43,7 @@ createApp(App)
   .use(router)
   .mount('#app');
 
-void useCategoryStore().initialize();
+void app.runWithContext(() => useCategoryStore().initialize());
 
 // 2026-10-11：迁移旧主题和会话，不覆盖新设置，并清理旧存储键。
 function migrateWebKitStorage() {

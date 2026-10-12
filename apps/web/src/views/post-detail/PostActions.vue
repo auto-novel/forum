@@ -8,15 +8,7 @@ import {
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useWebKit, XButton } from '@novelia/web-kit';
 
-import {
-  deletePost,
-  lockPost,
-  pinPost,
-  setPostStatus,
-  type Post,
-  unlockPost,
-  unpinPost,
-} from '@/api';
+import { useForumApi, type Post } from '@/api';
 import {
   DropdownMenuContent,
   DropdownMenuPortal,
@@ -46,6 +38,7 @@ const emit = defineEmits<{
   authorCommentsDeleted: [];
 }>();
 
+const forumApi = useForumApi();
 const { whoami } = useWebKit();
 const blacklistOpen = ref(false);
 const canBlockAuthor = computed(
@@ -121,7 +114,7 @@ function editPost() {
 
 function removePost() {
   void updateModeration(
-    () => deletePost(props.post.id),
+    () => forumApi.deletePost(props.post.id),
     { status: 1 },
     '帖子已删除',
     '删除帖子失败',
@@ -155,7 +148,7 @@ async function updateModeration(
 
 function hidePost() {
   void updateModeration(
-    () => setPostStatus(props.post.id, 1),
+    () => forumApi.setPostStatus(props.post.id, 1),
     { status: 1 },
     '帖子已隐藏',
     '隐藏帖子失败',
@@ -181,8 +174,8 @@ function togglePin() {
   const pinOrder = props.post.pinOrder == null ? 0 : null;
   const request = () =>
     pinOrder == null
-      ? unpinPost(props.post.id)
-      : pinPost(props.post.id, pinOrder);
+      ? forumApi.unpinPost(props.post.id)
+      : forumApi.pinPost(props.post.id, pinOrder);
   void updateModeration(
     request,
     { pinOrder },
@@ -194,7 +187,9 @@ function togglePin() {
 function toggleLock() {
   const commentsLocked = !props.post.commentsLocked;
   const request = () =>
-    commentsLocked ? lockPost(props.post.id) : unlockPost(props.post.id);
+    commentsLocked
+      ? forumApi.lockPost(props.post.id)
+      : forumApi.unlockPost(props.post.id);
   void updateModeration(
     request,
     { commentsLocked },

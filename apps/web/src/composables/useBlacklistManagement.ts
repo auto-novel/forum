@@ -1,10 +1,11 @@
 import { onScopeDispose, ref, watch } from 'vue';
 import { getApiErrorMessage, Notify, useWebKit } from '@novelia/web-kit';
-import { getBlacklist, setUserBlocked, type BlacklistEntry } from '@/api';
+import { useForumApi, type BlacklistEntry } from '@/api';
 import { usePostStore } from '@/stores/post';
 import { useCommentStore } from '@/stores/comment';
 
 export function useBlacklistManagement() {
+  const forumApi = useForumApi();
   const { whoami } = useWebKit();
   const posts = usePostStore();
   const comments = useCommentStore();
@@ -33,7 +34,7 @@ export function useBlacklistManagement() {
       active && version === loadVersion && whoami.value.user?.id === viewerId;
     loading.value = true;
     try {
-      const result = await getBlacklist(request.signal);
+      const result = await forumApi.getBlacklist(request.signal);
       if (isCurrent()) entries.value = result.items;
     } catch (reason) {
       if (!isCurrent() || request.signal.aborted) return;
@@ -65,7 +66,7 @@ export function useBlacklistManagement() {
       requestContext === context && whoami.value.user?.id === viewerId;
     removing.value = true;
     try {
-      await setUserBlocked(entry.userId, false);
+      await forumApi.setUserBlocked(entry.userId, false);
       if (!isCurrent()) return;
       // Update content caches even when navigation has closed this page.
       posts.refreshBlacklist(entry.userId, false);

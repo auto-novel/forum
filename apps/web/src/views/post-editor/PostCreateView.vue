@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { createPost } from '@/api';
+import { useForumApi } from '@/api';
 import { usePostStore } from '@/stores/post';
 import {
   getApiErrorMessage,
@@ -16,6 +16,7 @@ import PostPublishingNotice from './PostPublishingNotice.vue';
 
 import PostForm from './PostForm.vue';
 
+const forumApi = useForumApi();
 const { whoami } = useWebKit();
 const postStore = usePostStore();
 const route = useRoute();
@@ -88,7 +89,7 @@ async function submitPost() {
     return;
   submitting.value = true;
   try {
-    const post = await createPost({
+    const post = await forumApi.createPost({
       categoryId: selectedCategory.value.id,
       title: title.value.trim(),
       content: content.value,

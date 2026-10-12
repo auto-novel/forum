@@ -2,7 +2,7 @@ import { computed } from 'vue';
 import { defineStore } from 'pinia';
 import { useQuery } from '@pinia/colada';
 
-import { getCategories, type CategoryListItem } from '@/api';
+import { useForumApi, type CategoryListItem } from '@/api';
 import { whoami } from '@/session';
 
 const CACHE_MAX_AGE = 15 * 60 * 1000;
@@ -36,11 +36,12 @@ function setStoredCategorySlug(slug: string): void {
 }
 
 export const useCategoryStore = defineStore('category', () => {
+  const forumApi = useForumApi();
   const query = useQuery({
     key: ['categories'],
     staleTime: CACHE_MAX_AGE,
     query: async ({ signal }) => {
-      const items = await getCategories(signal);
+      const items = await forumApi.getCategories(signal);
       if (!items.length) throw new Error('分类列表为空');
       return items;
     },

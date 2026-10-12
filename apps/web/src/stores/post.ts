@@ -3,10 +3,8 @@ import { defineStore } from 'pinia';
 import { useQuery, useQueryCache } from '@pinia/colada';
 
 import {
-  getFavoritePosts,
-  getMyPosts,
-  getPost,
-  getPosts,
+  useForumApi,
+  type ForumApi,
   type Page,
   type Post,
   type PostSummary,
@@ -128,13 +126,14 @@ export const usePostStore = defineStore('post', () => {
   };
 });
 
-type CategoryParams = Parameters<typeof getPosts>[0];
+type CategoryParams = Parameters<ForumApi['getPosts']>[0];
 type ListKind = 'category' | 'mine' | 'favorites';
 
 export function usePostListQuery(
   kind: ListKind,
   params: MaybeRefOrGetter<CategoryParams>,
 ) {
+  const forumApi = useForumApi();
   usePostStore();
   const query = useQuery({
     key: () => [...listKey(), kind, toValue(params)],
@@ -142,10 +141,10 @@ export function usePostListQuery(
     query: ({ signal }) => {
       const value = toValue(params);
       return kind === 'category'
-        ? getPosts(value, signal)
+        ? forumApi.getPosts(value, signal)
         : kind === 'mine'
-          ? getMyPosts(value, signal)
-          : getFavoritePosts(value, signal);
+          ? forumApi.getMyPosts(value, signal)
+          : forumApi.getFavoritePosts(value, signal);
     },
   });
   return {
@@ -163,6 +162,7 @@ export function usePostQuery(
   id: MaybeRefOrGetter<number>,
   options: { editing?: boolean; enabled?: MaybeRefOrGetter<boolean> } = {},
 ) {
+  const forumApi = useForumApi();
   const store = usePostStore();
   const cache = useQueryCache();
   const query = useQuery({
@@ -178,7 +178,7 @@ export function usePostQuery(
       const requestedId = toValue(id);
       const key = postKey(requestedId);
       try {
-        return await getPost(requestedId, signal);
+        return await forumApi.getPost(requestedId, signal);
       } catch (error) {
         if (!signal.aborted && isUnavailable(error)) {
           for (const entry of cache.getEntries({ key, exact: true })) {

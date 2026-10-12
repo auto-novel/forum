@@ -28,7 +28,9 @@ const actionsUrl = new URL(
 const mocks = {
   '@/api': `
     const f = globalThis.__postActionsTest;
-    ${['setPostFavorite', 'deletePost', 'lockPost', 'unlockPost', 'pinPost', 'unpinPost', 'setPostStatus'].map((name) => `export const ${name} = (...args) => { f.calls.push(['${name}', ...args]); return f.requests.shift().promise; };`).join('\n')}
+    export const useForumApi = () => ({
+      ${['setPostFavorite', 'deletePost', 'lockPost', 'unlockPost', 'pinPost', 'unpinPost', 'setPostStatus'].map((name) => `${name}: (...args) => { f.calls.push(['${name}', ...args]); return f.requests.shift().promise; },`).join('\n')}
+    });
   `,
   '@/stores/post': `
     export const usePostStore = () => ({ setPost: post => { globalThis.__postActionsTest.post.value = post; } });
