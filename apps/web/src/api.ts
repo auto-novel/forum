@@ -54,7 +54,7 @@ export interface Post extends PostSummary {
   content: string;
 }
 
-export type PostSort = 'active' | 'newest' | 'updated' | 'views' | 'comments';
+export type PostSort = 'active' | 'updated' | 'views' | 'comments';
 
 export interface PostComment {
   id: number;

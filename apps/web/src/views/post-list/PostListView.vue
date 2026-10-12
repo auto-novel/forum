@@ -13,7 +13,6 @@ import PostList from './PostList.vue';
 const PAGE_SIZE = 20;
 const POST_SORTS = new Set<PostSort>([
   'active',
-  'newest',
   'updated',
   'views',
   'comments',
@@ -54,7 +53,7 @@ const selectedSort = computed<PostSort>(() => {
   const value = route.query.sort;
   return typeof value === 'string' && POST_SORTS.has(value as PostSort)
     ? (value as PostSort)
-    : 'updated';
+    : 'active';
 });
 
 const page = computed(() => {
@@ -96,7 +95,7 @@ function applyFilters(filters: {
     query: {
       ...(filters.query ? { q: filters.query } : {}),
       ...(filters.tagId ? { tag: String(filters.tagId) } : {}),
-      ...(filters.sort !== 'updated' ? { sort: filters.sort } : {}),
+      ...(filters.sort !== 'active' ? { sort: filters.sort } : {}),
     },
   });
 }
@@ -108,7 +107,7 @@ function changePage(nextPage: number) {
     query: {
       ...(searchQuery.value ? { q: searchQuery.value } : {}),
       ...(selectedTagId.value ? { tag: String(selectedTagId.value) } : {}),
-      ...(selectedSort.value !== 'updated' ? { sort: selectedSort.value } : {}),
+      ...(selectedSort.value !== 'active' ? { sort: selectedSort.value } : {}),
       ...(nextPage > 1 ? { page: String(nextPage) } : {}),
     },
   });
@@ -131,7 +130,7 @@ function changePage(nextPage: number) {
             params: { slug: category.slug },
             query: {
               ...(searchQuery ? { q: searchQuery } : {}),
-              ...(selectedSort !== 'updated' ? { sort: selectedSort } : {}),
+              ...(selectedSort !== 'active' ? { sort: selectedSort } : {}),
             },
           }"
           :aria-current="
