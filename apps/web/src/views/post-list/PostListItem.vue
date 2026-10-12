@@ -54,8 +54,12 @@ defineProps<{
           <PostTagList :tags="post.tags" />
           <span class="font-medium text-ink/80">{{ post.authorUsername }}</span>
           <span>
-            发布于
-            <XTime :time="post.createdAt" preset="relative" />
+            {{
+              post.updatedAt && post.updatedAt !== post.createdAt
+                ? '更新于'
+                : '发布于'
+            }}
+            <XTime :time="post.updatedAt || post.createdAt" preset="relative" />
           </span>
         </div>
         <div
