@@ -50,35 +50,24 @@ const toolbarSentinel = useTemplateRef<HTMLElement>('toolbarSentinel');
 const toolbarStuck = ref(false);
 let toolbarObserver: IntersectionObserver | undefined;
 let widthObserver: ResizeObserver | undefined;
-let editorScroller: HTMLElement | null = null;
 let editorWidth = 0;
 
 // 输入框不出现内部滚动条，也没必要手动缩放：高度始终跟内容走，
 // rows 只作为最小高度（height: auto 时的固有高度就是 rows）。
 function resizeEditor() {
   const element = textarea.value;
-  if (!element) return;
-  // 只有先把高度重置为 auto 才能测出内容真实高度，但这一瞬间编辑器会塌回
-  // rows 的高度，页面随之变矮，浏览器会把滚动位置夹到新的最大值；高度恢复
-  // 后滚动位置并不会自己回来，于是看起来「一打字/一切标签页面就跳」。
-  // 所以测量前后要手动保住滚动位置。
-  const scrollTop = editorScroller?.scrollTop;
+  if (!element || activeTab.value !== 'edit') return;
+  // 测量时高度会暂时塌缩，保住窗口位置，避免浏览器夹紧滚动范围后跳动。
+  const scrollY = window.scrollY;
   element.style.height = 'auto';
   element.style.height = `${element.scrollHeight}px`;
-  if (
-    editorScroller &&
-    scrollTop !== undefined &&
-    editorScroller.scrollTop !== scrollTop
-  ) {
-    editorScroller.scrollTop = scrollTop;
+  if (window.scrollY !== scrollY) {
+    window.scrollTo({ top: scrollY, behavior: 'instant' });
   }
 }
 
 onMounted(async () => {
   await nextTick();
-  editorScroller = editorRoot.value
-    ? findScrollContainer(editorRoot.value)
-    : null;
   resizeEditor();
   observeEditorWidth();
   observeToolbar();
@@ -113,20 +102,10 @@ function observeToolbar() {
         !entry.isIntersecting &&
         entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
     },
-    editorScroller ? { root: editorScroller } : undefined,
+    // 与工具栏的 sticky 偏移一致，避开 web-kit 的 50px header。
+    { rootMargin: '-50px 0px 0px 0px' },
   );
   toolbarObserver.observe(sentinel);
-}
-
-function findScrollContainer(element: HTMLElement): HTMLElement | null {
-  let current = element.parentElement;
-  while (current) {
-    if (/(auto|scroll|overlay)/.test(getComputedStyle(current).overflowY)) {
-      return current;
-    }
-    current = current.parentElement;
-  }
-  return null;
 }
 
 watch(value, () => void nextTick(resizeEditor));
@@ -136,7 +115,7 @@ watch(activeTab, (tab) => {
 
 async function restoreSelection(start: number, end: number) {
   await nextTick();
-  textarea.value?.focus();
+  textarea.value?.focus({ preventScroll: true });
   textarea.value?.setSelectionRange(start, end);
 }
 
@@ -194,7 +173,7 @@ defineExpose({ focus });
       :class="
         isArticle
           ? [
-              'sticky top-0 z-20 rounded-t-md bg-body',
+              'sticky top-[50px] z-20 rounded-t-md bg-body',
               toolbarStuck && 'editor-toolbar-stuck',
             ]
           : ''

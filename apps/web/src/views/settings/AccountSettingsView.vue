@@ -14,7 +14,10 @@ const route = useRoute();
         class="grid min-w-0 gap-6 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8"
       >
         <aside class="min-w-0">
-          <nav aria-label="账户设置栏目" class="md:sticky md:top-6">
+          <nav
+            aria-label="账户设置栏目"
+            class="md:sticky md:top-[calc(50px+1.5rem)]"
+          >
             <p class="mb-2 px-3 text-xs font-semibold text-muted">内容与互动</p>
             <RouterLink
               :to="{ name: 'blacklist' }"

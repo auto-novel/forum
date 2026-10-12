@@ -26,9 +26,7 @@ async function restoreScroll() {
   if (route.fullPath !== path) return;
   const scrollTop = window.history.state?.postListScrollTop;
   if (typeof scrollTop !== 'number' || !Number.isFinite(scrollTop)) return;
-  document
-    .querySelector('main')
-    ?.scrollTo({ top: scrollTop, behavior: 'instant' });
+  window.scrollTo({ top: scrollTop, behavior: 'instant' });
   const state = { ...window.history.state };
   delete state.postListScrollTop;
   window.history.replaceState(state, '');

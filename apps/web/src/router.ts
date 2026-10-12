@@ -152,7 +152,7 @@ router.afterEach((to, from, failure) => {
   ) {
     setPostListReturn({
       path: from.fullPath,
-      scrollTop: document.querySelector('main')?.scrollTop ?? 0,
+      scrollTop: window.scrollY,
     });
   } else if (!(
     ['post-detail', 'post-edit'].includes(String(to.name)) &&

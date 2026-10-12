@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
-import { useWebKitLayout, useWebKitViewport, XButton } from '@novelia/web-kit';
+import { useWebKitViewport, XButton } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { usePostListQuery } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
@@ -20,7 +20,6 @@ const POST_SORTS = new Set<PostSort>([
 
 const route = useRoute();
 const router = useRouter();
-const { scrollToTop } = useWebKitLayout();
 const { isMobile } = useWebKitViewport();
 const categoryStore = useCategoryStore();
 
@@ -111,7 +110,7 @@ function changePage(nextPage: number) {
       ...(nextPage > 1 ? { page: String(nextPage) } : {}),
     },
   });
-  scrollToTop({ behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 

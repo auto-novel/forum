@@ -10,8 +10,9 @@ globalThis.__profileNavigationTest = fixture;
 globalThis.__profileRouter = { createMemoryHistory, createRouter };
 globalThis.document = {
   title: '',
-  querySelector: () => ({ scrollTop: 120 }),
+  querySelector: () => ({ scrollTop: 0 }),
 };
+globalThis.window = { scrollY: 120 };
 const mocks = {
   'vue-router': `
     const r = globalThis.__profileRouter;

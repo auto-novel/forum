@@ -21,11 +21,11 @@ const passthrough = {
 
 for (const mode of ['mobile', 'tablet', 'desktop']) {
   test(`post list uses web-kit viewport for ${mode} navigation and publish label`, async () => {
-    assert.match(source, /const \{ isDesktop \} = useWebKitViewport\(\)/);
+    assert.match(source, /const \{ isMobile \} = useWebKitViewport\(\)/);
     const app = createSSRApp({
       render,
       setup: () => ({
-        isDesktop: mode === 'desktop',
+        isMobile: mode === 'mobile',
         selectedCategory: 'novel',
         selectedCategoryItem: { id: 1, title: '小说' },
         categoryStore: {
@@ -54,10 +54,10 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
       app.component(name, { render: () => null });
     }
     const html = await renderToString(app);
-    assert.equal(html.includes('<h1'), mode === 'desktop');
-    assert.equal(html.includes('aria-label="帖子板块"'), mode !== 'desktop');
+    assert.equal(html.includes('<h1'), mode !== 'mobile');
+    assert.equal(html.includes('aria-label="帖子板块"'), mode === 'mobile');
     assert.ok(
-      html.includes(`<span>${mode === 'desktop' ? '发表帖子' : '发帖'}</span>`),
+      html.includes(`<span>${mode !== 'mobile' ? '发表帖子' : '发帖'}</span>`),
     );
   });
 }

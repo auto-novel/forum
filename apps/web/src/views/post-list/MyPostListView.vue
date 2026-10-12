@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArticleOutlined } from '@vicons/material';
-import { useWebKit, useWebKitLayout } from '@novelia/web-kit';
+import { useWebKit } from '@novelia/web-kit';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -12,7 +12,6 @@ const PAGE_SIZE = 20;
 const route = useRoute();
 const router = useRouter();
 const { whoami } = useWebKit();
-const { scrollToTop } = useWebKitLayout();
 
 const page = computed(() => {
   const value = Number(route.query.page);
@@ -36,7 +35,7 @@ function changePage(nextPage: number) {
     name: 'my-posts',
     query: nextPage > 1 ? { page: String(nextPage) } : {},
   });
-  scrollToTop({ behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
