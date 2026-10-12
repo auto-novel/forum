@@ -57,20 +57,22 @@ export interface ForumApiOptions {
  */
 export function createForumApi(options: ForumApiOptions) {
   const client = options.client.extend({
-    prefix: new URL(
-      `api/v1/external/comment/${options.type}/`,
-      options.url,
-    ).toString(),
+    prefix: new URL('api/v1/', options.url).toString(),
   });
+  const commentPath = `external/comment/${options.type}`;
 
   return {
+    async setUserBlocked(userId: number, blocked: boolean) {
+      const path = `me/blacklist/${userId}`;
+      await (blocked ? client.put(path) : client.delete(path));
+    },
     getComments(
       subjectKey: string,
       params: CommentListParams,
       signal?: AbortSignal,
     ) {
       return client
-        .get(encodeURIComponent(subjectKey), {
+        .get(`${commentPath}/${encodeURIComponent(subjectKey)}`, {
           searchParams: {
             page: params.page,
             page_size: params.pageSize,
@@ -86,7 +88,7 @@ export function createForumApi(options: ForumApiOptions) {
       signal?: AbortSignal,
     ) {
       return client
-        .get(`${encodeURIComponent(subjectKey)}/${rootId}/reply`, {
+        .get(`${commentPath}/${encodeURIComponent(subjectKey)}/${rootId}/reply`, {
           searchParams: {
             page: params.page,
             page_size: params.pageSize,
@@ -97,19 +99,21 @@ export function createForumApi(options: ForumApiOptions) {
     },
     createComment(subjectKey: string, request: CreateCommentRequest) {
       return client
-        .post(encodeURIComponent(subjectKey), {
+        .post(`${commentPath}/${encodeURIComponent(subjectKey)}`, {
           json: request,
         })
         .json<Comment>();
     },
     updateComment(commentId: number, request: UpdateCommentRequest) {
-      return client.patch(String(commentId), { json: request }).json<Comment>();
+      return client
+        .patch(`${commentPath}/${commentId}`, { json: request })
+        .json<Comment>();
     },
     async deleteComment(commentId: number) {
-      await client.delete(String(commentId));
+      await client.delete(`${commentPath}/${commentId}`);
     },
     async setCommentStatus(commentId: number, status: CommentStatusName) {
-      await client.put(`${commentId}/status`, {
+      await client.put(`${commentPath}/${commentId}/status`, {
         json: { status },
       });
     },
