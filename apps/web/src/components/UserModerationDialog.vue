@@ -11,8 +11,7 @@ import {
 } from 'reka-ui';
 
 import { useForumApi } from '@/api';
-import { useWebKit, XButton } from '@novelia/web-kit';
-import { getApiErrorMessage, Notify } from '@novelia/web-kit';
+import { Toast, XButton, useWebKit } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 
 const props = defineProps<{
@@ -70,43 +69,40 @@ async function submit() {
   if (!canSubmit.value || submitting.value) return;
 
   submitting.value = true;
-  try {
-    if (isStrike.value) {
-      await createStrike({
-        username: props.username,
+  const strike = isStrike.value;
+  const username = props.username;
+  const userId = props.userId;
+  const shouldRemoveComments = !strike && removeComments.value;
+  const request = strike
+    ? createStrike({
+        username,
         reason: value,
         evidence: props.evidence,
         point: point.value,
-      });
-      Notify.success(`已处罚 @${props.username}`);
-    } else {
-      await banUser({ username: props.username, reason: value });
-      if (removeComments.value) {
-        try {
-          await forumApi.deleteCommentsByAuthor(props.userId);
-          commentStore.registerDeletedCommentsByAuthor(props.userId);
-          emit('commentsDeleted');
-          Notify.success(`已封禁 @${props.username} 并删除其全部评论`);
-        } catch (error) {
-          const message = await getApiErrorMessage(error, '未知错误');
-          Notify.success(`已封禁 @${props.username}`);
-          Notify.error(`删除该用户的评论失败：${message}`);
-        }
-      } else {
-        Notify.success(`已封禁 @${props.username}`);
-      }
-    }
-    emit('update:open', false);
-  } catch (error) {
-    Notify.error(
-      await getApiErrorMessage(
-        error,
-        isStrike.value ? '处罚用户失败' : '封禁用户失败',
-      ),
-    );
-  } finally {
-    submitting.value = false;
-  }
+      })
+    : banUser({ username, reason: value });
+  await Toast.promise(
+    request.then(() => {
+      const deletion = shouldRemoveComments
+        ? Toast.promise(
+            forumApi.deleteCommentsByAuthor(userId).then(() => {
+              commentStore.registerDeletedCommentsByAuthor(userId);
+              emit('commentsDeleted');
+            }),
+            {
+              success: `已删除 @${username} 的全部评论`,
+              error: '删除该用户的评论失败',
+            },
+          )
+        : Promise.resolve();
+      return deletion.then(() => emit('update:open', false));
+    }),
+    {
+      success: strike ? `已处罚 @${username}` : `已封禁 @${username}`,
+      error: strike ? '处罚用户失败' : '封禁用户失败',
+    },
+  );
+  submitting.value = false;
 }
 </script>
 

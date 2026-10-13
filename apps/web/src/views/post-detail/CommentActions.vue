@@ -6,15 +6,19 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from 'reka-ui';
+import { copyText } from '@/utils/clipboard';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import type { PostComment } from '@/api';
-import { useWebKit, XButton } from '@novelia/web-kit';
-import { XActionMenuItem } from '@novelia/web-kit';
-import { XConfirmDialog } from '@novelia/web-kit';
+import {
+  Toast,
+  XActionMenuItem,
+  XButton,
+  XConfirmDialog,
+  useWebKit,
+} from '@novelia/web-kit';
 import UserBlacklistDialog from '@/components/UserBlacklistDialog.vue';
 import UserModerationDialog from '@/components/UserModerationDialog.vue';
-import { getApiErrorMessage, Notify } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 
 const props = defineProps<{
@@ -95,54 +99,54 @@ onBeforeUnmount(() => window.clearTimeout(expiryTimer));
 async function copyComment() {
   if (copying.value) return;
   copying.value = true;
-  try {
-    await navigator.clipboard.writeText(props.comment.content);
-    Notify.success('评论原文已复制');
-  } catch {
-    Notify.error('复制失败，请手动选择评论内容复制');
-  } finally {
-    copying.value = false;
-  }
+  await Toast.promise(copyText(props.comment.content), {
+    success: '评论原文已复制',
+    error: '复制失败，请手动选择评论内容复制',
+  });
+  copying.value = false;
 }
 
 async function removeComment() {
   submitting.value = true;
-  try {
-    await commentStore.deleteComment(props.comment.id, asAdmin.value);
-    Notify.success('评论已删除');
-    emit('statusChanged', 2);
-  } catch (reason) {
-    Notify.error(await getApiErrorMessage(reason, '删除评论失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    commentStore
+      .deleteComment(props.comment.id, asAdmin.value)
+      .then(() => emit('statusChanged', 2)),
+    {
+      success: '评论已删除',
+      error: '删除评论失败',
+    },
+  );
+  submitting.value = false;
 }
 
 async function unhideComment() {
   if (submitting.value || !asAdmin.value || props.comment.status !== 1) return;
   submitting.value = true;
-  try {
-    await commentStore.unhideComment(props.comment.id);
-    Notify.success('评论已解除隐藏');
-    emit('statusChanged', 0);
-  } catch (reason) {
-    Notify.error(await getApiErrorMessage(reason, '解除隐藏失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    commentStore
+      .unhideComment(props.comment.id)
+      .then(() => emit('statusChanged', 0)),
+    {
+      success: '评论已解除隐藏',
+      error: '解除隐藏失败',
+    },
+  );
+  submitting.value = false;
 }
 
 async function hideComment() {
   submitting.value = true;
-  try {
-    await commentStore.hideComment(props.comment.id);
-    Notify.success('评论已隐藏');
-    emit('statusChanged', 1);
-  } catch (reason) {
-    Notify.error(await getApiErrorMessage(reason, '隐藏评论失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    commentStore
+      .hideComment(props.comment.id)
+      .then(() => emit('statusChanged', 1)),
+    {
+      success: '评论已隐藏',
+      error: '隐藏评论失败',
+    },
+  );
+  submitting.value = false;
 }
 
 function confirmAction() {

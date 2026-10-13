@@ -2,13 +2,12 @@
 import { computed, ref, useId, watch } from 'vue';
 
 import type { PostComment } from '@/api';
-import { useWebKit, XButton, XTime } from '@novelia/web-kit';
+import { Toast, XButton, XTime, useWebKit } from '@novelia/web-kit';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 import { useCommentValidation } from '@/composables/useCommentValidation';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
-import { getApiErrorMessage, Notify } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 
 import CommentActions from './CommentActions.vue';
@@ -75,15 +74,16 @@ async function saveEdit() {
   const value = content.value.trim();
   if (!canSave.value) return;
   submitting.value = true;
-  try {
-    await commentStore.updateComment(props.comment.id, value);
-    editing.value = false;
-    Notify.success('评论修改已保存');
-  } catch (reason) {
-    Notify.error(await getApiErrorMessage(reason, '更新评论失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    commentStore.updateComment(props.comment.id, value).then(() => {
+      editing.value = false;
+    }),
+    {
+      success: '评论修改已保存',
+      error: '更新评论失败',
+    },
+  );
+  submitting.value = false;
 }
 </script>
 

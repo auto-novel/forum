@@ -40,9 +40,9 @@ const mocks = {
     const f = globalThis.__blacklistManagementTest;
     export const useWebKit = () => ({ whoami: f.whoami });
     export const getApiErrorMessage = async (_, fallback) => fallback;
-    export const Notify = {
-      success: message => f.notices.push(['success', message]),
-      error: message => f.notices.push(['error', message]),
+    export const Toast = {
+      success(message) { f.notices.push(['success', message]); },
+      error(message) { f.notices.push(['error', message]); },
     };
   `,
   ...Object.fromEntries(

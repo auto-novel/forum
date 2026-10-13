@@ -11,8 +11,9 @@ import {
 } from 'reka-ui';
 import { computed, nextTick, ref, watch } from 'vue';
 
-import { Notify, XButton } from '@novelia/web-kit';
-import { copyText, postShareMarkdown, postShareUrl } from '@/utils/postShare';
+import { Toast, XButton } from '@novelia/web-kit';
+import { copyText } from '@/utils/clipboard';
+import { postShareMarkdown, postShareUrl } from '@/utils/postShare';
 
 const props = defineProps<{
   open: boolean;
@@ -45,15 +46,14 @@ function selectLink() {
 async function copy(content: string, successMessage: string) {
   if (copying.value) return;
   copying.value = true;
-  try {
-    await copyText(content);
-    Notify.success(successMessage);
-    emit('update:open', false);
-  } catch {
-    Notify.error('复制失败，请手动选中链接复制');
-  } finally {
-    copying.value = false;
-  }
+  await Toast.promise(
+    copyText(content).then(() => emit('update:open', false)),
+    {
+      success: successMessage,
+      error: '复制失败，请手动选中链接复制',
+    },
+  );
+  copying.value = false;
 }
 
 function copyLink() {

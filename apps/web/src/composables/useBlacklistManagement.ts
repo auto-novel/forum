@@ -1,5 +1,5 @@
 import { onScopeDispose, ref, watch } from 'vue';
-import { getApiErrorMessage, Notify, useWebKit } from '@novelia/web-kit';
+import { getApiErrorMessage, Toast, useWebKit } from '@novelia/web-kit';
 import { useForumApi, type BlacklistEntry } from '@/api';
 import { usePostStore } from '@/stores/post';
 import { useCommentStore } from '@/stores/comment';
@@ -81,11 +81,11 @@ export function useBlacklistManagement() {
         (item) => item.userId !== entry.userId,
       );
       selected.value = undefined;
-      Notify.success('已取消拉黑');
+      Toast.success('已取消拉黑');
     } catch (reason) {
       if (!active || !isCurrent()) return;
       const message = await getApiErrorMessage(reason, '取消拉黑失败');
-      if (active && isCurrent()) Notify.error(message);
+      if (active && isCurrent()) Toast.error(message);
     } finally {
       if (active && isCurrent()) removing.value = false;
     }

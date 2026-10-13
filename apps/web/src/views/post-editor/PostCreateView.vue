@@ -4,12 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useForumApi } from '@/api';
 import { usePostStore } from '@/stores/post';
-import {
-  getApiErrorMessage,
-  Notify,
-  useWebKit,
-  XAsyncContent,
-} from '@novelia/web-kit';
+import { Toast, useWebKit, XAsyncContent } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { useDraftStore } from '@/stores/draft';
 import PostPublishingNotice from './PostPublishingNotice.vue';
@@ -88,25 +83,31 @@ async function submitPost() {
   if (!whoami.value.isSignedIn || !categoriesReady.value || submitting.value)
     return;
   submitting.value = true;
-  try {
-    const post = await forumApi.createPost({
-      categoryId: selectedCategory.value.id,
-      title: title.value.trim(),
-      content: content.value,
-      tagIds: selectedTagIds.value,
-    });
-    postStore.setPost(post);
-    draftStore.clearPostDraft(draftUserId.value);
-    title.value = '';
-    content.value = '';
-    selectedTagIds.value = [];
-    Notify.success('帖子已发布');
-    await router.replace({ name: 'post-detail', params: { id: post.id } });
-  } catch (error) {
-    Notify.error(await getApiErrorMessage(error, '帖子发布失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    forumApi
+      .createPost({
+        categoryId: selectedCategory.value.id,
+        title: title.value.trim(),
+        content: content.value,
+        tagIds: selectedTagIds.value,
+      })
+      .then((post) => {
+        postStore.setPost(post);
+        draftStore.clearPostDraft(draftUserId.value);
+        title.value = '';
+        content.value = '';
+        selectedTagIds.value = [];
+        return Toast.promise(
+          router.replace({ name: 'post-detail', params: { id: post.id } }),
+          { error: '无法打开帖子详情' },
+        );
+      }),
+    {
+      success: '帖子已发布',
+      error: '帖子发布失败',
+    },
+  );
+  submitting.value = false;
 }
 </script>
 

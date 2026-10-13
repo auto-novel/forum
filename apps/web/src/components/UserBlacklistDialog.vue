@@ -2,7 +2,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import {
   getApiErrorMessage,
-  Notify,
+  Toast,
   useWebKit,
   XConfirmDialog,
 } from '@novelia/web-kit';
@@ -55,7 +55,7 @@ async function confirm() {
     posts.refreshBlacklist(userId, !blocked);
     comments.refreshBlacklist(userId, !blocked);
     if (active) {
-      Notify.success(blocked ? '已取消拉黑' : '已拉黑作者');
+      Toast.success(blocked ? '已取消拉黑' : '已拉黑作者');
       emit('close');
     }
   } catch (reason) {
@@ -64,7 +64,7 @@ async function confirm() {
       reason,
       blocked ? '取消拉黑失败' : '拉黑失败',
     );
-    if (active && isCurrent()) Notify.error(message);
+    if (active && isCurrent()) Toast.error(message);
   } finally {
     pending.value = false;
   }

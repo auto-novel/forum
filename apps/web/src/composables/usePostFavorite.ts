@@ -6,7 +6,7 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue';
-import { getApiErrorMessage, Notify, useWebKit } from '@novelia/web-kit';
+import { getApiErrorMessage, Toast, useWebKit } from '@novelia/web-kit';
 
 import { useForumApi, type Post } from '@/api';
 import { usePostStore } from '@/stores/post';
@@ -47,11 +47,11 @@ export function usePostFavorite(post: MaybeRefOrGetter<Post | undefined>) {
       if (requestContext !== context || !latestPost) return;
       // Merge into the latest data, preserving concurrent comment/management changes.
       postStore.setPost({ ...latestPost, favorited: nextValue });
-      Notify.success(nextValue ? '帖子已收藏' : '已取消收藏');
+      Toast.success(nextValue ? '帖子已收藏' : '已取消收藏');
     } catch (reason) {
       if (requestContext !== context) return;
       const message = await getApiErrorMessage(reason, '更新收藏失败');
-      if (requestContext === context) Notify.error(message);
+      if (requestContext === context) Toast.error(message);
     } finally {
       if (requestContext === context) loading.value = false;
     }

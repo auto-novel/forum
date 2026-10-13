@@ -3,10 +3,8 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { useForumApi, type Post } from '@/api';
-import { useWebKit, XButton } from '@novelia/web-kit';
-import { XAsyncContent } from '@novelia/web-kit';
+import { Toast, XAsyncContent, XButton, useWebKit } from '@novelia/web-kit';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
-import { getApiErrorMessage, Notify } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { usePostQuery, usePostStore } from '@/stores/post';
 
@@ -101,25 +99,31 @@ function changeCategory() {
 async function save() {
   if (!post.value || submitting.value) return;
   submitting.value = true;
-  try {
-    const updatedPost = await forumApi.updatePost(post.value.id, {
-      categoryId: selectedCategory.value.id,
-      title: title.value.trim(),
-      content: content.value,
-      tagIds: selectedTagIds.value,
-    });
-    applyPost(updatedPost);
-    postStore.setPost(updatedPost);
-    Notify.success('帖子修改已保存');
-    await router.replace({
-      name: 'post-detail',
-      params: { id: updatedPost.id },
-    });
-  } catch (reason) {
-    Notify.error(await getApiErrorMessage(reason, '更新帖子失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    forumApi
+      .updatePost(post.value.id, {
+        categoryId: selectedCategory.value.id,
+        title: title.value.trim(),
+        content: content.value,
+        tagIds: selectedTagIds.value,
+      })
+      .then((updatedPost) => {
+        applyPost(updatedPost);
+        postStore.setPost(updatedPost);
+        return Toast.promise(
+          router.replace({
+            name: 'post-detail',
+            params: { id: updatedPost.id },
+          }),
+          { error: '无法打开帖子详情' },
+        );
+      }),
+    {
+      success: '帖子修改已保存',
+      error: '更新帖子失败',
+    },
+  );
+  submitting.value = false;
 }
 
 function cancel() {

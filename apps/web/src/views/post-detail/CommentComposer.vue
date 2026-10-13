@@ -6,10 +6,9 @@ import CommentRulesNotice from './CommentRulesNotice.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 import { useCommentValidation } from '@/composables/useCommentValidation';
-import { getApiErrorMessage, Notify } from '@novelia/web-kit';
+import { Toast, XButton, useWebKit } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 import { useDraftStore } from '@/stores/draft';
-import { useWebKit, XButton } from '@novelia/web-kit';
 
 const props = defineProps<{
   postId: number;
@@ -68,20 +67,23 @@ async function submitComment() {
   const value = content.value.trim();
   if (!canSubmit.value || props.locked) return;
   submitting.value = true;
-  try {
-    const comment = await commentStore.createComment(props.postId, {
-      content: value,
-      rootId: props.replyTo?.rootId ?? props.replyTo?.id,
-    });
-    content.value = '';
-    draftStore.clearCommentDraft(draftKey.value);
-    Notify.success('评论已发表');
-    emit('created', comment);
-  } catch (error) {
-    Notify.error(await getApiErrorMessage(error, '评论发布失败'));
-  } finally {
-    submitting.value = false;
-  }
+  await Toast.promise(
+    commentStore
+      .createComment(props.postId, {
+        content: value,
+        rootId: props.replyTo?.rootId ?? props.replyTo?.id,
+      })
+      .then((comment) => {
+        content.value = '';
+        draftStore.clearCommentDraft(draftKey.value);
+        emit('created', comment);
+      }),
+    {
+      success: '评论已发表',
+      error: '评论发布失败',
+    },
+  );
+  submitting.value = false;
 }
 </script>
 

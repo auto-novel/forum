@@ -50,9 +50,21 @@ const mocks = {
       };
     });
     export const useWebKit = () => ({ whoami });
-    export const Notify = {
-      success: message => f.notices.push(['success', message]),
-      error: message => f.notices.push(['error', message]),
+    export const Toast = {
+      async promise(promise, messages = {}) {
+        if (messages.loading !== undefined) f.notices.push(['loading', messages.loading]);
+        try {
+          const value = await promise;
+          if (messages.success !== undefined) f.notices.push(['success', messages.success]);
+          return value;
+        } catch (reason) {
+          const detail = reason instanceof Error ? reason.message : '';
+          if (messages.error !== undefined) f.notices.push(['error', messages.error + (detail ? '：' + detail : '')]);
+          return undefined;
+        }
+      },
+      success(message) { f.notices.push(['success', message]); },
+      error(message) { f.notices.push(['error', message]); },
     };
     export const getApiErrorMessage = async (_, fallback) => fallback;
     export const XButton = {}, XActionMenuItem = {}, XConfirmDialog = {};
@@ -71,6 +83,11 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier in mocks)
       return { url: `post-test:${specifier}`, shortCircuit: true };
+    if (specifier === '@/utils/clipboard')
+      return {
+        url: new URL('../src/utils/clipboard.ts', import.meta.url).href,
+        shortCircuit: true,
+      };
     return nextResolve(specifier, context);
   },
   load(url, context, nextLoad) {
@@ -197,6 +214,7 @@ test('copy original prevents duplicate writes and unlocks after clipboard failur
   });
   try {
     const pending = actions.copyPost();
+    assert.deepEqual(fixture.notices, []);
     await actions.copyPost();
     assert.equal(writeText.mock.calls.length, 1);
     assert.equal(actions.copying.value, true);
@@ -204,7 +222,37 @@ test('copy original prevents duplicate writes and unlocks after clipboard failur
     await pending;
     assert.equal(actions.copying.value, false);
     assert.deepEqual(fixture.notices, [
-      ['error', '复制失败，请手动选择帖子内容复制'],
+      ['error', '复制失败，请手动选择帖子内容复制：复制到剪贴板失败'],
+    ]);
+  } finally {
+    scope.stop();
+    if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor);
+    else delete navigator.clipboard;
+  }
+});
+
+test('copy original handles synchronous clipboard errors and allows retry', async (t) => {
+  const { scope, actions } = setup(null);
+  const descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  const writeText = t.mock.fn(() => {
+    throw new Error('clipboard unavailable');
+  });
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText },
+  });
+  try {
+    await actions.copyPost();
+    assert.equal(actions.copying.value, false);
+    assert.deepEqual(fixture.notices, [
+      ['error', '复制失败，请手动选择帖子内容复制：复制到剪贴板失败'],
+    ]);
+    writeText.mock.mockImplementation(async () => {});
+    await actions.copyPost();
+    assert.equal(writeText.mock.calls.length, 2);
+    assert.equal(actions.copying.value, false);
+    assert.deepEqual(fixture.notices.slice(-1), [
+      ['success', '帖子原文已复制'],
     ]);
   } finally {
     scope.stop();

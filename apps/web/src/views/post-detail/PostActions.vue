@@ -5,8 +5,16 @@ import {
   MoreVertOutlined,
   ShareOutlined,
 } from '@vicons/material';
+import { copyText } from '@/utils/clipboard';
 import { computed, onScopeDispose, ref, watch } from 'vue';
-import { useWebKit, XButton } from '@novelia/web-kit';
+import {
+  Toast,
+  XActionMenuItem,
+  XButton,
+  XConfirmDialog,
+  getApiErrorMessage,
+  useWebKit,
+} from '@novelia/web-kit';
 
 import { useForumApi, type Post } from '@/api';
 import {
@@ -17,11 +25,8 @@ import {
 } from 'reka-ui';
 import PostFavoriteButton from './PostFavoriteButton.vue';
 import PostShareDialog from './PostShareDialog.vue';
-import { XActionMenuItem } from '@novelia/web-kit';
-import { XConfirmDialog } from '@novelia/web-kit';
 import UserBlacklistDialog from '@/components/UserBlacklistDialog.vue';
 import UserModerationDialog from '@/components/UserModerationDialog.vue';
-import { getApiErrorMessage, Notify } from '@novelia/web-kit';
 
 const props = defineProps<{
   post: Post;
@@ -98,14 +103,11 @@ const confirmation = computed(() =>
 async function copyPost() {
   if (copying.value) return;
   copying.value = true;
-  try {
-    await navigator.clipboard.writeText(props.post.content);
-    Notify.success('帖子原文已复制');
-  } catch {
-    Notify.error('复制失败，请手动选择帖子内容复制');
-  } finally {
-    copying.value = false;
-  }
+  await Toast.promise(copyText(props.post.content), {
+    success: '帖子原文已复制',
+    error: '复制失败，请手动选择帖子内容复制',
+  });
+  copying.value = false;
 }
 
 function editPost() {
@@ -132,15 +134,16 @@ async function updateModeration(
   const isCurrent = () => requestContext === context;
   actionLoading.value = true;
   try {
+    // 保留手动提示，避免切换帖子、账号或离开页面后展示过期结果。
     await request();
     if (!isCurrent()) return;
-    Notify.success(successMessage);
+    Toast.success(successMessage);
     if (patch.status != null && patch.status !== 0) emit('deleted');
     else emit('updated', patch);
   } catch (reason) {
     if (!isCurrent()) return;
     const message = await getApiErrorMessage(reason, failureMessage);
-    if (isCurrent()) Notify.error(message);
+    if (isCurrent()) Toast.error(message);
   } finally {
     if (isCurrent()) actionLoading.value = false;
   }
