@@ -5,13 +5,13 @@ import {
   MoreVertOutlined,
   ShareOutlined,
 } from '@vicons/material';
-import { copyText } from '@/utils/clipboard';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import {
   Toast,
   XActionMenuItem,
   XButton,
   XConfirmDialog,
+  copyToClipboard,
   getApiErrorMessage,
   useWebKit,
 } from '@novelia/web-kit';
@@ -103,7 +103,7 @@ const confirmation = computed(() =>
 async function copyPost() {
   if (copying.value) return;
   copying.value = true;
-  await Toast.promise(copyText(props.post.content), {
+  await Toast.promise(copyToClipboard(props.post.content), {
     success: '帖子原文已复制',
     error: '复制失败，请手动选择帖子内容复制',
   });

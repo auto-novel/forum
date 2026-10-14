@@ -6,7 +6,6 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from 'reka-ui';
-import { copyText } from '@/utils/clipboard';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import type { PostComment } from '@/api';
@@ -15,6 +14,7 @@ import {
   XActionMenuItem,
   XButton,
   XConfirmDialog,
+  copyToClipboard,
   useWebKit,
 } from '@novelia/web-kit';
 import UserBlacklistDialog from '@/components/UserBlacklistDialog.vue';
@@ -99,7 +99,7 @@ onBeforeUnmount(() => window.clearTimeout(expiryTimer));
 async function copyComment() {
   if (copying.value) return;
   copying.value = true;
-  await Toast.promise(copyText(props.comment.content), {
+  await Toast.promise(copyToClipboard(props.comment.content), {
     success: '评论原文已复制',
     error: '复制失败，请手动选择评论内容复制',
   });

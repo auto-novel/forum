@@ -1,23 +1,16 @@
 <script setup lang="ts">
-import { CloseOutlined, HelpOutlineOutlined } from '@vicons/material';
-import {
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-  DialogTrigger,
-} from 'reka-ui';
+import { HelpOutlineOutlined } from '@vicons/material';
+import { ref } from 'vue';
 
-import { XButton } from '@novelia/web-kit';
+import { XButton, XDialog } from '@novelia/web-kit';
 
 import type { MarkdownMode } from '@novelia/forum-api';
 
 defineProps<{
   mode: MarkdownMode;
 }>();
+
+const open = ref(false);
 
 type MarkdownFeature = {
   name: string;
@@ -60,82 +53,73 @@ const features: MarkdownFeature[] = [
 </script>
 
 <template>
-  <DialogRoot>
-    <DialogTrigger as-child>
+  <XDialog
+    v-model:open="open"
+    title="Markdown 语法帮助"
+    description="以下是编辑器支持的基本语法，特殊标记的功能不能用于评论。"
+    class="flex flex-col"
+    style="
+      max-width: 42rem;
+      max-height: min(80dvh, calc(100dvh - 2rem));
+      overflow: hidden;
+      padding: 0;
+    "
+  >
+    <template #trigger>
       <XButton variant="subtle" size="xs">
         <HelpOutlineOutlined class="size-4" aria-hidden="true" />
         Markdown 语法帮助
       </XButton>
-    </DialogTrigger>
+    </template>
+    <header
+      class="shrink-0 border-b border-divider px-5 py-4 pr-14 sm:px-6 sm:pr-14"
+    >
+      <h2 class="text-lg font-semibold text-ink">Markdown 语法帮助</h2>
+      <p class="mt-1 text-sm leading-6 text-muted">
+        以下是编辑器支持的基本语法，特殊标记的功能不能用于评论。
+      </p>
+    </header>
 
-    <DialogPortal>
-      <DialogOverlay class="fixed inset-0 z-40 bg-black/45" />
-      <DialogContent
-        class="fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-md border border-border bg-surface shadow-2xl outline-none sm:max-h-[80vh]"
+    <div class="min-h-0 overflow-y-auto p-4 sm:p-6">
+      <div
+        class="divide-y divide-divider sm:divide-y-0 sm:overflow-hidden sm:rounded-md sm:border sm:border-border"
       >
-        <header
-          class="relative border-b border-divider px-5 py-4 pr-14 sm:px-6"
+        <div
+          class="hidden grid-cols-[10.5rem_minmax(0,1fr)] bg-paper text-xs font-semibold text-muted sm:grid"
         >
-          <DialogTitle class="text-lg font-semibold text-ink">
-            Markdown 语法帮助
-          </DialogTitle>
-          <DialogDescription class="mt-1 text-sm leading-6 text-muted">
-            以下是编辑器支持的基本语法，特殊标记的功能不能用于评论。
-          </DialogDescription>
-          <DialogClose as-child>
-            <XButton
-              class="absolute top-4 right-4"
-              variant="subtle"
-              size="icon-sm"
-              aria-label="关闭"
-            >
-              <CloseOutlined class="size-5" aria-hidden="true" />
-            </XButton>
-          </DialogClose>
-        </header>
-
-        <div class="overflow-y-auto p-4 sm:p-6">
-          <div
-            class="divide-y divide-divider sm:divide-y-0 sm:overflow-hidden sm:rounded-md sm:border sm:border-border"
-          >
-            <div
-              class="hidden grid-cols-[10.5rem_minmax(0,1fr)] bg-paper text-xs font-semibold text-muted sm:grid"
-            >
-              <span class="px-3 py-2.5">功能</span>
-              <span class="px-3 py-2.5">基本语法</span>
-            </div>
-            <section
-              v-for="feature in features"
-              :key="feature.name"
-              class="grid gap-2 py-3 text-sm sm:grid-cols-[10.5rem_minmax(0,1fr)] sm:items-center sm:gap-0 sm:border-t sm:border-divider sm:py-0"
-              :class="{
-                'bg-paper/50': mode === 'comment' && feature.articleOnly,
-              }"
-            >
-              <div class="sm:px-3 sm:py-2.5">
-                <h3 class="font-medium text-ink">
-                  {{ feature.name }}
-                </h3>
-                <span
-                  v-if="feature.articleOnly"
-                  class="mt-1 block text-xs text-warning"
-                >
-                  评论不支持
-                </span>
-              </div>
-              <code
-                class="block whitespace-pre-wrap rounded-sm bg-paper px-2 py-1.5 font-mono text-xs leading-5 text-ink sm:mx-3 sm:my-2"
-              >
-                {{ feature.syntax }}
-              </code>
-            </section>
-          </div>
-
-          <p class="mt-4 text-xs leading-5 text-muted">
-            为保证内容安全，文章和评论都不支持直接嵌入 HTML。
-          </p>
+          <span class="px-3 py-2.5">功能</span>
+          <span class="px-3 py-2.5">基本语法</span>
         </div>
-      </DialogContent>
-    </DialogPortal>
-  </DialogRoot>
+        <section
+          v-for="feature in features"
+          :key="feature.name"
+          class="grid gap-2 py-3 text-sm sm:grid-cols-[10.5rem_minmax(0,1fr)] sm:items-center sm:gap-0 sm:border-t sm:border-divider sm:py-0"
+          :class="{
+            'bg-paper/50': mode === 'comment' && feature.articleOnly,
+          }"
+        >
+          <div class="sm:px-3 sm:py-2.5">
+            <h3 class="font-medium text-ink">
+              {{ feature.name }}
+            </h3>
+            <span
+              v-if="feature.articleOnly"
+              class="mt-1 block text-xs text-warning"
+            >
+              评论不支持
+            </span>
+          </div>
+          <code
+            class="block whitespace-pre-wrap rounded-sm bg-paper px-2 py-1.5 font-mono text-xs leading-5 text-ink sm:mx-3 sm:my-2"
+          >
+            {{ feature.syntax }}
+          </code>
+        </section>
+      </div>
+
+      <p class="mt-4 text-xs leading-5 text-muted">
+        为保证内容安全，文章和评论都不支持直接嵌入 HTML。
+      </p>
+    </div>
+  </XDialog>
 </template>

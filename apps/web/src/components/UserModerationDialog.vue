@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import { CloseOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
-import {
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from 'reka-ui';
-
 import { useForumApi } from '@/api';
-import { Toast, XButton, useWebKit } from '@novelia/web-kit';
+import { Toast, XButton, XDialog, useWebKit } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 
 const props = defineProps<{
@@ -107,105 +97,90 @@ async function submit() {
 </script>
 
 <template>
-  <DialogRoot :open="open" @update:open="updateOpen">
-    <DialogPortal>
-      <DialogOverlay class="fixed inset-0 z-40 bg-black/45" />
-      <DialogContent
-        class="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface p-5 shadow-2xl outline-none sm:p-6"
+  <XDialog
+    :open="open"
+    :title="title"
+    :description="description"
+    :closable="!submitting"
+    style="max-width: 28rem"
+    @update:open="updateOpen"
+  >
+    <h2 class="pr-10 text-lg font-semibold text-ink">{{ title }}</h2>
+    <p class="mt-2 pr-10 text-sm leading-6 text-muted">{{ description }}</p>
+
+    <form class="mt-5 space-y-4" @submit.prevent="submit">
+      <label class="block">
+        <span class="text-sm font-medium text-ink">
+          {{ isStrike ? '处罚原因' : '封禁原因' }}
+        </span>
+        <textarea
+          v-model="reason"
+          class="mt-1.5 min-h-24 w-full resize-y rounded-sm border border-border bg-surface px-3 py-2 text-sm leading-6 text-ink outline-none transition-colors placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
+          :placeholder="isStrike ? '说明违规行为' : '说明封禁原因'"
+          :disabled="submitting"
+          required
+          autofocus
+        />
+      </label>
+
+      <label v-if="isStrike" class="block">
+        <span class="text-sm font-medium text-ink">处罚分值</span>
+        <input
+          v-model.number="point"
+          type="number"
+          min="1"
+          step="1"
+          class="mt-1.5 block w-28 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
+          :disabled="submitting"
+          required
+        />
+      </label>
+
+      <label
+        v-else
+        class="flex cursor-pointer items-start gap-3 rounded-sm border border-border bg-paper/60 px-3 py-3"
       >
-        <DialogTitle class="text-lg font-semibold text-ink">
-          {{ title }}
-        </DialogTitle>
-        <DialogDescription class="mt-2 text-sm leading-6 text-muted">
-          {{ description }}
-        </DialogDescription>
+        <input
+          v-model="removeComments"
+          type="checkbox"
+          class="mt-0.5 size-4 shrink-0 accent-primary"
+          :disabled="submitting"
+        />
+        <span>
+          <span class="block text-sm font-medium text-ink">
+            删除该用户的全部评论
+          </span>
+          <span class="mt-1 block text-xs leading-5 text-muted">
+            包括该用户在所有帖子及外部资源下发表的评论。
+          </span>
+        </span>
+      </label>
 
-        <form class="mt-5 space-y-4" @submit.prevent="submit">
-          <label class="block">
-            <span class="text-sm font-medium text-ink">
-              {{ isStrike ? '处罚原因' : '封禁原因' }}
-            </span>
-            <textarea
-              v-model="reason"
-              class="mt-1.5 min-h-24 w-full resize-y rounded-sm border border-border bg-surface px-3 py-2 text-sm leading-6 text-ink outline-none transition-colors placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
-              :placeholder="isStrike ? '说明违规行为' : '说明封禁原因'"
-              :disabled="submitting"
-              required
-              autofocus
-            />
-          </label>
+      <div v-if="isStrike">
+        <p class="text-sm font-medium text-ink">处罚依据</p>
+        <p
+          class="mt-1.5 max-h-28 overflow-y-auto whitespace-pre-wrap break-all rounded-sm bg-paper px-3 py-2 text-xs leading-5 text-muted"
+        >
+          {{ evidence }}
+        </p>
+      </div>
 
-          <label v-if="isStrike" class="block">
-            <span class="text-sm font-medium text-ink">处罚分值</span>
-            <input
-              v-model.number="point"
-              type="number"
-              min="1"
-              step="1"
-              class="mt-1.5 block w-28 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
-              :disabled="submitting"
-              required
-            />
-          </label>
-
-          <label
-            v-else
-            class="flex cursor-pointer items-start gap-3 rounded-sm border border-border bg-paper/60 px-3 py-3"
-          >
-            <input
-              v-model="removeComments"
-              type="checkbox"
-              class="mt-0.5 size-4 shrink-0 accent-primary"
-              :disabled="submitting"
-            />
-            <span>
-              <span class="block text-sm font-medium text-ink">
-                删除该用户的全部评论
-              </span>
-              <span class="mt-1 block text-xs leading-5 text-muted">
-                包括该用户在所有帖子及外部资源下发表的评论。
-              </span>
-            </span>
-          </label>
-
-          <div v-if="isStrike">
-            <p class="text-sm font-medium text-ink">处罚依据</p>
-            <p
-              class="mt-1.5 max-h-28 overflow-y-auto whitespace-pre-wrap break-all rounded-sm bg-paper px-3 py-2 text-xs leading-5 text-muted"
-            >
-              {{ evidence }}
-            </p>
-          </div>
-
-          <div class="flex justify-end gap-3 pt-2">
-            <XButton
-              variant="outline"
-              :disabled="submitting"
-              @click="updateOpen(false)"
-            >
-              取消
-            </XButton>
-            <XButton
-              type="submit"
-              variant="danger"
-              :disabled="!canSubmit || submitting"
-            >
-              {{ submitting ? '处理中…' : isStrike ? '确认处罚' : '确认封禁' }}
-            </XButton>
-          </div>
-        </form>
-
+      <div class="flex justify-end gap-3 pt-2">
         <XButton
-          class="absolute top-4 right-4"
-          variant="subtle"
-          size="icon-sm"
-          aria-label="关闭"
+          variant="outline"
           :disabled="submitting"
           @click="updateOpen(false)"
         >
-          <CloseOutlined class="size-5" aria-hidden="true" />
+          取消
         </XButton>
-      </DialogContent>
-    </DialogPortal>
-  </DialogRoot>
+        <XButton
+          type="submit"
+          variant="danger"
+          :disabled="!canSubmit || submitting"
+        >
+          {{ submitting ? '处理中…' : isStrike ? '确认处罚' : '确认封禁' }}
+        </XButton>
+      </div>
+    </form>
+  </XDialog>
 </template>

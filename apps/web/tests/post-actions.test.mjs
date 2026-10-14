@@ -50,6 +50,11 @@ const mocks = {
       };
     });
     export const useWebKit = () => ({ whoami });
+    export async function copyToClipboard(text) {
+      if (typeof navigator.clipboard?.writeText !== 'function')
+        throw new Error('Clipboard API is unavailable.');
+      await navigator.clipboard.writeText(text);
+    }
     export const Toast = {
       async promise(promise, messages = {}) {
         if (messages.loading !== undefined) f.notices.push(['loading', messages.loading]);
@@ -83,11 +88,6 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier in mocks)
       return { url: `post-test:${specifier}`, shortCircuit: true };
-    if (specifier === '@/utils/clipboard')
-      return {
-        url: new URL('../src/utils/clipboard.ts', import.meta.url).href,
-        shortCircuit: true,
-      };
     return nextResolve(specifier, context);
   },
   load(url, context, nextLoad) {
@@ -222,7 +222,7 @@ test('copy original prevents duplicate writes and unlocks after clipboard failur
     await pending;
     assert.equal(actions.copying.value, false);
     assert.deepEqual(fixture.notices, [
-      ['error', '复制失败，请手动选择帖子内容复制：复制到剪贴板失败'],
+      ['error', '复制失败，请手动选择帖子内容复制：clipboard denied'],
     ]);
   } finally {
     scope.stop();
@@ -245,7 +245,7 @@ test('copy original handles synchronous clipboard errors and allows retry', asyn
     await actions.copyPost();
     assert.equal(actions.copying.value, false);
     assert.deepEqual(fixture.notices, [
-      ['error', '复制失败，请手动选择帖子内容复制：复制到剪贴板失败'],
+      ['error', '复制失败，请手动选择帖子内容复制：clipboard unavailable'],
     ]);
     writeText.mock.mockImplementation(async () => {});
     await actions.copyPost();
