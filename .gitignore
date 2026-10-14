@@ -1,5 +1,13 @@
 .vscode/
 
+# AI
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.claude/
+.codex/
+.cursor/
+
 # Deploy
 /data/
 .env
@@ -7,7 +15,7 @@
 # Api
 /apps/api/forum
 
-# Admin
+# Web / Admin
 dist/
 node_modules/
 auto-imports.d.ts
