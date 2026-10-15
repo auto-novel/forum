@@ -40,7 +40,7 @@ comment on column post.views_count is '帖子详情数据成功读取后的累�
 comment on column post.comments_count is '帖子下 status=published 的评论数量，统计一级评论和子回复';
 comment on column post.comments_locked is 'true=评论区锁定状态，禁止新增评论；false=评论区开放状态，可新增评论';
 comment on column post.pin_order is 'NULL=普通帖；非NULL=置顶帖的排序优先级，数值越小越靠前';
-comment on column post.active_at is '帖子最后活跃时间；产生有效新评论等活跃事件时由应用层更新，用于列表排序';
+comment on column post.active_at is '帖子最后活跃时间；新增或恢复已发布评论、编辑帖子标题或正文时由应用层更新，用于列表排序';
 
 create index if not exists idx_post_published_pin_active
     on post (pin_order nulls last, active_at desc, id desc)

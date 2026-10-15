@@ -341,13 +341,13 @@ func (r *postRepository) Update(
 	if err != nil {
 		return nil, err
 	}
-	// Metadata changes and unchanged saves must not count as content edits.
-	updatedAt := CASE().
-		WHEN(table.Post.Title.NOT_EQ(String(input.Title)).OR(table.Post.Content.NOT_EQ(String(input.Content)))).
-		THEN(TimestampzT(time.Now())).
-		ELSE(table.Post.UpdatedAt)
-	stmt := table.Post.UPDATE(table.Post.CategoryID, table.Post.Title, table.Post.Content, table.Post.UpdatedAt).
-		SET(Int64(input.CategoryID), String(input.Title), String(input.Content), updatedAt).
+	// Only title/content edits refresh timestamps; metadata changes and unchanged saves do not.
+	contentChanged := table.Post.Title.NOT_EQ(String(input.Title)).OR(table.Post.Content.NOT_EQ(String(input.Content)))
+	now := TimestampzT(time.Now())
+	updatedAt := CASE().WHEN(contentChanged).THEN(now).ELSE(table.Post.UpdatedAt)
+	activeAt := CASE().WHEN(contentChanged).THEN(now).ELSE(table.Post.ActiveAt)
+	stmt := table.Post.UPDATE(table.Post.CategoryID, table.Post.Title, table.Post.Content, table.Post.UpdatedAt, table.Post.ActiveAt).
+		SET(Int64(input.CategoryID), String(input.Title), String(input.Content), updatedAt, activeAt).
 		WHERE(table.Post.ID.EQ(Int64(id))).
 		RETURNING(table.Post.AllColumns)
 	var record model.Post
