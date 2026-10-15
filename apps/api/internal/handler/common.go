@@ -22,19 +22,19 @@ type pagination struct {
 }
 
 func parsePagination(query url.Values, defaultPageSize, maxPageSize int64) (pagination, error) {
-	page, err := httpx.ParseQueryPositiveInt(query, "page", 1)
+	page, err := httpx.ParseQueryPositiveInt(query, "page", 1, "页码")
 	if err != nil {
 		return pagination{}, err
 	}
-	pageSize, err := httpx.ParseQueryPositiveInt(query, "page_size", defaultPageSize)
+	pageSize, err := httpx.ParseQueryPositiveInt(query, "page_size", defaultPageSize, "每页条数")
 	if err != nil {
 		return pagination{}, err
 	}
 	if pageSize > maxPageSize {
-		return pagination{}, httpx.BadRequest(fmt.Sprintf("page_size 不能超过 %d", maxPageSize))
+		return pagination{}, httpx.BadRequest(fmt.Sprintf("每页条数不能超过 %d", maxPageSize))
 	}
 	if page-1 > math.MaxInt64/pageSize {
-		return pagination{}, httpx.BadRequest("page 超出可支持的范围")
+		return pagination{}, httpx.BadRequest("页码超出可支持的范围")
 	}
 	return pagination{Limit: pageSize, Offset: (page - 1) * pageSize}, nil
 }

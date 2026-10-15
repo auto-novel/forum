@@ -20,11 +20,11 @@ func (h *commentHandler) RegisterAdminRoutes(router chi.Router) {
 }
 
 type commentStatusInput struct {
-	Status string `json:"status" validate:"required"`
+	Status string `json:"status" label:"评论状态" validate:"required"`
 }
 
 func (h *commentHandler) setStatus(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "评论 ID")
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (h *commentHandler) setStatus(w http.ResponseWriter, r *http.Request) error
 }
 
 func (h *commentHandler) deleteAllByAuthor(w http.ResponseWriter, r *http.Request) error {
-	authorID, err := httpx.ParseParamPositiveInt(r, "authorId")
+	authorID, err := httpx.ParseParamPositiveInt(r, "authorId", "作者 ID")
 	if err != nil {
 		return err
 	}
@@ -85,22 +85,22 @@ func (h *commentHandler) listAdmin(w http.ResponseWriter, r *http.Request) error
 	}
 	if values, ok := query["post_id"]; ok {
 		if len(values) != 1 {
-			return httpx.BadRequest("post_id 必须为正整数")
+			return httpx.BadRequest("帖子 ID 必须为正整数")
 		}
 		id, err := strconv.ParseInt(values[0], 10, 64)
 		if err != nil || id <= 0 {
-			return httpx.BadRequest("post_id 必须为正整数")
+			return httpx.BadRequest("帖子 ID 必须为正整数")
 		}
 		listQuery.PostID = id
 	}
 	if values, ok := query["status"]; ok {
 		if len(values) != 1 {
-			return httpx.BadRequest("status 必须为 all、0、1 或 2")
+			return httpx.BadRequest("状态无效")
 		}
 		if values[0] != "all" {
 			status, err := strconv.ParseInt(values[0], 10, 16)
 			if err != nil || !domain.CommentStatus(status).Valid() {
-				return httpx.BadRequest("status 必须为 all、0、1 或 2")
+				return httpx.BadRequest("状态无效")
 			}
 			commentStatus := domain.CommentStatus(status)
 			listQuery.Status = &commentStatus
@@ -136,6 +136,6 @@ func parseCommentStatus(value string) (domain.CommentStatus, error) {
 	case "deleted":
 		return domain.CommentStatusDeleted, nil
 	default:
-		return 0, httpx.BadRequest("status 必须为 published、hidden 或 deleted")
+		return 0, httpx.BadRequest("状态无效")
 	}
 }

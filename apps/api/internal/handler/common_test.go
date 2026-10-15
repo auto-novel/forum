@@ -151,7 +151,7 @@ func TestDomainFilterErrorMapping(t *testing.T) {
 			if response.Code != http.StatusOK {
 				t.Fatalf("disabled filter rejected content: %s", response.Body.String())
 			}
-		} else if response.Code != http.StatusBadRequest || response.Body.String() != "content 无法完成域名检查" {
+		} else if response.Code != http.StatusBadRequest || response.Body.String() != "正文中的链接过长" {
 			t.Fatalf("unexpected response: %d %q", response.Code, response.Body.String())
 		}
 	}

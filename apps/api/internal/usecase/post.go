@@ -107,7 +107,7 @@ func (u *PostUsecase) ListAdmin(
 		return 0, nil, err
 	}
 	if query.Status != nil && !query.Status.Valid() {
-		return 0, nil, Invalid(CodePostStatusInvalid, "status 必须为 all、0、1 或 2")
+		return 0, nil, Invalid(CodePostStatusInvalid, "状态无效")
 	}
 	if query.AuthorID < 0 {
 		return 0, nil, Invalid(CodePostAuthorInvalid, "用户 ID 必须为正整数")
@@ -148,7 +148,7 @@ func (u *PostUsecase) list(
 	favoriteUserID, blacklistUserID int64,
 ) (int64, []domain.PostListItem, error) {
 	if query.Limit <= 0 || query.Limit > 100 || query.Offset < 0 {
-		return 0, nil, Invalid(CodePostPaginationInvalid, "limit 必须为 1 到 100，offset 不能为负数")
+		return 0, nil, Invalid(CodePostPaginationInvalid, "分页参数无效")
 	}
 	if query.Sort == "" {
 		query.Sort = domain.PostSortActive
@@ -156,10 +156,10 @@ func (u *PostUsecase) list(
 	switch query.Sort {
 	case domain.PostSortActive, domain.PostSortNewest, domain.PostSortUpdated, domain.PostSortViews, domain.PostSortComments:
 	default:
-		return 0, nil, Invalid(CodePostSortInvalid, "sort 必须为 active、newest、updated、views 或 comments")
+		return 0, nil, Invalid(CodePostSortInvalid, "排序方式无效")
 	}
-	if !uniquePostTagIDs(query.TagIDs) {
-		return 0, nil, Invalid(CodePostTagInvalid, "tag 必须为不重复的正整数")
+	if err := validatePostTagIDs(query.TagIDs); err != nil {
+		return 0, nil, err
 	}
 	query.Search = strings.TrimSpace(query.Search)
 	status := domain.PostStatus(repository.PostStatusAll)
@@ -269,25 +269,25 @@ type PostInput struct {
 
 func (u *PostUsecase) validateInput(actor Actor, input PostInput) error {
 	if input.CategoryID <= 0 {
-		return Invalid(CodePostCategoryInvalid, "categoryId 必须为正整数")
+		return Invalid(CodePostCategoryInvalid, "分类 ID 必须为正整数")
 	}
 	length := utf8.RuneCountInString(strings.TrimSpace(input.Title))
 	if length < 2 || length > 100 {
-		return Invalid(CodePostTitleInvalid, "title 长度必须为 2 到 100 字")
+		return Invalid(CodePostTitleInvalid, "标题长度必须为 2 到 100 字")
 	}
 	if strings.TrimSpace(input.Content) == "" || utf8.RuneCountInString(input.Content) > 20000 {
-		return Invalid(CodePostContentInvalid, "content 不能为空且不能超过 20000 字")
+		return Invalid(CodePostContentInvalid, "正文不能为空且不能超过 20000 字")
 	}
-	if !uniquePostTagIDs(input.TagIDs) {
-		return Invalid(CodePostTagInvalid, "tagIds 必须为不重复的正整数")
+	if err := validatePostTagIDs(input.TagIDs); err != nil {
+		return err
 	}
 	if len(input.TagIDs) > 3 {
 		return Invalid(CodePostTagInvalid, "一个帖子最多只能添加 3 个标签")
 	}
-	if err := u.checkDomainText("title", input.Title); err != nil {
+	if err := u.checkDomainText("标题", input.Title); err != nil {
 		return err
 	}
-	if err := u.checkDomainText("content", input.Content); err != nil {
+	if err := u.checkDomainText("正文", input.Content); err != nil {
 		return err
 	}
 	if input.CategoryID == forumcategory.AnnouncementsID && !actor.IsAdmin {
@@ -296,15 +296,18 @@ func (u *PostUsecase) validateInput(actor Actor, input PostInput) error {
 	return nil
 }
 
-func uniquePostTagIDs(ids []int64) bool {
+func validatePostTagIDs(ids []int64) error {
 	seen := make(map[int64]bool, len(ids))
 	for _, id := range ids {
-		if id <= 0 || seen[id] {
-			return false
+		if id <= 0 {
+			return Invalid(CodePostTagInvalid, "标签无效")
+		}
+		if seen[id] {
+			return Invalid(CodePostTagInvalid, "不能重复选择标签")
 		}
 		seen[id] = true
 	}
-	return true
+	return nil
 }
 
 func (u *PostUsecase) checkDomainText(field, text string) error {
@@ -315,9 +318,11 @@ func (u *PostUsecase) checkDomainText(field, text string) error {
 	case err == nil:
 		return nil
 	case errors.Is(err, domainfilter.ErrBlocked):
-		return Invalid(CodePostDomainBlocked, field+" 包含禁止使用的域名")
-	case errors.Is(err, domainfilter.ErrText), errors.Is(err, domainfilter.ErrCandidate):
-		return Invalid(CodePostDomainInvalid, field+" 无法完成域名检查")
+		return Invalid(CodePostDomainBlocked, field+"包含禁止使用的域名")
+	case errors.Is(err, domainfilter.ErrText):
+		return Invalid(CodePostDomainInvalid, field+"格式无效")
+	case errors.Is(err, domainfilter.ErrCandidate):
+		return Invalid(CodePostDomainInvalid, field+"中的链接过长")
 	default:
 		return fmt.Errorf("post.check_domain: %w", err)
 	}
@@ -502,7 +507,7 @@ func checkPostAdmin(actor Actor) error {
 
 func checkPostID(id int64) error {
 	if id <= 0 {
-		return Invalid(CodePostIDInvalid, "id 必须为正整数")
+		return Invalid(CodePostIDInvalid, "帖子 ID 必须为正整数")
 	}
 	return nil
 }
@@ -515,7 +520,7 @@ func (u *PostUsecase) SetStatus(ctx context.Context, actor Actor, id int64, stat
 		return err
 	}
 	if !status.Valid() {
-		return Invalid(CodePostStatusInvalid, "status 必须为 0、1 或 2")
+		return Invalid(CodePostStatusInvalid, "状态无效")
 	}
 	err := u.postRepo.SetStatus(ctx, id, status)
 	if errors.Is(err, repository.ErrNotFound) {

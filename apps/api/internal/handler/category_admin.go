@@ -36,7 +36,7 @@ func newTagResponse(tag domain.Tag) tagResponse {
 }
 
 func (h *categoryHandler) listTags(w http.ResponseWriter, r *http.Request) error {
-	categoryID, err := httpx.ParseParamPositiveInt(r, "cid")
+	categoryID, err := httpx.ParseParamPositiveInt(r, "cid", "分类 ID")
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (input tagInput) toUsecaseInput(categoryID int64) usecase.TagInput {
 }
 
 func (h *categoryHandler) createTag(w http.ResponseWriter, r *http.Request) error {
-	categoryID, err := httpx.ParseParamPositiveInt(r, "cid")
+	categoryID, err := httpx.ParseParamPositiveInt(r, "cid", "分类 ID")
 	if err != nil {
 		return err
 	}
@@ -96,11 +96,11 @@ func (h *categoryHandler) createTag(w http.ResponseWriter, r *http.Request) erro
 }
 
 func (h *categoryHandler) updateTag(w http.ResponseWriter, r *http.Request) error {
-	categoryID, err := httpx.ParseParamPositiveInt(r, "cid")
+	categoryID, err := httpx.ParseParamPositiveInt(r, "cid", "分类 ID")
 	if err != nil {
 		return err
 	}
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "标签 ID")
 	if err != nil {
 		return err
 	}
@@ -131,11 +131,11 @@ func (h *categoryHandler) deactivateTag(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *categoryHandler) setTagActive(w http.ResponseWriter, r *http.Request, active bool) error {
-	categoryID, err := httpx.ParseParamPositiveInt(r, "cid")
+	categoryID, err := httpx.ParseParamPositiveInt(r, "cid", "分类 ID")
 	if err != nil {
 		return err
 	}
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "标签 ID")
 	if err != nil {
 		return err
 	}

@@ -238,8 +238,10 @@ func (u *CommentUsecase) checkContent(content string) error {
 		return nil
 	case errors.Is(err, domainfilter.ErrBlocked):
 		return Invalid(CodeCommentDomainBlocked, "评论包含禁止使用的域名")
-	case errors.Is(err, domainfilter.ErrText), errors.Is(err, domainfilter.ErrCandidate):
-		return Invalid(CodeCommentDomainInvalid, "评论无法完成域名检查")
+	case errors.Is(err, domainfilter.ErrText):
+		return Invalid(CodeCommentDomainInvalid, "评论内容格式无效")
+	case errors.Is(err, domainfilter.ErrCandidate):
+		return Invalid(CodeCommentDomainInvalid, "评论中的链接过长")
 	default:
 		return fmt.Errorf("comment.check_content: %w", err)
 	}
@@ -323,7 +325,7 @@ func (u *CommentUsecase) CreateExternal(
 		return nil, err
 	}
 	if !u.subjectResolver.Valid(command.Kind, command.SubjectKey) {
-		return nil, Invalid(CodeCommentSubjectKeyInvalid, "subjectKey 格式无效")
+		return nil, Invalid(CodeCommentSubjectKeyInvalid, "评论对象无效")
 	}
 	exists, err := u.subjectResolver.Check(ctx, command.Kind, command.SubjectKey)
 	if err != nil {

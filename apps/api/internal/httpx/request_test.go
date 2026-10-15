@@ -124,14 +124,14 @@ func TestParseQueryPositiveInt(t *testing.T) {
 	}{
 		{name: "default", query: url.Values{}, key: "page", defaultValue: 1, want: 1},
 		{name: "value", query: url.Values{"page": {"2"}}, key: "page", defaultValue: 1, want: 2},
-		{name: "invalid", query: url.Values{"page": {"invalid"}}, key: "page", defaultValue: 1, wantMessage: "page 必须为正整数"},
-		{name: "zero", query: url.Values{"page": {"0"}}, key: "page", defaultValue: 1, wantMessage: "page 必须为正整数"},
-		{name: "negative", query: url.Values{"page": {"-1"}}, key: "page", defaultValue: 1, wantMessage: "page 必须为正整数"},
+		{name: "invalid", query: url.Values{"page": {"invalid"}}, key: "page", defaultValue: 1, wantMessage: "页码 必须为正整数"},
+		{name: "zero", query: url.Values{"page": {"0"}}, key: "page", defaultValue: 1, wantMessage: "页码 必须为正整数"},
+		{name: "negative", query: url.Values{"page": {"-1"}}, key: "page", defaultValue: 1, wantMessage: "页码 必须为正整数"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseQueryPositiveInt(tt.query, tt.key, tt.defaultValue)
+			got, err := ParseQueryPositiveInt(tt.query, tt.key, tt.defaultValue, "页码")
 			if tt.wantMessage == "" {
 				if err != nil {
 					t.Fatalf("ParseQueryPositiveInt returned error: %v", err)
@@ -163,12 +163,12 @@ func TestParseQueryUnixTime(t *testing.T) {
 		{name: "empty", query: url.Values{}},
 		{name: "numeric timestamp", query: url.Values{"created_after": {"100"}}, want: time.Unix(100, 0)},
 		{name: "negative timestamp", query: url.Values{"created_after": {"-100"}}, want: time.Unix(-100, 0)},
-		{name: "invalid", query: url.Values{"created_after": {"invalid"}}, wantMessage: "created_after 必须为 Unix 时间戳"},
+		{name: "invalid", query: url.Values{"created_after": {"invalid"}}, wantMessage: "起始时间 必须为 Unix 时间戳"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseQueryUnixTime(tt.query, "created_after")
+			got, err := ParseQueryUnixTime(tt.query, "created_after", "起始时间")
 			if tt.wantMessage == "" {
 				if err != nil {
 					t.Fatalf("ParseQueryUnixTime returned error: %v", err)
@@ -198,10 +198,10 @@ func TestParseParamPositiveInt(t *testing.T) {
 		wantMessage string
 	}{
 		{name: "value", value: "2", want: 2},
-		{name: "missing", wantMessage: "id 必须为正整数"},
-		{name: "invalid", value: "invalid", wantMessage: "id 必须为正整数"},
-		{name: "zero", value: "0", wantMessage: "id 必须为正整数"},
-		{name: "negative", value: "-1", wantMessage: "id 必须为正整数"},
+		{name: "missing", wantMessage: "帖子 ID 必须为正整数"},
+		{name: "invalid", value: "invalid", wantMessage: "帖子 ID 必须为正整数"},
+		{name: "zero", value: "0", wantMessage: "帖子 ID 必须为正整数"},
+		{name: "negative", value: "-1", wantMessage: "帖子 ID 必须为正整数"},
 	}
 
 	for _, tt := range tests {
@@ -213,7 +213,7 @@ func TestParseParamPositiveInt(t *testing.T) {
 			}
 			request = request.WithContext(context.WithValue(request.Context(), chi.RouteCtxKey, routeContext))
 
-			got, err := ParseParamPositiveInt(request, "id")
+			got, err := ParseParamPositiveInt(request, "id", "帖子 ID")
 			if tt.wantMessage == "" {
 				if err != nil {
 					t.Fatalf("ParseParamPositiveInt returned error: %v", err)

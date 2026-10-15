@@ -37,14 +37,14 @@ type commentUpdateInput struct {
 
 func validateCommentUpdate(input commentUpdateInput) error {
 	if len(input.RootID) > 0 {
-		return httpx.BadRequest("rootId 不能修改")
+		return httpx.BadRequest("不能更改回复对象")
 	}
 	return nil
 }
 
 func validateComment(input commentInput) error {
 	if input.RootID != nil && *input.RootID <= 0 {
-		return httpx.BadRequest("rootId 必须为正整数")
+		return httpx.BadRequest("回复对象无效")
 	}
 	return nil
 }
@@ -101,7 +101,7 @@ func newCommentThreadResponse(value domain.CommentThreadPreview) (commentRespons
 }
 
 func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "评论 ID")
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func (h *commentHandler) update(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *commentHandler) delete(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "评论 ID")
 	if err != nil {
 		return err
 	}

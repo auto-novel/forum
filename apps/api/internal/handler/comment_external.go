@@ -77,7 +77,7 @@ func newExternalCommentResponse(value domain.CommentReadModel) externalCommentRe
 func externalCommentSubjectKey(r *http.Request) (string, error) {
 	subjectKey := chi.URLParam(r, "subjectKey")
 	if !validText(subjectKey, 1, 255) {
-		return "", httpx.BadRequest("subjectKey 长度必须为 1 到 255")
+		return "", httpx.BadRequest("评论对象无效")
 	}
 	return subjectKey, nil
 }
@@ -118,9 +118,9 @@ func (h *externalCommentHandler) listReplies(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return err
 	}
-	rootID, err := httpx.ParseParamPositiveInt(r, "rootId")
+	rootID, err := httpx.ParseParamPositiveInt(r, "rootId", "回复对象")
 	if err != nil {
-		return err
+		return httpx.BadRequest("回复对象无效")
 	}
 	pagination, err := parsePagination(r.URL.Query(), 20, 100)
 	if err != nil {
@@ -181,7 +181,7 @@ func (h *externalCommentHandler) create(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "commentId")
+	id, err := httpx.ParseParamPositiveInt(r, "commentId", "评论 ID")
 	if err != nil {
 		return err
 	}
@@ -210,7 +210,7 @@ func (h *externalCommentHandler) update(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *externalCommentHandler) delete(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "commentId")
+	id, err := httpx.ParseParamPositiveInt(r, "commentId", "评论 ID")
 	if err != nil {
 		return err
 	}
@@ -230,7 +230,7 @@ func (h *externalCommentHandler) delete(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *externalCommentHandler) setStatus(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "commentId")
+	id, err := httpx.ParseParamPositiveInt(r, "commentId", "评论 ID")
 	if err != nil {
 		return err
 	}

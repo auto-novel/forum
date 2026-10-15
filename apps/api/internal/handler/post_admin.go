@@ -28,22 +28,22 @@ func (h *postHandler) listAdminPosts(w http.ResponseWriter, r *http.Request) err
 	listQuery.AuthorName = strings.TrimSpace(r.URL.Query().Get("author_name"))
 	if values, ok := r.URL.Query()["author_id"]; ok {
 		if len(values) != 1 {
-			return httpx.BadRequest("author_id 必须为正整数")
+			return httpx.BadRequest("作者 ID 必须为正整数")
 		}
 		authorID, err := strconv.ParseInt(values[0], 10, 64)
 		if err != nil || authorID <= 0 {
-			return httpx.BadRequest("author_id 必须为正整数")
+			return httpx.BadRequest("作者 ID 必须为正整数")
 		}
 		listQuery.AuthorID = authorID
 	}
 	if values, ok := r.URL.Query()["status"]; ok {
 		if len(values) != 1 {
-			return httpx.BadRequest("status 必须为 all、0、1 或 2")
+			return httpx.BadRequest("状态无效")
 		}
 		if values[0] != "all" {
 			status, err := strconv.ParseInt(values[0], 10, 16)
 			if err != nil || !domain.PostStatus(status).Valid() {
-				return httpx.BadRequest("status 必须为 all、0、1 或 2")
+				return httpx.BadRequest("状态无效")
 			}
 			value := domain.PostStatus(status)
 			listQuery.Status = &value
@@ -53,11 +53,11 @@ func (h *postHandler) listAdminPosts(w http.ResponseWriter, r *http.Request) err
 }
 
 type postStatusInput struct {
-	Status *domain.PostStatus `json:"status" validate:"required"`
+	Status *domain.PostStatus `json:"status" label:"帖子状态" validate:"required"`
 }
 
 func (h *postHandler) setPostStatus(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (h *postHandler) unlockPostComments(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *postHandler) setPostCommentsLocked(w http.ResponseWriter, r *http.Request, locked bool) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -105,11 +105,11 @@ func (h *postHandler) setPostCommentsLocked(w http.ResponseWriter, r *http.Reque
 }
 
 type postPinInput struct {
-	PinOrder *int32 `json:"pinOrder" validate:"required"`
+	PinOrder *int32 `json:"pinOrder" label:"置顶顺序" validate:"required"`
 }
 
 func (h *postHandler) pinPost(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (h *postHandler) pinPost(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) unpinPost(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}

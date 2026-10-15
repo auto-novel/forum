@@ -124,7 +124,7 @@ func parsePostListQuery(r *http.Request) (usecase.ListPostsQuery, error) {
 	switch sort {
 	case domain.PostSortActive, domain.PostSortNewest, domain.PostSortUpdated, domain.PostSortViews, domain.PostSortComments:
 	default:
-		return usecase.ListPostsQuery{}, httpx.BadRequest("sort 必须为 active、newest、updated、views 或 comments")
+		return usecase.ListPostsQuery{}, httpx.BadRequest("排序方式无效")
 	}
 	listQuery := usecase.ListPostsQuery{
 		CategorySlug: query.Get("category"),
@@ -135,13 +135,13 @@ func parsePostListQuery(r *http.Request) (usecase.ListPostsQuery, error) {
 		for _, value := range strings.Split(part, ",") {
 			id, err := strconv.ParseInt(value, 10, 64)
 			if err != nil || id <= 0 {
-				return listQuery, httpx.BadRequest("tag 必须为正整数")
+				return listQuery, httpx.BadRequest("标签无效")
 			}
 			listQuery.TagIDs = append(listQuery.TagIDs, id)
 		}
 	}
 	if !uniquePositiveIDs(listQuery.TagIDs) {
-		return listQuery, httpx.BadRequest("tag 不能重复")
+		return listQuery, httpx.BadRequest("不能重复选择标签")
 	}
 	return listQuery, nil
 }
@@ -176,7 +176,7 @@ func (h *postHandler) list(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) get(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func (h *postHandler) create(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (h *postHandler) update(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) delete(w http.ResponseWriter, r *http.Request) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ func (h *postHandler) delete(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) setFavorite(w http.ResponseWriter, r *http.Request, favorite bool) error {
-	id, err := httpx.ParseParamPositiveInt(r, "id")
+	id, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (h *postHandler) unfavorite(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *postHandler) listComments(w http.ResponseWriter, r *http.Request) error {
-	postID, err := httpx.ParseParamPositiveInt(r, "id")
+	postID, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
@@ -307,13 +307,13 @@ func (h *postHandler) listComments(w http.ResponseWriter, r *http.Request) error
 }
 
 func (h *postHandler) listCommentReplies(w http.ResponseWriter, r *http.Request) error {
-	postID, err := httpx.ParseParamPositiveInt(r, "id")
+	postID, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}
-	rootID, err := httpx.ParseParamPositiveInt(r, "rootId")
+	rootID, err := httpx.ParseParamPositiveInt(r, "rootId", "回复对象")
 	if err != nil {
-		return err
+		return httpx.BadRequest("回复对象无效")
 	}
 	pagination, err := parsePagination(r.URL.Query(), 20, 100)
 	if err != nil {
@@ -346,7 +346,7 @@ func (h *postHandler) listCommentReplies(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *postHandler) createComment(w http.ResponseWriter, r *http.Request) error {
-	postID, err := httpx.ParseParamPositiveInt(r, "id")
+	postID, err := httpx.ParseParamPositiveInt(r, "id", "帖子 ID")
 	if err != nil {
 		return err
 	}

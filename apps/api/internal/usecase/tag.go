@@ -54,7 +54,7 @@ func checkTagAdmin(actor Actor) error {
 
 func checkTagCategory(id int64) error {
 	if id <= 0 {
-		return Invalid(CodeTagCategoryInvalid, "categoryId 必须为正整数")
+		return Invalid(CodeTagCategoryInvalid, "分类 ID 必须为正整数")
 	}
 	if _, ok := forumcategory.FindByID(id); !ok {
 		return NotFound(CodeTagCategoryNotFound, "分类不存在")
@@ -75,10 +75,10 @@ func normalizeTagInput(input TagInput) (TagInput, error) {
 	}
 	input.Name = strings.TrimSpace(input.Name)
 	if n := utf8.RuneCountInString(input.Name); n == 0 || n > 64 {
-		return input, Invalid(CodeTagNameInvalid, "name 不能为空且不能超过 64 字")
+		return input, Invalid(CodeTagNameInvalid, "标签名称不能为空且不能超过 64 字")
 	}
 	if input.Color < 0 {
-		return input, Invalid(CodeTagColorInvalid, "color 不能为负数")
+		return input, Invalid(CodeTagColorInvalid, "标签颜色无效")
 	}
 	return input, nil
 }

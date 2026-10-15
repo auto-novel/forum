@@ -81,7 +81,7 @@ func (h *meHandler) setBlacklist(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	id, err := httpx.ParseParamPositiveInt(r, "userID")
+	id, err := httpx.ParseParamPositiveInt(r, "userID", "用户 ID")
 	if err != nil {
 		return err
 	}
