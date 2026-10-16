@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { MoreVertOutlined } from '@vicons/material';
-import {
-  DropdownMenuContent,
-  DropdownMenuPortal,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-} from 'reka-ui';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import type { PostComment } from '@/api';
 import {
   Toast,
+  XActionMenu,
   XActionMenuItem,
   XButton,
   XConfirmDialog,
@@ -179,77 +173,57 @@ function handleUserModerationOpenChange(open: boolean) {
     <XButton v-if="canEdit" variant="ghost" size="xs" @click="emit('edit')">
       编辑
     </XButton>
-    <DropdownMenuRoot>
-      <DropdownMenuTrigger as-child>
-        <XButton
-          variant="ghost"
-          size="icon-xs"
-          aria-label="更多操作"
-          title="更多操作"
+    <XActionMenu compact>
+      <XActionMenuItem :disabled="copying" @activate="copyComment">
+        复制原文
+      </XActionMenuItem>
+      <XActionMenuItem
+        v-if="asAdmin && isPublished"
+        :disabled="submitting"
+        @activate="confirmationAction = 'hide'"
+      >
+        隐藏评论
+      </XActionMenuItem>
+      <XActionMenuItem
+        v-if="asAdmin && comment.status === 1"
+        :disabled="submitting"
+        @activate="unhideComment"
+      >
+        解除隐藏
+      </XActionMenuItem>
+      <XActionMenuItem
+        v-if="canDelete"
+        danger
+        :disabled="submitting"
+        @activate="confirmationAction = 'delete'"
+      >
+        删除评论
+      </XActionMenuItem>
+      <XActionMenuItem
+        v-if="canBlockAuthor"
+        :danger="!comment.authorBlocked"
+        :disabled="submitting"
+        @activate="blacklistOpen = true"
+      >
+        {{ comment.authorBlocked ? '取消拉黑' : '拉黑作者' }}
+      </XActionMenuItem>
+      <template v-if="canModerateAuthor">
+        <XActionMenuItem
+          danger
+          :disabled="submitting"
+          @activate="userModerationAction = 'strike'"
         >
-          <MoreVertOutlined class="size-4" aria-hidden="true" />
-        </XButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuPortal>
-        <DropdownMenuContent
-          side="bottom"
-          align="end"
-          :side-offset="6"
-          :collision-padding="8"
-          class="z-30 w-32 rounded-md border border-border bg-surface p-1 shadow-xl outline-none"
+          处罚作者
+        </XActionMenuItem>
+        <XActionMenuItem
+          danger
+          :disabled="submitting"
+          @activate="userModerationAction = 'ban'"
         >
-          <XActionMenuItem :disabled="copying" @activate="copyComment">
-            复制原文
-          </XActionMenuItem>
-          <XActionMenuItem
-            v-if="asAdmin && isPublished"
-            :disabled="submitting"
-            @activate="confirmationAction = 'hide'"
-          >
-            隐藏评论
-          </XActionMenuItem>
-          <XActionMenuItem
-            v-if="asAdmin && comment.status === 1"
-            :disabled="submitting"
-            @activate="unhideComment"
-          >
-            解除隐藏
-          </XActionMenuItem>
-          <XActionMenuItem
-            v-if="canDelete"
-            danger
-            :disabled="submitting"
-            @activate="confirmationAction = 'delete'"
-          >
-            删除评论
-          </XActionMenuItem>
-          <XActionMenuItem
-            v-if="canBlockAuthor"
-            :danger="!comment.authorBlocked"
-            :disabled="submitting"
-            @activate="blacklistOpen = true"
-          >
-            {{ comment.authorBlocked ? '取消拉黑' : '拉黑作者' }}
-          </XActionMenuItem>
-          <template v-if="canModerateAuthor">
-            <XActionMenuItem
-              danger
-              :disabled="submitting"
-              @activate="userModerationAction = 'strike'"
-            >
-              处罚作者
-            </XActionMenuItem>
-            <XActionMenuItem
-              danger
-              :disabled="submitting"
-              @activate="userModerationAction = 'ban'"
-            >
-              封禁作者
-            </XActionMenuItem>
-          </template>
-        </DropdownMenuContent>
-      </DropdownMenuPortal>
-    </DropdownMenuRoot>
+          封禁作者
+        </XActionMenuItem>
+      </template>
+    </XActionMenu>
 
     <XConfirmDialog
       :open="confirmationAction != null"

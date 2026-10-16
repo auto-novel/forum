@@ -2,12 +2,12 @@
 import {
   ChatBubbleOutlineOutlined,
   EditOutlined,
-  MoreVertOutlined,
   ShareOutlined,
 } from '@vicons/material';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import {
   Toast,
+  XActionMenu,
   XActionMenuItem,
   XButton,
   XConfirmDialog,
@@ -17,12 +17,6 @@ import {
 } from '@novelia/web-kit';
 
 import { useForumApi, type Post } from '@/api';
-import {
-  DropdownMenuContent,
-  DropdownMenuPortal,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-} from 'reka-ui';
 import PostFavoriteButton from './PostFavoriteButton.vue';
 import PostShareDialog from './PostShareDialog.vue';
 import UserBlacklistDialog from '@/components/UserBlacklistDialog.vue';
@@ -247,79 +241,59 @@ function toggleLock() {
       >
         <ShareOutlined class="size-5" aria-hidden="true" />
       </XButton>
-      <DropdownMenuRoot>
-        <DropdownMenuTrigger as-child>
-          <XButton
-            variant="ghost"
-            size="none"
-            class="min-h-9 px-1.5 text-ink!"
-            aria-label="更多操作"
-            title="更多操作"
-            :disabled="actionLoading"
-          >
-            <MoreVertOutlined class="size-5" aria-hidden="true" />
-          </XButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuPortal>
-          <DropdownMenuContent
-            side="bottom"
-            align="end"
-            :side-offset="6"
-            :collision-padding="8"
-            class="z-30 w-40 rounded-md border border-border bg-surface p-1 shadow-xl outline-none"
-          >
-            <XActionMenuItem :disabled="copying" @activate="copyPost">
-              复制原文
+      <span class="inline-flex" :inert="actionLoading">
+        <XActionMenu>
+          <XActionMenuItem :disabled="copying" @activate="copyPost">
+            复制原文
+          </XActionMenuItem>
+          <template v-if="asAdmin">
+            <XActionMenuItem :disabled="actionLoading" @activate="togglePin">
+              {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
             </XActionMenuItem>
-            <template v-if="asAdmin">
-              <XActionMenuItem :disabled="actionLoading" @activate="togglePin">
-                {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
-              </XActionMenuItem>
-              <XActionMenuItem :disabled="actionLoading" @activate="toggleLock">
-                {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
-              </XActionMenuItem>
-              <XActionMenuItem
-                :disabled="actionLoading"
-                @activate="confirmationAction = 'hide'"
-              >
-                隐藏帖子
-              </XActionMenuItem>
-            </template>
+            <XActionMenuItem :disabled="actionLoading" @activate="toggleLock">
+              {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
+            </XActionMenuItem>
             <XActionMenuItem
-              v-if="canDelete"
+              :disabled="actionLoading"
+              @activate="confirmationAction = 'hide'"
+            >
+              隐藏帖子
+            </XActionMenuItem>
+          </template>
+          <XActionMenuItem
+            v-if="canDelete"
+            danger
+            :disabled="actionLoading"
+            @activate="confirmationAction = 'delete'"
+          >
+            删除帖子
+          </XActionMenuItem>
+          <XActionMenuItem
+            v-if="canBlockAuthor"
+            :danger="!post.authorBlocked"
+            :disabled="actionLoading"
+            @activate="blacklistOpen = true"
+          >
+            {{ post.authorBlocked ? '取消拉黑' : '拉黑作者' }}
+          </XActionMenuItem>
+          <template v-if="canModerateAuthor">
+            <XActionMenuItem
               danger
               :disabled="actionLoading"
-              @activate="confirmationAction = 'delete'"
+              @activate="userModerationAction = 'strike'"
             >
-              删除帖子
+              处罚作者
             </XActionMenuItem>
             <XActionMenuItem
-              v-if="canBlockAuthor"
-              :danger="!post.authorBlocked"
+              danger
               :disabled="actionLoading"
-              @activate="blacklistOpen = true"
+              @activate="userModerationAction = 'ban'"
             >
-              {{ post.authorBlocked ? '取消拉黑' : '拉黑作者' }}
+              封禁作者
             </XActionMenuItem>
-            <template v-if="canModerateAuthor">
-              <XActionMenuItem
-                danger
-                :disabled="actionLoading"
-                @activate="userModerationAction = 'strike'"
-              >
-                处罚作者
-              </XActionMenuItem>
-              <XActionMenuItem
-                danger
-                :disabled="actionLoading"
-                @activate="userModerationAction = 'ban'"
-              >
-                封禁作者
-              </XActionMenuItem>
-            </template>
-          </DropdownMenuContent>
-        </DropdownMenuPortal>
-      </DropdownMenuRoot>
+          </template>
+        </XActionMenu>
+      </span>
     </div>
     <PostShareDialog
       :open="shareOpen"

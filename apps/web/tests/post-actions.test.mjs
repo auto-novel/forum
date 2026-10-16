@@ -72,12 +72,10 @@ const mocks = {
       error(message) { f.notices.push(['error', message]); },
     };
     export const getApiErrorMessage = async (_, fallback) => fallback;
-    export const XButton = {}, XActionMenuItem = {}, XConfirmDialog = {};
+    export const XButton = {}, XActionMenu = {}, XActionMenuItem = {}, XConfirmDialog = {};
   `,
   '@vicons/material':
-    'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, MoreVertOutlined = {}, ShareOutlined = {};',
-  'reka-ui':
-    'export const DropdownMenuContent = {}, DropdownMenuPortal = {}, DropdownMenuRoot = {}, DropdownMenuTrigger = {};',
+    'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, ShareOutlined = {};',
   './PostFavoriteButton.vue': 'export default {};',
   './PostShareDialog.vue': 'export default {};',
   '@/components/UserBlacklistDialog.vue': 'export default {};',
@@ -190,7 +188,7 @@ test('copy original is available to guests and preserves raw Markdown', async (t
     const { descriptor: sfc } = parse(
       readFileSync(new URL(actionsUrl), 'utf8'),
     );
-    assert.match(sfc.template.content, /<DropdownMenuRoot>/);
+    assert.match(sfc.template.content, /<XActionMenu>/);
     assert.match(sfc.template.content, /@activate="copyPost"/);
     await actions.copyPost();
     assert.equal(writeText.mock.calls[0].arguments[0], content);
