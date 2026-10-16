@@ -8,7 +8,7 @@
 
 ## 贡献
 
-请务必在编写代码前阅读[贡献指南](https://github.com/auto-novel/forum/blob/main/CONTRIBUTING.md)，感谢所有为本项目做出贡献的人们！
+请务必在编写代码前阅读 [贡献指南](CONTRIBUTING.md)，感谢所有为本项目做出贡献的人们！
 
 ## 部署
 
@@ -30,7 +30,7 @@ EOF
 docker compose up -d
 ```
 
-启动后，可以通过以下地址访问：
+启动后，可通过以下地址访问：
 
 - 用户端：http://localhost:5000/
 - 管理端：http://localhost:5000/admin/
