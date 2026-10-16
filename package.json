@@ -8,9 +8,11 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev:admin": "pnpm --filter forum-admin dev",
+    "dev": "pnpm dev:web",
     "dev:web": "pnpm --filter forum-web dev",
-    "build": "pnpm --filter forum-web build && pnpm --filter forum-admin build"
+    "dev:admin": "pnpm --filter forum-admin dev",
+    "build": "pnpm --stream -r run build",
+    "test": "pnpm --stream -r --if-present run test"
   },
   "devDependencies": {
     "prettier": "^3.9.6"
