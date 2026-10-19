@@ -116,9 +116,9 @@ async function saveEdit() {
     >
       <XButton
         v-if="asAdmin"
-        variant="plain"
-        size="none"
-        class="text-sm leading-6 text-muted hover:text-primary"
+        variant="ghost"
+        size="xs"
+        class="min-h-0 p-0 text-sm font-normal leading-6 text-muted hover:bg-transparent hover:text-primary"
         :aria-expanded="showModeratedContent"
         :aria-controls="`comment-${comment.id}-moderated-content`"
         @click="showModeratedContent = !showModeratedContent"

@@ -78,7 +78,7 @@ const emit = defineEmits<{
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
-      @change="emit('changePage', $event)"
+      @update:page="emit('changePage', $event)"
     />
   </section>
 </template>

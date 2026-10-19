@@ -65,19 +65,11 @@ function copyMarkdown() {
     :open="open"
     title="分享帖子"
     description="复制链接发送给好友，或复制 Markdown 引用到其他平台。"
-    style="max-width: 28rem"
+    class="w-[28rem]"
     @update:open="emit('update:open', $event)"
     @open-auto-focus="focusLink"
   >
-    <h2 class="pr-10 text-lg font-semibold text-ink">分享帖子</h2>
-    <p class="mt-2 pr-10 text-sm leading-6 text-muted">
-      复制链接发送给好友，或复制 Markdown 引用到其他平台。
-    </p>
-
-    <label
-      class="mt-5 block text-xs font-medium text-muted"
-      for="post-share-link"
-    >
+    <label class="block text-xs font-medium text-muted" for="post-share-link">
       帖子链接
     </label>
     <input

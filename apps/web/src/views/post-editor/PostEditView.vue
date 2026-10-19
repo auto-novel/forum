@@ -157,10 +157,26 @@ void categoryStore.initialize().then(() => {
         :loading="loading"
         :error="error"
         size="large"
-        heading-tag="h1"
         error-title="帖子加载失败"
         @retry="loadPost"
       >
+        <template #error="{ error: message, retry }">
+          <div class="grid min-h-96 place-items-center p-8 text-center">
+            <div>
+              <div
+                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-strong"
+                aria-hidden="true"
+              >
+                !
+              </div>
+              <h1 class="mt-4 text-lg font-semibold text-ink">帖子加载失败</h1>
+              <p class="mt-2 text-sm text-muted">{{ message }}</p>
+              <XButton v-if="retry" class="mt-5" @click="retry()">
+                再试一次
+              </XButton>
+            </div>
+          </div>
+        </template>
         <template #loading>
           <div class="py-6">
             <div class="h-7 w-32 animate-pulse rounded-sm bg-border" />

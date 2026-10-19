@@ -72,10 +72,10 @@ const mocks = {
       error(message) { f.notices.push(['error', message]); },
     };
     export const getApiErrorMessage = async (_, fallback) => fallback;
-    export const XButton = {}, XActionMenu = {}, XActionMenuItem = {}, XConfirmDialog = {};
+    export const XButton = {}, XDropdownMenu = {}, XDropdownMenuItem = {}, XConfirmDialog = {};
   `,
   '@vicons/material':
-    'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, ShareOutlined = {};',
+    'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, ShareOutlined = {}, MoreVertOutlined = {};',
   './PostFavoriteButton.vue': 'export default {};',
   './PostShareDialog.vue': 'export default {};',
   '@/components/UserBlacklistDialog.vue': 'export default {};',
@@ -188,8 +188,9 @@ test('copy original is available to guests and preserves raw Markdown', async (t
     const { descriptor: sfc } = parse(
       readFileSync(new URL(actionsUrl), 'utf8'),
     );
-    assert.match(sfc.template.content, /<XActionMenu>/);
-    assert.match(sfc.template.content, /@activate="copyPost"/);
+    assert.match(sfc.template.content, /<XDropdownMenu\b[^>]*>/);
+    assert.match(sfc.template.content, /<template #trigger>/);
+    assert.match(sfc.template.content, /@select="copyPost"/);
     await actions.copyPost();
     assert.equal(writeText.mock.calls[0].arguments[0], content);
     assert.deepEqual(fixture.notices, [['success', '帖子原文已复制']]);

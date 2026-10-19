@@ -72,7 +72,7 @@ const emit = defineEmits<{
       :empty="!comments.length"
       size="compact"
       error-title=""
-      :error-icon="false"
+      :ui="{ icon: 'hidden', description: 'mt-0' }"
       retry-label="重新加载评论"
       empty-title="还没有评论"
       empty-description="这里暂时安安静静的。"
@@ -88,12 +88,18 @@ const emit = defineEmits<{
         </div>
       </template>
 
-      <template #empty-icon>
-        <div
-          class="mx-auto grid size-11 place-items-center rounded-full bg-paper text-muted"
-          aria-hidden="true"
-        >
-          <ChatBubbleOutlineOutlined class="size-5" />
+      <template #empty>
+        <div class="grid min-h-52 place-items-center p-6 text-center">
+          <div>
+            <div
+              class="mx-auto grid size-11 place-items-center rounded-full bg-paper text-muted"
+              aria-hidden="true"
+            >
+              <ChatBubbleOutlineOutlined class="size-5" />
+            </div>
+            <h2 class="mt-3 text-sm font-medium text-ink">还没有评论</h2>
+            <p class="mt-1 text-xs text-muted">这里暂时安安静静的。</p>
+          </div>
         </div>
       </template>
 
@@ -118,7 +124,7 @@ const emit = defineEmits<{
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
-      @change="emit('changePage', $event)"
+      @update:page="emit('changePage', $event)"
     />
   </section>
 </template>

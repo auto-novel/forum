@@ -57,30 +57,27 @@ const features: MarkdownFeature[] = [
     v-model:open="open"
     title="Markdown 语法帮助"
     description="以下是编辑器支持的基本语法，特殊标记的功能不能用于评论。"
-    class="flex flex-col"
-    style="
-      max-width: 42rem;
-      max-height: min(80dvh, calc(100dvh - 2rem));
-      overflow: hidden;
-      padding: 0;
-    "
+    class="w-[42rem]"
+    :ui="{
+      header:
+        'border-b border-divider px-5 py-4 pr-14 sm:px-6 sm:py-4 sm:pr-14',
+      title: 'font-semibold',
+      description: 'mt-1',
+      body: 'p-4 sm:p-6',
+    }"
+    style="max-height: min(80dvh, calc(100dvh - 2rem))"
   >
     <template #trigger>
-      <XButton variant="subtle" size="xs">
+      <XButton
+        variant="ghost"
+        size="xs"
+        class="hover:bg-divider/40 hover:text-ink"
+      >
         <HelpOutlineOutlined class="size-4" aria-hidden="true" />
         Markdown 语法帮助
       </XButton>
     </template>
-    <header
-      class="shrink-0 border-b border-divider px-5 py-4 pr-14 sm:px-6 sm:pr-14"
-    >
-      <h2 class="text-lg font-semibold text-ink">Markdown 语法帮助</h2>
-      <p class="mt-1 text-sm leading-6 text-muted">
-        以下是编辑器支持的基本语法，特殊标记的功能不能用于评论。
-      </p>
-    </header>
-
-    <div class="min-h-0 overflow-y-auto p-4 sm:p-6">
+    <div>
       <div
         class="divide-y divide-divider sm:divide-y-0 sm:overflow-hidden sm:rounded-md sm:border sm:border-border"
       >

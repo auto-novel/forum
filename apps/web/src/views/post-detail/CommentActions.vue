@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { MoreVertOutlined } from '@vicons/material';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import type { PostComment } from '@/api';
 import {
   Toast,
-  XActionMenu,
-  XActionMenuItem,
+  XDropdownMenu,
+  XDropdownMenuItem,
   XButton,
   XConfirmDialog,
   copyToClipboard,
@@ -173,57 +174,67 @@ function handleUserModerationOpenChange(open: boolean) {
     <XButton v-if="canEdit" variant="ghost" size="xs" @click="emit('edit')">
       编辑
     </XButton>
-    <XActionMenu compact>
-      <XActionMenuItem :disabled="copying" @activate="copyComment">
+    <XDropdownMenu align="end" class="min-w-32 w-32">
+      <template #trigger>
+        <XButton
+          variant="ghost"
+          size="icon-xs"
+          aria-label="更多操作"
+          title="更多操作"
+        >
+          <MoreVertOutlined class="size-4" aria-hidden="true" />
+        </XButton>
+      </template>
+      <XDropdownMenuItem :disabled="copying" @select="copyComment">
         复制原文
-      </XActionMenuItem>
-      <XActionMenuItem
+      </XDropdownMenuItem>
+      <XDropdownMenuItem
         v-if="asAdmin && isPublished"
         :disabled="submitting"
-        @activate="confirmationAction = 'hide'"
+        @select="confirmationAction = 'hide'"
       >
         隐藏评论
-      </XActionMenuItem>
-      <XActionMenuItem
+      </XDropdownMenuItem>
+      <XDropdownMenuItem
         v-if="asAdmin && comment.status === 1"
         :disabled="submitting"
-        @activate="unhideComment"
+        @select="unhideComment"
       >
         解除隐藏
-      </XActionMenuItem>
-      <XActionMenuItem
+      </XDropdownMenuItem>
+      <XDropdownMenuItem
         v-if="canDelete"
-        danger
+        destructive
         :disabled="submitting"
-        @activate="confirmationAction = 'delete'"
+        @select="confirmationAction = 'delete'"
       >
         删除评论
-      </XActionMenuItem>
-      <XActionMenuItem
+      </XDropdownMenuItem>
+      <XDropdownMenuItem
         v-if="canBlockAuthor"
-        :danger="!comment.authorBlocked"
+        :destructive="!comment.authorBlocked"
         :disabled="submitting"
-        @activate="blacklistOpen = true"
+        @select="blacklistOpen = true"
       >
         {{ comment.authorBlocked ? '取消拉黑' : '拉黑作者' }}
-      </XActionMenuItem>
+      </XDropdownMenuItem>
       <template v-if="canModerateAuthor">
-        <XActionMenuItem
-          danger
+        <XDropdownMenuItem
+          destructive
           :disabled="submitting"
-          @activate="userModerationAction = 'strike'"
+          @select="userModerationAction = 'strike'"
         >
           处罚作者
-        </XActionMenuItem>
-        <XActionMenuItem
-          danger
+        </XDropdownMenuItem>
+        <XDropdownMenuItem
+          destructive
           :disabled="submitting"
-          @activate="userModerationAction = 'ban'"
+          @select="userModerationAction = 'ban'"
         >
           封禁作者
-        </XActionMenuItem>
+        </XDropdownMenuItem>
       </template>
-    </XActionMenu>
+    </XDropdownMenu>
 
     <XConfirmDialog
       :open="confirmationAction != null"

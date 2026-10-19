@@ -124,7 +124,7 @@ watch(
           :options="sortOptions"
           aria-label="帖子排序"
           class="min-w-0 flex-1 sm:w-32 sm:flex-none"
-          @change="apply"
+          @update:model-value="apply"
         />
         <slot name="actions" />
       </div>

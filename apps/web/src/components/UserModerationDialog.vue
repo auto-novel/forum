@@ -102,13 +102,10 @@ async function submit() {
     :title="title"
     :description="description"
     :closable="!submitting"
-    style="max-width: 28rem"
+    class="w-[28rem]"
     @update:open="updateOpen"
   >
-    <h2 class="pr-10 text-lg font-semibold text-ink">{{ title }}</h2>
-    <p class="mt-2 pr-10 text-sm leading-6 text-muted">{{ description }}</p>
-
-    <form class="mt-5 space-y-4" @submit.prevent="submit">
+    <form class="space-y-4" @submit.prevent="submit">
       <label class="block">
         <span class="text-sm font-medium text-ink">
           {{ isStrike ? '处罚原因' : '封禁原因' }}

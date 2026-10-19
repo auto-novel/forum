@@ -181,9 +181,10 @@ defineExpose({ focus });
     >
       <div class="flex flex-none" role="tablist" aria-label="Markdown 编辑模式">
         <XButton
-          variant="plain"
-          size="none"
+          variant="ghost"
+          size="sm"
           :class="[
+            'min-h-0 rounded-none hover:bg-transparent hover:text-ink',
             editorTabClass,
             activeTab === 'edit' ? '-mb-px text-ink' : 'text-muted',
           ]"
@@ -194,9 +195,10 @@ defineExpose({ focus });
           编辑
         </XButton>
         <XButton
-          variant="plain"
-          size="none"
+          variant="ghost"
+          size="sm"
           :class="[
+            'min-h-0 rounded-none hover:bg-transparent hover:text-ink',
             editorTabClass,
             activeTab === 'preview' ? '-mb-px text-ink' : 'text-muted',
           ]"
@@ -214,9 +216,9 @@ defineExpose({ focus });
         aria-label="Markdown 格式工具"
       >
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
-          class="font-bold"
+          class="font-bold text-ink hover:bg-divider/40 hover:text-ink"
           title="粗体"
           aria-label="粗体"
           @mousedown.prevent="wrapSelection('**', '**', '粗体')"
@@ -224,9 +226,9 @@ defineExpose({ focus });
           B
         </XButton>
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
-          class="italic"
+          class="italic text-ink hover:bg-divider/40 hover:text-ink"
           title="斜体"
           aria-label="斜体"
           @mousedown.prevent="wrapSelection('*', '*', '斜体')"
@@ -234,9 +236,9 @@ defineExpose({ focus });
           I
         </XButton>
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
-          class="line-through"
+          class="line-through text-ink hover:bg-divider/40 hover:text-ink"
           title="删除线"
           aria-label="删除线"
           @mousedown.prevent="wrapSelection('~~', '~~', '删除线')"
@@ -244,8 +246,9 @@ defineExpose({ focus });
           S
         </XButton>
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
+          class="text-ink hover:bg-divider/40 hover:text-ink"
           title="链接"
           aria-label="链接"
           @mousedown.prevent="wrapSelection('[', '](https://)', '链接文字')"
@@ -253,8 +256,9 @@ defineExpose({ focus });
           <LinkOutlined class="mx-auto size-4" aria-hidden="true" />
         </XButton>
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
+          class="text-ink hover:bg-divider/40 hover:text-ink"
           title="剧透"
           aria-label="剧透"
           @mousedown.prevent="wrapSelection('!!', '!!', '剧透内容')"
@@ -262,8 +266,9 @@ defineExpose({ focus });
           <VisibilityOffOutlined class="mx-auto size-4" aria-hidden="true" />
         </XButton>
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
+          class="text-ink hover:bg-divider/40 hover:text-ink"
           title="评分"
           aria-label="评分"
           @mousedown.prevent="insertBlock('::: star 5', '', '')"
@@ -271,8 +276,9 @@ defineExpose({ focus });
           <StarBorderOutlined class="mx-auto size-4" aria-hidden="true" />
         </XButton>
         <XButton
-          variant="toolbar"
+          variant="ghost"
           size="icon-sm"
+          class="text-ink hover:bg-divider/40 hover:text-ink"
           title="折叠内容"
           aria-label="折叠内容"
           @mousedown.prevent="

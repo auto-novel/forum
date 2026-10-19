@@ -243,9 +243,9 @@ function returnToList() {
     <div class="mx-auto max-w-4xl">
       <div class="mb-3 flex flex-wrap items-center gap-1.5">
         <XButton
-          variant="plain"
-          size="none"
-          class="min-h-9 rounded-sm text-xs font-medium text-primary hover:text-primary-hover"
+          variant="ghost"
+          size="xs"
+          class="min-h-9 rounded-sm px-0 text-xs font-medium text-primary hover:bg-transparent hover:text-primary-hover"
           title="返回列表"
           aria-label="返回列表"
           @click="returnToList"
@@ -269,10 +269,26 @@ function returnToList() {
         :loading="postLoading"
         :error="postError"
         size="large"
-        heading-tag="h1"
         error-title="帖子加载失败"
         @retry="loadPost"
       >
+        <template #error="{ error: message, retry }">
+          <div class="grid min-h-96 place-items-center p-8 text-center">
+            <div>
+              <div
+                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-strong"
+                aria-hidden="true"
+              >
+                !
+              </div>
+              <h1 class="mt-4 text-lg font-semibold text-ink">帖子加载失败</h1>
+              <p class="mt-2 text-sm text-muted">{{ message }}</p>
+              <XButton v-if="retry" class="mt-5" @click="retry()">
+                再试一次
+              </XButton>
+            </div>
+          </div>
+        </template>
         <template #loading>
           <div class="py-6">
             <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />

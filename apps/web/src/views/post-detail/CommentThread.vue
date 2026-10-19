@@ -97,7 +97,7 @@ async function handleCreated(comment: PostComment) {
           v-if="totalPages > 1"
           :page="replyPage"
           :total-pages="totalPages"
-          @change="replyPage = $event"
+          @update:page="replyPage = $event"
         />
       </template>
     </div>

@@ -2,13 +2,14 @@
 import {
   ChatBubbleOutlineOutlined,
   EditOutlined,
+  MoreVertOutlined,
   ShareOutlined,
 } from '@vicons/material';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import {
   Toast,
-  XActionMenu,
-  XActionMenuItem,
+  XDropdownMenu,
+  XDropdownMenuItem,
   XButton,
   XConfirmDialog,
   copyToClipboard,
@@ -231,8 +232,8 @@ function toggleLock() {
       </XButton>
       <XButton
         variant="ghost"
-        size="none"
-        class="min-h-9 px-1.5 text-ink!"
+        size="icon"
+        class="w-auto min-h-9 px-1.5 text-ink!"
         aria-label="分享帖子"
         title="分享帖子"
         aria-haspopup="dialog"
@@ -242,57 +243,67 @@ function toggleLock() {
         <ShareOutlined class="size-5" aria-hidden="true" />
       </XButton>
       <span class="inline-flex" :inert="actionLoading">
-        <XActionMenu>
-          <XActionMenuItem :disabled="copying" @activate="copyPost">
+        <XDropdownMenu align="end" class="w-40">
+          <template #trigger>
+            <XButton
+              variant="ghost"
+              size="icon"
+              aria-label="更多操作"
+              title="更多操作"
+            >
+              <MoreVertOutlined class="size-5" aria-hidden="true" />
+            </XButton>
+          </template>
+          <XDropdownMenuItem :disabled="copying" @select="copyPost">
             复制原文
-          </XActionMenuItem>
+          </XDropdownMenuItem>
           <template v-if="asAdmin">
-            <XActionMenuItem :disabled="actionLoading" @activate="togglePin">
+            <XDropdownMenuItem :disabled="actionLoading" @select="togglePin">
               {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
-            </XActionMenuItem>
-            <XActionMenuItem :disabled="actionLoading" @activate="toggleLock">
+            </XDropdownMenuItem>
+            <XDropdownMenuItem :disabled="actionLoading" @select="toggleLock">
               {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
-            </XActionMenuItem>
-            <XActionMenuItem
+            </XDropdownMenuItem>
+            <XDropdownMenuItem
               :disabled="actionLoading"
-              @activate="confirmationAction = 'hide'"
+              @select="confirmationAction = 'hide'"
             >
               隐藏帖子
-            </XActionMenuItem>
+            </XDropdownMenuItem>
           </template>
-          <XActionMenuItem
+          <XDropdownMenuItem
             v-if="canDelete"
-            danger
+            destructive
             :disabled="actionLoading"
-            @activate="confirmationAction = 'delete'"
+            @select="confirmationAction = 'delete'"
           >
             删除帖子
-          </XActionMenuItem>
-          <XActionMenuItem
+          </XDropdownMenuItem>
+          <XDropdownMenuItem
             v-if="canBlockAuthor"
-            :danger="!post.authorBlocked"
+            :destructive="!post.authorBlocked"
             :disabled="actionLoading"
-            @activate="blacklistOpen = true"
+            @select="blacklistOpen = true"
           >
             {{ post.authorBlocked ? '取消拉黑' : '拉黑作者' }}
-          </XActionMenuItem>
+          </XDropdownMenuItem>
           <template v-if="canModerateAuthor">
-            <XActionMenuItem
-              danger
+            <XDropdownMenuItem
+              destructive
               :disabled="actionLoading"
-              @activate="userModerationAction = 'strike'"
+              @select="userModerationAction = 'strike'"
             >
               处罚作者
-            </XActionMenuItem>
-            <XActionMenuItem
-              danger
+            </XDropdownMenuItem>
+            <XDropdownMenuItem
+              destructive
               :disabled="actionLoading"
-              @activate="userModerationAction = 'ban'"
+              @select="userModerationAction = 'ban'"
             >
               封禁作者
-            </XActionMenuItem>
+            </XDropdownMenuItem>
           </template>
-        </XActionMenu>
+        </XDropdownMenu>
       </span>
     </div>
     <PostShareDialog

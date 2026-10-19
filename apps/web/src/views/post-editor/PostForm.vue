@@ -115,9 +115,9 @@ function submit() {
         v-model="category"
         :options="categoryOptions"
         :disabled="submitting"
-        rounded
+        class="rounded-md"
         required
-        @change="emit('categoryChange')"
+        @update:model-value="emit('categoryChange')"
       />
     </div>
 
