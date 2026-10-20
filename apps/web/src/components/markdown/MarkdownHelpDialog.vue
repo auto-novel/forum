@@ -4,7 +4,7 @@ import { ref } from 'vue';
 
 import { XButton, XDialog } from '@novelia/web-kit';
 
-import type { MarkdownMode } from '@novelia/forum-api';
+import type { MarkdownMode } from '@/markdown';
 
 defineProps<{
   mode: MarkdownMode;

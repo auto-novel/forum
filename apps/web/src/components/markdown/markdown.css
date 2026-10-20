@@ -1,0 +1,17 @@
+.forum-markdown {
+  --markdown-star-color: rgb(219, 219, 223);
+  --markdown-star-active-color: #4fb233;
+  --markdown-spoiler-background: var(--color-spoiler);
+  --markdown-spoiler-color: var(--color-spoiler-ink);
+}
+
+.forum-markdown--article {
+  --markdown-heading-margin: 1.25em 0.5em;
+  --markdown-block-margin: 0 0.75em;
+  --markdown-line-height: 1.7;
+}
+
+.forum-markdown--comment {
+  --markdown-font-size: 0.875rem;
+  --markdown-line-height: 1.6;
+}

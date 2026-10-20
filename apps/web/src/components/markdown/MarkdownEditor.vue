@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import {
-  StarBorderOutlined,
-  UnfoldMoreOutlined,
-  VisibilityOffOutlined,
-} from '@vicons/material';
 import { useTemplateRef } from 'vue';
 
-import { XMarkdownEditor, XMarkdownEditorToolButton } from '@novelia/web-kit';
+import { XMarkdownEditor } from '@novelia/web-kit';
 
-import type { MarkdownMode } from '@novelia/forum-api';
-import MarkdownContent from './MarkdownContent.vue';
+import { getMarkdown, type MarkdownMode } from '@/markdown';
 
 withDefaults(
   defineProps<{
@@ -39,8 +33,9 @@ defineExpose({ focus: () => editor.value?.focus() });
   <XMarkdownEditor
     ref="editor"
     v-model="value"
-    class="rounded-md"
-    :tools="['bold', 'italic', 'strike', 'link']"
+    :class="`forum-markdown forum-markdown--${mode}`"
+    :markdown="getMarkdown(mode)"
+    :tools="['bold', 'italic', 'strike', 'link', 'spoiler', 'star', 'details']"
     :sticky="mode === 'article'"
     :sticky-offset="50"
     :rows="rows"
@@ -50,38 +45,7 @@ defineExpose({ focus: () => editor.value?.focus() });
     :invalid="invalid"
     :aria-describedby="describedBy"
     spellcheck="false"
-    :ui="{
-      toolbar: 'rounded-t-md',
-      textarea: 'min-h-24 placeholder:text-muted/70',
-      preview: 'min-h-48',
-    }"
-  >
-    <template #toolbar="{ wrapSelection, insertBlock, disabled: blocked }">
-      <XMarkdownEditorToolButton
-        label="剧透"
-        :disabled="blocked"
-        @click="wrapSelection('!!', '!!', '剧透内容')"
-      >
-        <VisibilityOffOutlined class="size-4" aria-hidden="true" />
-      </XMarkdownEditorToolButton>
-      <XMarkdownEditorToolButton
-        label="评分"
-        :disabled="blocked"
-        @click="insertBlock('::: star 5', '', '')"
-      >
-        <StarBorderOutlined class="size-4" aria-hidden="true" />
-      </XMarkdownEditorToolButton>
-      <XMarkdownEditorToolButton
-        label="折叠内容"
-        :disabled="blocked"
-        @click="insertBlock('::: details 点击展开\n', '\n:::', '折叠内容')"
-      >
-        <UnfoldMoreOutlined class="size-4" aria-hidden="true" />
-      </XMarkdownEditorToolButton>
-    </template>
-    <template #preview="{ source }">
-      <MarkdownContent v-if="source.trim()" :mode="mode" :source="source" />
-      <p v-else class="text-sm text-muted">没有可预览的内容</p>
-    </template>
-  </XMarkdownEditor>
+  />
 </template>
+
+<style scoped src="./markdown.css"></style>

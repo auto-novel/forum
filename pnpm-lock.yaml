@@ -15,8 +15,8 @@ importers:
   apps/admin:
     dependencies:
       '@novelia/web-kit':
-        specifier: github:auto-novel/auth#6a33ad9800e544355fe4965aa28b9181d8952c2b&path:packages/web-kit
-        version: https://codeload.github.com/auto-novel/auth/tar.gz/6a33ad9800e544355fe4965aa28b9181d8952c2b#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
+        specifier: github:auto-novel/auth#b791535b06ddf0864c18cc09fc98dff04665da34&path:packages/web-kit
+        version: https://codeload.github.com/auto-novel/auth/tar.gz/b791535b06ddf0864c18cc09fc98dff04665da34#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))
@@ -61,8 +61,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/forum-api
       '@novelia/web-kit':
-        specifier: github:auto-novel/auth#6a33ad9800e544355fe4965aa28b9181d8952c2b&path:packages/web-kit
-        version: https://codeload.github.com/auto-novel/auth/tar.gz/6a33ad9800e544355fe4965aa28b9181d8952c2b#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
+        specifier: github:auto-novel/auth#b791535b06ddf0864c18cc09fc98dff04665da34&path:packages/web-kit
+        version: https://codeload.github.com/auto-novel/auth/tar.gz/b791535b06ddf0864c18cc09fc98dff04665da34#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@pinia/colada':
         specifier: ^1.4.4
         version: 1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
@@ -78,6 +78,9 @@ importers:
       '@vue/tsconfig':
         specifier: ^0.9.1
         version: 0.9.1(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
+      markdown-it-anchor:
+        specifier: ^10.0.0
+        version: 10.0.0(@types/markdown-it@14.2.0)(markdown-it@15.0.3)
       pinia:
         specifier: ^4.0.3
         version: 4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
@@ -108,22 +111,6 @@ importers:
         version: 25.9.5
 
   packages/forum-api:
-    dependencies:
-      '@mdit/plugin-container':
-        specifier: ^2.0.1
-        version: 2.0.1(markdown-it@15.0.1)
-      '@mdit/plugin-spoiler':
-        specifier: ^2.1.1
-        version: 2.1.1(markdown-it@15.0.1)
-      dompurify:
-        specifier: ^3.4.15
-        version: 3.4.15
-      markdown-it:
-        specifier: ^15.0.1
-        version: 15.0.1
-      markdown-it-anchor:
-        specifier: ^10.0.0
-        version: 10.0.0(@types/markdown-it@14.2.0)(markdown-it@15.0.1)
     devDependencies:
       ky:
         specifier: ^2.1.0
@@ -203,44 +190,44 @@ packages:
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
 
-  '@mdit/helper@1.1.1':
-    resolution: {integrity: sha512-Rrl14ZjFerzfAqCt0zxAWbPgRpsumgm9iBLrCVE05WS8dM6v/LnF1ppPFVnRz1F7fAaxn0kTFOlYwzcY+kRsHQ==}
+  '@mdit/helper@1.1.2':
+    resolution: {integrity: sha512-xZywQ7aXrmkRCuGvFXguXVKeiQ7kHCxPkjtR+nK/n31YiSPPi/Rmb/ll+CYt0LdyeXR0Y1I16da7gxDT4/VXWg==}
     engines: {node: '>=22'}
     peerDependencies:
-      markdown-it: ^15.0.1
+      markdown-it: ^15.0.2
     peerDependenciesMeta:
       markdown-it:
         optional: true
 
-  '@mdit/plugin-container@2.0.1':
-    resolution: {integrity: sha512-Heb0mQRy7AI46Szw1X/rqk2W7QJfVzJp08e2RRr41uN5eMuDFHXjpG/Fb3ywaTI7aw/MD4Q57Mug3hBKf5oZDA==}
+  '@mdit/plugin-container@2.0.2':
+    resolution: {integrity: sha512-hccAp7qxFVlv2vTFetTU9Ay6I3jGKyJJkdXR57zgUAWpJnW9Hp+Ig9nC2p19e/FNnBoBJLLiL8NWZQj2shEoXA==}
     engines: {node: '>=22'}
     peerDependencies:
-      markdown-it: ^15.0.1
+      markdown-it: ^15.0.2
     peerDependenciesMeta:
       markdown-it:
         optional: true
 
-  '@mdit/plugin-inline-rule@2.2.1':
-    resolution: {integrity: sha512-abU4gF31O9qhh0SGGfD/maoI8vPCt1oZ1VSho/TAs21eKeEUqQjXfgv2Y9dW7SY8zeZbHdxHze1bzvnOh1Rk2g==}
+  '@mdit/plugin-inline-rule@2.2.2':
+    resolution: {integrity: sha512-FQFiXeWjZCgolJ/3OPZfL7ycsWtEQIUoEXzin+j+rDgeer7lMp3ixBhYF7ye50zkKDIZi+wR/VMJ8dXlUQaXSQ==}
     engines: {node: '>=22'}
     peerDependencies:
-      markdown-it: ^15.0.1
+      markdown-it: ^15.0.2
     peerDependenciesMeta:
       markdown-it:
         optional: true
 
-  '@mdit/plugin-spoiler@2.1.1':
-    resolution: {integrity: sha512-KT7VzkyPoMKqjv+aFQu6sDgRoY42+iYV7eUK5ehcOEuaS71CySkrz3G/Z5VoIk65PaKgPssZGnoKhybRdhsNfA==}
+  '@mdit/plugin-spoiler@2.1.2':
+    resolution: {integrity: sha512-HE/+35N+m+uzCe2c9L7D3R/NGDk8UxbobgJaKOj8hC4vtPGCEDY5Kmhml+xuXcI1vkh/bMI8dPVfbL5r7lUKew==}
     engines: {node: '>=22'}
     peerDependencies:
-      markdown-it: ^15.0.1
+      markdown-it: ^15.0.2
     peerDependenciesMeta:
       markdown-it:
         optional: true
 
-  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/6a33ad9800e544355fe4965aa28b9181d8952c2b#path:packages/web-kit':
-    resolution: {gitHosted: true, integrity: sha512-8xrVy40Wp1tWn5Z1jBdRSTuZLE2MtuNqrX7sxv2YNAMLRyc6w6CXUbw02MKrn8hVbcOXBOkCTnJ68573niXwjQ==, path: packages/web-kit, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/6a33ad9800e544355fe4965aa28b9181d8952c2b}
+  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/b791535b06ddf0864c18cc09fc98dff04665da34#path:packages/web-kit':
+    resolution: {gitHosted: true, integrity: sha512-G673FNWPfelksx9+OyHcAGScOMmNyyBPYfgAEeQIzXIgZjB3zz518RmZ8NWLvIz4ItKWHS5d53ZmZrHUnFfz8Q==, path: packages/web-kit, tarball: https://codeload.github.com/auto-novel/auth/tar.gz/b791535b06ddf0864c18cc09fc98dff04665da34}
     version: 0.1.0
     peerDependencies:
       '@vicons/material': ^0.13.0
@@ -584,8 +571,8 @@ packages:
   alien-signals@3.2.1:
     resolution: {integrity: sha512-I8FjmltrfnDFoZedi5CG8DghVYNhzb/Ijluz7tCSJH0xpd0484Kowhbb1XDYOxfJpU1p5wnM2X54dA+IfGyD1g==}
 
-  argparse@3.0.1:
-    resolution: {integrity: sha512-nM4mHF/KM1v59ZNKX7zfusQz5wUAxR511YG8Vo6TyiV4aqhu++rbJW4v04xsWhpSsHFj66flT8P7znVpyO20xQ==}
+  argparse@3.0.3:
+    resolution: {integrity: sha512-Sn98ftV3KfsO8xfLPHG6oT8y+b0yvbrLgZjgPDXsharNY15tTAjqIsIju4S32nl6/iEUNNE4v+yL2Zhm8ooP3w==}
 
   aria-hidden@1.2.6:
     resolution: {integrity: sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA==}
@@ -642,8 +629,8 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  dompurify@3.4.15:
-    resolution: {integrity: sha512-EUBjM+B+lkDE41iE82DDSCfkoPGfXx8IxFxPMjNzm/Uk4xDet77rTN9wqlxlVg71kK7XGuUMv6wUxJUwwv+Xyw==}
+  dompurify@3.4.17:
+    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
 
   enhanced-resolve@5.24.5:
     resolution: {integrity: sha512-L1l8TNvomm6UVW5B253AGxQagSQr+vGwhMlrrfRS2qmhx46AMpMVJKQYLvWYbysTMY8VoicOvzHzoHMbyzB+4A==}
@@ -872,8 +859,8 @@ packages:
       '@types/markdown-it': '*'
       markdown-it: '*'
 
-  markdown-it@15.0.1:
-    resolution: {integrity: sha512-9/7gE95FNPkfUWrjJIoHZza2iLmuJlPD0UNMxPi7bxUrbCR525YZY0r+zyfes0dZI5ZZ/uNIXUJca0pJvtw41g==}
+  markdown-it@15.0.3:
+    resolution: {integrity: sha512-+Az7Ojz3iRGu8KYMvJ6xVhvrxP3eE+vEtJX75Ow88XBpcQNV/0lGX5ZynIIBftREo4DC2jsveAMDaeltmm8QvQ==}
     hasBin: true
 
   mdurl@2.1.0:
@@ -1238,35 +1225,39 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
-  '@mdit/helper@1.1.1(markdown-it@15.0.1)':
+  '@mdit/helper@1.1.2(markdown-it@15.0.3)':
     optionalDependencies:
-      markdown-it: 15.0.1
+      markdown-it: 15.0.3
 
-  '@mdit/plugin-container@2.0.1(markdown-it@15.0.1)':
+  '@mdit/plugin-container@2.0.2(markdown-it@15.0.3)':
     dependencies:
-      '@mdit/helper': 1.1.1(markdown-it@15.0.1)
+      '@mdit/helper': 1.1.2(markdown-it@15.0.3)
     optionalDependencies:
-      markdown-it: 15.0.1
+      markdown-it: 15.0.3
 
-  '@mdit/plugin-inline-rule@2.2.1(markdown-it@15.0.1)':
+  '@mdit/plugin-inline-rule@2.2.2(markdown-it@15.0.3)':
     dependencies:
-      '@mdit/helper': 1.1.1(markdown-it@15.0.1)
+      '@mdit/helper': 1.1.2(markdown-it@15.0.3)
     optionalDependencies:
-      markdown-it: 15.0.1
+      markdown-it: 15.0.3
 
-  '@mdit/plugin-spoiler@2.1.1(markdown-it@15.0.1)':
+  '@mdit/plugin-spoiler@2.1.2(markdown-it@15.0.3)':
     dependencies:
-      '@mdit/helper': 1.1.1(markdown-it@15.0.1)
-      '@mdit/plugin-inline-rule': 2.2.1(markdown-it@15.0.1)
+      '@mdit/helper': 1.1.2(markdown-it@15.0.3)
+      '@mdit/plugin-inline-rule': 2.2.2(markdown-it@15.0.3)
     optionalDependencies:
-      markdown-it: 15.0.1
+      markdown-it: 15.0.3
 
-  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/6a33ad9800e544355fe4965aa28b9181d8952c2b#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
+  '@novelia/web-kit@https://codeload.github.com/auto-novel/auth/tar.gz/b791535b06ddf0864c18cc09fc98dff04665da34#path:packages/web-kit(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
+      '@mdit/plugin-container': 2.0.2(markdown-it@15.0.3)
+      '@mdit/plugin-spoiler': 2.1.2(markdown-it@15.0.3)
       '@vicons/material': 0.13.0
       '@vueuse/core': 14.4.0(vue@3.5.42(typescript@6.0.3))
       date-fns: 4.4.0
+      dompurify: 3.4.17
       ky: 2.1.0
+      markdown-it: 15.0.3
       reka-ui: 2.11.0(vue@3.5.42(typescript@6.0.3))
       tailwind-merge: 3.7.0
       tailwind-variants: 3.3.1(tailwind-merge@3.7.0)(tailwindcss@4.3.3)
@@ -1561,7 +1552,7 @@ snapshots:
 
   alien-signals@3.2.1: {}
 
-  argparse@3.0.1: {}
+  argparse@3.0.3: {}
 
   aria-hidden@1.2.6:
     dependencies:
@@ -1611,7 +1602,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  dompurify@3.4.15:
+  dompurify@3.4.17:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -1767,14 +1758,14 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  markdown-it-anchor@10.0.0(@types/markdown-it@14.2.0)(markdown-it@15.0.1):
+  markdown-it-anchor@10.0.0(@types/markdown-it@14.2.0)(markdown-it@15.0.3):
     dependencies:
       '@types/markdown-it': 14.2.0
-      markdown-it: 15.0.1
+      markdown-it: 15.0.3
 
-  markdown-it@15.0.1:
+  markdown-it@15.0.3:
     dependencies:
-      argparse: 3.0.1
+      argparse: 3.0.3
       entities: 8.1.0
       linkify-it: 6.1.0
       mdurl: 2.1.0
