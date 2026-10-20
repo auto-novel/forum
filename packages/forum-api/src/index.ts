@@ -12,5 +12,4 @@ export {
   type UpdateCommentRequest,
 } from './api';
 export { renderMarkdown, type MarkdownMode } from './markdown';
-export { createMarkdownLink, handleMarkdownLinkPaste } from './markdown-editor';
 export { subjectKeys } from './subject';

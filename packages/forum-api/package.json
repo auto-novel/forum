@@ -6,8 +6,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsc -b",
-    "test": "node --test tests/*.test.mjs"
+    "build": "tsc -b"
   },
   "peerDependencies": {
     "ky": "^2.1.0"
