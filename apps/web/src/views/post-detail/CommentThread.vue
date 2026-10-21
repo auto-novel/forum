@@ -73,7 +73,7 @@ async function handleCreated(comment: PostComment) {
       @author-comments-deleted="emit('authorCommentsDeleted')"
     />
 
-    <div v-if="comment.replyCount > 0" class="border-t border-divider/60">
+    <div v-if="comment.replyCount > 0">
       <p v-if="loading" class="py-4 pl-8 text-sm text-muted">正在加载回复…</p>
       <div v-else-if="error" class="flex items-center gap-3 py-4 pl-8 text-sm">
         <span class="text-error-strong">{{ error }}</span>
