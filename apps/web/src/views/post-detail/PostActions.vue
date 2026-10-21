@@ -10,6 +10,7 @@ import {
   Toast,
   XDropdownMenu,
   XDropdownMenuItem,
+  XDropdownMenuSeparator,
   XButton,
   XConfirmDialog,
   copyToClipboard,
@@ -257,6 +258,7 @@ function toggleLock() {
           <XDropdownMenuItem :disabled="copying" @select="copyPost">
             复制原文
           </XDropdownMenuItem>
+          <XDropdownMenuSeparator v-if="asAdmin || canDelete" />
           <template v-if="asAdmin">
             <XDropdownMenuItem :disabled="actionLoading" @select="togglePin">
               {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
@@ -279,13 +281,14 @@ function toggleLock() {
           >
             删除帖子
           </XDropdownMenuItem>
+          <XDropdownMenuSeparator v-if="canBlockAuthor || canModerateAuthor" />
           <XDropdownMenuItem
             v-if="canBlockAuthor"
             :destructive="!post.authorBlocked"
             :disabled="actionLoading"
             @select="blacklistOpen = true"
           >
-            {{ post.authorBlocked ? '取消拉黑' : '拉黑作者' }}
+            {{ post.authorBlocked ? '取消屏蔽' : '屏蔽用户' }}
           </XDropdownMenuItem>
           <template v-if="canModerateAuthor">
             <XDropdownMenuItem
@@ -293,14 +296,14 @@ function toggleLock() {
               :disabled="actionLoading"
               @select="userModerationAction = 'strike'"
             >
-              处罚作者
+              处罚用户
             </XDropdownMenuItem>
             <XDropdownMenuItem
               destructive
               :disabled="actionLoading"
               @select="userModerationAction = 'ban'"
             >
-              封禁作者
+              封禁用户
             </XDropdownMenuItem>
           </template>
         </XDropdownMenu>

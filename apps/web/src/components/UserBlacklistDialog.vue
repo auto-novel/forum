@@ -29,7 +29,7 @@ onScopeDispose(() => {
 // Keep the requested operation stable while the content cache updates.
 const blocked = props.authorBlocked;
 const title = computed(
-  () => `${blocked ? '取消拉黑' : '拉黑'} @${props.username}`,
+  () => `${blocked ? '取消屏蔽' : '屏蔽'} @${props.username}`,
 );
 watch(
   () => [props.userId, whoami.value.user?.id],
@@ -55,14 +55,14 @@ async function confirm() {
     posts.refreshBlacklist(userId, !blocked);
     comments.refreshBlacklist(userId, !blocked);
     if (active) {
-      Toast.success(blocked ? '已取消拉黑' : '已拉黑作者');
+      Toast.success(blocked ? '已取消屏蔽' : '已屏蔽用户');
       emit('close');
     }
   } catch (reason) {
     if (!active || !isCurrent()) return;
     const message = await getApiErrorMessage(
       reason,
-      blocked ? '取消拉黑失败' : '拉黑失败',
+      blocked ? '取消屏蔽失败' : '屏蔽失败',
     );
     if (active && isCurrent()) Toast.error(message);
   } finally {
@@ -77,10 +77,10 @@ async function confirm() {
     :title="title"
     :description="
       blocked
-        ? '取消后，该作者的帖子和评论将重新出现在列表中。'
-        : '拉黑后，帖子和收藏列表将过滤该作者的帖子，评论区将过滤其评论及其发起的评论串，仅对你生效。可在账户设置页面管理你的黑名单。'
+        ? '取消后，该用户的帖子和评论将重新出现在列表中。'
+        : '屏蔽后，帖子和收藏列表将过滤该用户的帖子，评论区将过滤其评论及其发起的评论串，仅对你生效。可在账户设置页面管理你的黑名单。'
     "
-    :confirm-label="blocked ? '取消拉黑' : '拉黑作者'"
+    :confirm-label="blocked ? '取消屏蔽' : '屏蔽用户'"
     :loading="pending"
     :danger="!blocked"
     @update:open="

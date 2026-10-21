@@ -7,6 +7,7 @@ import {
   Toast,
   XDropdownMenu,
   XDropdownMenuItem,
+  XDropdownMenuSeparator,
   XButton,
   XConfirmDialog,
   copyToClipboard,
@@ -73,6 +74,9 @@ const moderationEvidence = computed(() =>
       `/p/${props.postId}#comment-${props.comment.id}`,
       window.location.origin,
     ).toString(),
+    '',
+    '评论原文：',
+    props.comment.content,
   ].join('\n'),
 );
 const confirmation = computed(() =>
@@ -123,8 +127,8 @@ async function unhideComment() {
       .unhideComment(props.comment.id)
       .then(() => emit('statusChanged', 0)),
     {
-      success: '评论已解除隐藏',
-      error: '解除隐藏失败',
+      success: '评论已取消隐藏',
+      error: '取消隐藏失败',
     },
   );
   submitting.value = false;
@@ -188,6 +192,7 @@ function handleUserModerationOpenChange(open: boolean) {
       <XDropdownMenuItem :disabled="copying" @select="copyComment">
         复制原文
       </XDropdownMenuItem>
+      <XDropdownMenuSeparator v-if="asAdmin || canDelete" />
       <XDropdownMenuItem
         v-if="asAdmin && isPublished"
         :disabled="submitting"
@@ -200,7 +205,7 @@ function handleUserModerationOpenChange(open: boolean) {
         :disabled="submitting"
         @select="unhideComment"
       >
-        解除隐藏
+        取消隐藏
       </XDropdownMenuItem>
       <XDropdownMenuItem
         v-if="canDelete"
@@ -210,13 +215,14 @@ function handleUserModerationOpenChange(open: boolean) {
       >
         删除评论
       </XDropdownMenuItem>
+      <XDropdownMenuSeparator v-if="canBlockAuthor || canModerateAuthor" />
       <XDropdownMenuItem
         v-if="canBlockAuthor"
         :destructive="!comment.authorBlocked"
         :disabled="submitting"
         @select="blacklistOpen = true"
       >
-        {{ comment.authorBlocked ? '取消拉黑' : '拉黑作者' }}
+        {{ comment.authorBlocked ? '取消屏蔽' : '屏蔽用户' }}
       </XDropdownMenuItem>
       <template v-if="canModerateAuthor">
         <XDropdownMenuItem
@@ -224,14 +230,14 @@ function handleUserModerationOpenChange(open: boolean) {
           :disabled="submitting"
           @select="userModerationAction = 'strike'"
         >
-          处罚作者
+          处罚用户
         </XDropdownMenuItem>
         <XDropdownMenuItem
           destructive
           :disabled="submitting"
           @select="userModerationAction = 'ban'"
         >
-          封禁作者
+          封禁用户
         </XDropdownMenuItem>
       </template>
     </XDropdownMenu>
@@ -260,6 +266,8 @@ function handleUserModerationOpenChange(open: boolean) {
       :user-id="comment.authorId"
       :username="comment.authorUsername"
       :evidence="moderationEvidence"
+      :comment-id="comment.id"
+      @comment-deleted="emit('statusChanged', 2)"
       @update:open="handleUserModerationOpenChange"
       @comments-deleted="emit('authorCommentsDeleted')"
     />

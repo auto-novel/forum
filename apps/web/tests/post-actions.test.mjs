@@ -72,7 +72,7 @@ const mocks = {
       error(message) { f.notices.push(['error', message]); },
     };
     export const getApiErrorMessage = async (_, fallback) => fallback;
-    export const XButton = {}, XDropdownMenu = {}, XDropdownMenuItem = {}, XConfirmDialog = {};
+    export const XButton = {}, XDropdownMenu = {}, XDropdownMenuItem = {}, XDropdownMenuSeparator = {}, XConfirmDialog = {};
   `,
   '@vicons/material':
     'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, ShareOutlined = {}, MoreVertOutlined = {};',
