@@ -6,8 +6,7 @@ import {
   COMMENT_REPLY_PAGE_SIZE,
   useCommentReplyPageQuery,
 } from '@/stores/comment';
-import { XButton } from '@novelia/web-kit';
-import { XPagination } from '@novelia/web-kit';
+import { XAsyncContent, XPagination } from '@novelia/web-kit';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -74,12 +73,18 @@ async function handleCreated(comment: PostComment) {
     />
 
     <div v-if="comment.replyCount > 0">
-      <p v-if="loading" class="py-4 pl-8 text-sm text-muted">正在加载回复…</p>
-      <div v-else-if="error" class="flex items-center gap-3 py-4 pl-8 text-sm">
-        <span class="text-error-strong">{{ error }}</span>
-        <XButton variant="outline" size="xs" @click="retry">重试</XButton>
-      </div>
-      <template v-else>
+      <XAsyncContent
+        :loading="loading"
+        :error="error"
+        size="compact"
+        error-title=""
+        retry-label="重试"
+        :ui="{
+          loading: 'pl-8',
+          error: 'min-h-0 pl-8',
+        }"
+        @retry="retry"
+      >
         <CommentListItem
           v-for="reply in replies"
           :key="reply.id"
@@ -99,7 +104,7 @@ async function handleCreated(comment: PostComment) {
           :total-pages="totalPages"
           @update:page="replyPage = $event"
         />
-      </template>
+      </XAsyncContent>
     </div>
   </section>
 </template>

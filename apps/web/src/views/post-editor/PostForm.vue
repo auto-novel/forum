@@ -2,8 +2,7 @@
 import { computed, useId } from 'vue';
 
 import type { PostTag } from '@/api';
-import { XButton } from '@novelia/web-kit';
-import { XSelect } from '@novelia/web-kit';
+import { XButton, XInput, XSelect } from '@novelia/web-kit';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 
@@ -77,18 +76,15 @@ function submit() {
       <label for="post-title" class="mb-2 block text-sm font-semibold text-ink">
         标题
       </label>
-      <input
+      <XInput
         id="post-title"
         v-model="title"
-        type="text"
-        class="block min-h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+        class="rounded-md"
         :placeholder="titlePlaceholder"
         :disabled="submitting"
         required
         :aria-describedby="titleHint ? 'post-title-hint' : undefined"
-        :aria-invalid="
-          titleLength > 100 || (titleLength > 0 && titleLength < 2) || undefined
-        "
+        :invalid="titleLength > 100 || (titleLength > 0 && titleLength < 2)"
       />
       <div class="mt-1 flex items-center justify-between gap-3 text-xs">
         <p

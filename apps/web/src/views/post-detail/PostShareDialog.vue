@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 
-import { Toast, XButton, XDialog, copyToClipboard } from '@novelia/web-kit';
+import {
+  Toast,
+  XButton,
+  XDialog,
+  XInput,
+  copyToClipboard,
+} from '@novelia/web-kit';
 import { postShareMarkdown, postShareUrl } from '@/utils/postShare';
 
 const props = defineProps<{
@@ -11,7 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ 'update:open': [open: boolean] }>();
 
-const linkInput = ref<HTMLInputElement>();
+const linkInput = ref<InstanceType<typeof XInput>>();
 const copying = ref(false);
 
 const link = computed(() => postShareUrl(props.post));
@@ -65,19 +71,19 @@ function copyMarkdown() {
     :open="open"
     title="分享帖子"
     description="复制链接发送给好友，或复制 Markdown 引用到其他平台。"
-    class="w-[28rem]"
+    class="w-md"
     @update:open="emit('update:open', $event)"
     @open-auto-focus="focusLink"
   >
     <label class="block text-xs font-medium text-muted" for="post-share-link">
       帖子链接
     </label>
-    <input
+    <XInput
       id="post-share-link"
       ref="linkInput"
-      :value="link"
+      :model-value="link"
       readonly
-      class="mt-2 min-h-10 w-full rounded-sm border border-border bg-transparent px-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+      class="mt-2"
       @focus="selectLink"
     />
 
