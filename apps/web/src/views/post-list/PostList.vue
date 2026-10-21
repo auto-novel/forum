@@ -55,8 +55,8 @@ const emit = defineEmits<{
       <template #loading>
         <div class="divide-y divide-divider" aria-label="正在加载帖子">
           <div v-for="index in 5" :key="index" class="py-2.5">
-            <div class="h-5 w-3/4 animate-pulse rounded-sm bg-border" />
-            <div class="mt-1.5 h-5 w-1/3 animate-pulse rounded-sm bg-divider" />
+            <div class="h-5 w-3/4 skeleton bg-border" />
+            <div class="mt-1.5 h-5 w-1/3 skeleton" />
           </div>
         </div>
       </template>

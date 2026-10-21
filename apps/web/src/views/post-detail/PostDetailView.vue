@@ -260,10 +260,7 @@ function returnToList() {
           :pinned="post.pinOrder != null"
           :locked="post.commentsLocked"
         />
-        <div
-          v-else-if="postLoading"
-          class="h-3 w-24 animate-pulse rounded-sm bg-divider"
-        />
+        <div v-else-if="postLoading" class="h-3 w-24 skeleton" />
       </div>
       <XAsyncContent
         :loading="postLoading"
@@ -291,12 +288,12 @@ function returnToList() {
         </template>
         <template #loading>
           <div class="py-6">
-            <div class="mt-4 h-8 w-4/5 animate-pulse rounded-sm bg-border" />
-            <div class="mt-5 h-4 w-56 animate-pulse rounded-sm bg-divider" />
+            <div class="mt-4 h-8 w-4/5 skeleton bg-border" />
+            <div class="mt-5 h-4 w-56 skeleton" />
             <div class="my-6 h-px bg-divider" />
-            <div class="h-4 w-full animate-pulse rounded-sm bg-divider" />
-            <div class="mt-3 h-4 w-full animate-pulse rounded-sm bg-divider" />
-            <div class="mt-3 h-4 w-2/3 animate-pulse rounded-sm bg-divider" />
+            <div class="h-4 w-full skeleton" />
+            <div class="mt-3 h-4 w-full skeleton" />
+            <div class="mt-3 h-4 w-2/3 skeleton" />
           </div>
         </template>
 

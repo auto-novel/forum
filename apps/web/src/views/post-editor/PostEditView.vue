@@ -179,10 +179,10 @@ void categoryStore.initialize().then(() => {
         </template>
         <template #loading>
           <div class="py-6">
-            <div class="h-7 w-32 animate-pulse rounded-sm bg-border" />
-            <div class="mt-6 h-10 w-full animate-pulse rounded-sm bg-divider" />
-            <div class="mt-5 h-10 w-full animate-pulse rounded-sm bg-divider" />
-            <div class="mt-5 h-80 w-full animate-pulse rounded-sm bg-divider" />
+            <div class="h-7 w-32 skeleton bg-border" />
+            <div class="mt-6 h-10 w-full skeleton" />
+            <div class="mt-5 h-10 w-full skeleton" />
+            <div class="mt-5 h-80 w-full skeleton" />
           </div>
         </template>
 
