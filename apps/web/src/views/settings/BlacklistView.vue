@@ -57,6 +57,35 @@ const {
         empty-description="你还没有拉黑任何用户。"
         @retry="load"
       >
+        <template #loading>
+          <div role="status">
+            <span class="sr-only">正在加载黑名单…</span>
+            <div
+              class="animate-pulse motion-reduce:animate-none"
+              aria-hidden="true"
+            >
+              <div class="mb-3 h-5 w-32 rounded-sm bg-divider" />
+              <div
+                class="divide-y divide-divider rounded-md border border-divider px-4"
+              >
+                <div
+                  v-for="index in 3"
+                  :key="index"
+                  class="flex items-center justify-between gap-4 py-4"
+                >
+                  <div class="min-w-0 flex-1">
+                    <div class="h-6 w-32 max-w-full rounded-sm bg-border" />
+                    <div
+                      class="mt-1 h-4 w-40 max-w-full rounded-sm bg-divider"
+                    />
+                  </div>
+                  <div class="h-9 w-22 shrink-0 rounded-sm bg-divider" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
         <p class="mb-3 text-sm text-muted">
           已拉黑 {{ entries.length }} 位用户
         </p>
