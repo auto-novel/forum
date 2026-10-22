@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { nextTick, onMounted, watch } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
-import { XAsyncContent } from '@novelia/web-kit';
-import { XPagination } from '@novelia/web-kit';
+import {
+  restoreScrollPosition,
+  XAsyncContent,
+  XPagination,
+} from '@novelia/web-kit';
 
 import PostListItem from './PostListItem.vue';
 
@@ -22,11 +25,20 @@ const route = useRoute();
 async function restoreScroll() {
   if (props.loading || props.error) return;
   const path = route.fullPath;
-  await nextTick();
-  if (route.fullPath !== path) return;
-  const scrollTop = window.history.state?.postListScrollTop;
+  const { postListScrollTop: scrollTop, position: historyPosition } =
+    window.history.state ?? {};
   if (typeof scrollTop !== 'number' || !Number.isFinite(scrollTop)) return;
-  window.scrollTo({ top: scrollTop, behavior: 'instant' });
+  const position = await restoreScrollPosition(
+    { top: scrollTop, left: 0 },
+    () =>
+      route.fullPath === path &&
+      window.history.state?.position === historyPosition &&
+      window.history.state?.postListScrollTop === scrollTop &&
+      !props.loading &&
+      !props.error,
+  );
+  if (!position) return;
+  window.scrollTo(position);
   const state = { ...window.history.state };
   delete state.postListScrollTop;
   window.history.replaceState(state, '');

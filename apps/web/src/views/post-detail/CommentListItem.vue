@@ -116,6 +116,7 @@ async function saveEdit() {
     >
       <XButton
         v-if="asAdmin"
+        color="neutral"
         variant="ghost"
         size="xs"
         class="min-h-0 p-0 text-sm font-normal leading-6 text-muted hover:bg-transparent hover:text-primary"
@@ -159,6 +160,7 @@ async function saveEdit() {
         <MarkdownHelpDialog mode="comment" />
         <div class="flex gap-2">
           <XButton
+            color="neutral"
             variant="ghost"
             size="xs"
             :disabled="submitting"

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useForumApi } from '@/api';
-import { Toast, XAutoComplete, XButton, XDialog, useWebKit } from '@novelia/web-kit';
+import {
+  Toast,
+  XAutoComplete,
+  XButton,
+  XDialog,
+  useWebKit,
+} from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 
 const props = defineProps<{
@@ -203,6 +209,7 @@ async function submit() {
 
       <div class="flex justify-end gap-3 pt-2">
         <XButton
+          color="neutral"
           variant="outline"
           :disabled="submitting"
           @click="updateOpen(false)"
@@ -211,7 +218,7 @@ async function submit() {
         </XButton>
         <XButton
           type="submit"
-          variant="danger"
+          color="danger"
           :disabled="!canSubmit || submitting"
         >
           {{ submitting ? '处理中…' : isStrike ? '确认处罚' : '确认封禁' }}

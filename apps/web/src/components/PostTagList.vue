@@ -15,7 +15,7 @@ const tagColors = [
   'bg-info-soft text-info',
   'bg-warning-soft text-warning',
   'bg-purple-50 text-purple-600',
-  'bg-error-soft text-error-strong',
+  'bg-error-soft text-error-text',
 ];
 
 function tagClass(color: number) {

@@ -88,7 +88,12 @@ function copyMarkdown() {
     />
 
     <div class="mt-5 flex flex-wrap justify-end gap-3">
-      <XButton variant="outline" :disabled="copying" @click="copyMarkdown">
+      <XButton
+        color="neutral"
+        variant="outline"
+        :disabled="copying"
+        @click="copyMarkdown"
+      >
         复制 Markdown
       </XButton>
       <XButton :disabled="copying" @click="copyLink">复制链接</XButton>

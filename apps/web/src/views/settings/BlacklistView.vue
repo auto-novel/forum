@@ -102,6 +102,7 @@ const {
               </p>
             </div>
             <XButton
+              color="neutral"
               variant="outline"
               size="sm"
               class="shrink-0"

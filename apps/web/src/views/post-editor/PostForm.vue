@@ -179,6 +179,7 @@ function submit() {
     >
       <XButton
         v-if="showCancel"
+        color="neutral"
         variant="outline"
         class="bg-surface shadow-lg"
         :disabled="submitting"

@@ -164,7 +164,7 @@ void categoryStore.initialize().then(() => {
           <div class="grid min-h-96 place-items-center p-8 text-center">
             <div>
               <div
-                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-strong"
+                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-text"
                 aria-hidden="true"
               >
                 !
@@ -220,6 +220,7 @@ void categoryStore.initialize().then(() => {
           <XButton
             :as="RouterLink"
             :to="detailRoute"
+            color="neutral"
             variant="outline"
             class="mt-5"
           >

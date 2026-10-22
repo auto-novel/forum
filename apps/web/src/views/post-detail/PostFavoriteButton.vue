@@ -16,9 +16,9 @@ defineEmits<{ toggle: [] }>();
 
 <template>
   <XButton
-    :variant="prominent ? (favorited ? 'outline' : 'primary') : 'ghost'"
+    :color="prominent !== favorited ? 'primary' : 'neutral'"
+    :variant="prominent ? (favorited ? 'outline' : 'solid') : 'ghost'"
     size="sm"
-    :class="{ 'text-primary': !prominent && favorited }"
     :disabled="loading"
     :title="favorited ? '取消收藏' : '收藏帖子，稍后阅读'"
     :aria-label="favorited ? '取消收藏帖子' : '收藏帖子'"

@@ -16,7 +16,7 @@ import PostListView from '@/views/post-list/PostListView.vue';
 import ProfileView from '@/views/profile/ProfileView.vue';
 import AccountSettingsView from '@/views/settings/AccountSettingsView.vue';
 import BlacklistView from '@/views/settings/BlacklistView.vue';
-import { MyStrikeListView } from '@novelia/web-kit';
+import { MyStrikeListView, restoreScrollPosition } from '@novelia/web-kit';
 
 function defaultCategorySlug() {
   return useCategoryStore().getLastVisitedCategory();
@@ -24,8 +24,13 @@ function defaultCategorySlug() {
 
 const router = createRouter({
   history: createWebHistory(),
-  scrollBehavior(_to, _from, savedPosition) {
-    return savedPosition ?? false;
+  scrollBehavior(to, _from, savedPosition) {
+    return savedPosition
+      ? restoreScrollPosition(
+          savedPosition,
+          () => router.currentRoute.value === to,
+        )
+      : false;
   },
   routes: [
     {

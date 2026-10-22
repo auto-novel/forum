@@ -132,6 +132,7 @@ async function submitComment() {
         <div class="flex items-center gap-2">
           <XButton
             v-if="replyTo"
+            color="neutral"
             variant="outline"
             :disabled="submitting"
             @click="emit('cancelReply')"

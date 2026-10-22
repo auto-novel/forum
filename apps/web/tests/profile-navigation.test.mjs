@@ -31,7 +31,11 @@ const mocks = {
       globalThis.__profileNavigationTest.returnTo = value;
     };
   `,
-  '@novelia/web-kit': 'export const MyStrikeListView = {};',
+  '@novelia/web-kit': `
+    export const MyStrikeListView = {};
+    export const restoreScrollPosition = async (position, isCurrentNavigation) =>
+      isCurrentNavigation() ? { ...position, behavior: 'instant' } : false;
+  `,
 };
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -57,6 +61,19 @@ registerHooks({
   },
 });
 const { default: router } = await import(routerUrl);
+
+test('history scroll restoration rejects a superseded navigation', async () => {
+  const to = router.currentRoute.value;
+  const scroll = router.options.scrollBehavior;
+  const position = { top: 120, left: 24 };
+  assert.equal(scroll(to, to, null), false);
+  assert.deepEqual(await scroll(to, to, position), {
+    ...position,
+    behavior: 'instant',
+  });
+  await router.push('/my/posts');
+  assert.equal(await scroll(to, to, position), false);
+});
 
 test('profile entry defaults to my posts inside the profile layout', async () => {
   await router.push({ name: 'profile' });

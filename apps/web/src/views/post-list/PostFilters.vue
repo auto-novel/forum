@@ -134,6 +134,7 @@ watch(
         <XButton
           v-for="option in tagOptions"
           :key="option.value"
+          color="neutral"
           variant="ghost"
           size="xs"
           :aria-pressed="tagInput === option.value"
@@ -149,6 +150,7 @@ watch(
         </XButton>
         <XButton
           v-if="tags.length > TAG_PREVIEW_LIMIT"
+          color="neutral"
           variant="ghost"
           size="xs"
           :aria-expanded="showAllTags"

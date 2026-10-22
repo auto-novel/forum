@@ -243,6 +243,7 @@ function returnToList() {
     <div class="mx-auto max-w-4xl">
       <div class="mb-3 flex flex-wrap items-center gap-1.5">
         <XButton
+          color="neutral"
           variant="ghost"
           size="xs"
           class="min-h-9 rounded-sm px-0 text-xs font-medium text-primary hover:bg-transparent hover:text-primary-hover"
@@ -273,7 +274,7 @@ function returnToList() {
           <div class="grid min-h-96 place-items-center p-8 text-center">
             <div>
               <div
-                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-strong"
+                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-text"
                 aria-hidden="true"
               >
                 !

@@ -168,6 +168,7 @@ function handleUserModerationOpenChange(open: boolean) {
   <div class="ml-auto flex items-center gap-1">
     <XButton
       v-if="canReply"
+      color="neutral"
       variant="ghost"
       size="xs"
       :aria-expanded="replying"
@@ -175,12 +176,19 @@ function handleUserModerationOpenChange(open: boolean) {
     >
       回复
     </XButton>
-    <XButton v-if="canEdit" variant="ghost" size="xs" @click="emit('edit')">
+    <XButton
+      v-if="canEdit"
+      color="neutral"
+      variant="ghost"
+      size="xs"
+      @click="emit('edit')"
+    >
       编辑
     </XButton>
     <XDropdownMenu align="end" class="min-w-32 w-32">
       <template #trigger>
         <XButton
+          color="neutral"
           variant="ghost"
           size="icon-xs"
           aria-label="更多操作"

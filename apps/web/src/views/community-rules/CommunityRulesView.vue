@@ -132,7 +132,7 @@ const permissions = [
                   />
                   <CloseOutlined
                     v-else
-                    class="size-5 text-error-strong"
+                    class="size-5 text-error-text"
                     aria-hidden="true"
                   />
                 </span>

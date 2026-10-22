@@ -211,6 +211,7 @@ function toggleLock() {
       <XButton
         as="a"
         href="#comments"
+        color="neutral"
         variant="outline"
         size="sm"
         class="text-ink!"
@@ -222,6 +223,7 @@ function toggleLock() {
       </XButton>
       <XButton
         v-if="canManagePost"
+        color="neutral"
         variant="outline"
         size="sm"
         class="text-ink!"
@@ -232,6 +234,7 @@ function toggleLock() {
         编辑
       </XButton>
       <XButton
+        color="neutral"
         variant="ghost"
         size="icon"
         class="w-auto min-h-9 px-1.5 text-ink!"
@@ -247,6 +250,7 @@ function toggleLock() {
         <XDropdownMenu align="end" class="w-40">
           <template #trigger>
             <XButton
+              color="neutral"
               variant="ghost"
               size="icon"
               aria-label="更多操作"
