@@ -152,25 +152,7 @@ function changePage(nextPage: number) {
         class="space-y-2 text-sm leading-relaxed text-ink"
       >
         <p class="text-warning">
-          FishHawk陷入加班地狱，网站开发速度大幅下降已成常态，论坛反馈目前没有精力维护，有问题加群@吧
-        </p>
-        <p class="flex flex-wrap gap-x-4 gap-y-2">
-          <a
-            href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=Qa0SOMBYZoJZ4vuykz3MbPS0zbpeN0pW&authKey=q75E7fr5CIBSDhqX%2F4kuC%2B0mcPiDvj%2FSDfP%2FGZ8Rl8kDn6Z3M6XPSZ91yt4ZWonq&noverify=0&group_code=819513328"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-primary underline underline-offset-4"
-          >
-            QQ群：819513328
-          </a>
-          <a
-            href="https://t.me/+hgUSCmuBReQzNmU1"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="break-all text-primary underline underline-offset-4"
-          >
-            TG群
-          </a>
+          FishHawk陷入加班地狱，网站开发速度大幅下降已成常态，论坛反馈目前没有精力维护，有问题加群@吧，群链接看小说站首页。
         </p>
       </aside>
       <PostFilters
