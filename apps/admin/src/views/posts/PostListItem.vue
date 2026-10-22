@@ -5,16 +5,8 @@ import {
   PushPinOutlined,
   VisibilityOutlined,
 } from '@vicons/material';
-import {
-  NButton,
-  NIcon,
-  NInputNumber,
-  NPopconfirm,
-  NPopover,
-  NSpin,
-  NTag,
-  NText,
-} from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
+import { NInputNumber, NPopconfirm, NPopover, NSpin } from 'naive-ui';
 import { ref, watch } from 'vue';
 
 import type { PostStatus, PostSummary } from '@/api';
@@ -50,90 +42,90 @@ function formatDate(value: string) {
 <template>
   <div class="post-row">
     <div class="post-content">
-      <div class="post-badges">
-        <n-tag size="small" :bordered="false">{{ categoryName }}</n-tag>
-        <n-tag
+      <div class="post-badges text-xs">
+        <span class="rounded-sm bg-paper px-2 py-0.5 text-muted">
+          {{ categoryName }}
+        </span>
+        <span
           v-if="post.status === 1"
-          size="small"
-          type="warning"
-          :bordered="false"
+          class="rounded-sm bg-warning-soft px-2 py-0.5 text-warning-text"
         >
           隐藏
-        </n-tag>
-        <n-tag
+        </span>
+        <span
           v-if="post.status === 2"
-          size="small"
-          type="error"
-          :bordered="false"
+          class="rounded-sm bg-error-soft px-2 py-0.5 text-error-text"
         >
           已删除
-        </n-tag>
-        <n-tag
+        </span>
+        <span
           v-if="post.pinOrder != null"
-          size="small"
-          type="warning"
-          :bordered="false"
+          class="inline-flex items-center gap-1 rounded-sm bg-warning-soft px-2 py-0.5 text-warning-text"
         >
-          <template #icon><n-icon :component="PushPinOutlined" /></template>
+          <PushPinOutlined class="size-3.5" aria-hidden="true" />
           置顶 {{ post.pinOrder }}
-        </n-tag>
-        <n-tag
+        </span>
+        <span
           v-if="post.commentsLocked"
-          size="small"
-          type="error"
-          :bordered="false"
+          class="inline-flex items-center gap-1 rounded-sm bg-error-soft px-2 py-0.5 text-error-text"
         >
-          <template #icon><n-icon :component="LockOutlined" /></template>
+          <LockOutlined class="size-3.5" aria-hidden="true" />
           已锁评
-        </n-tag>
+        </span>
       </div>
-      <n-text strong class="post-title">{{ post.title }}</n-text>
+      <p class="post-title font-semibold text-ink">{{ post.title }}</p>
       <div class="post-footer">
-        <n-text depth="3">
+        <span class="text-muted">
           {{ post.authorUsername }} (ID {{ post.authorId }}) ·
           {{ formatDate(post.activeAt) }}
-        </n-text>
+        </span>
         <div class="post-metrics">
           <span>
-            <n-icon :component="VisibilityOutlined" />
+            <VisibilityOutlined class="size-4" aria-hidden="true" />
             {{ post.viewsCount }}
           </span>
           <span>
-            <n-icon :component="CommentOutlined" />
+            <CommentOutlined class="size-4" aria-hidden="true" />
             {{ post.commentsCount }}
           </span>
-          <n-button
-            text
-            type="primary"
-            size="small"
+          <XButton
+            variant="ghost"
+            color="primary"
+            size="sm"
             @click="emit('reviewComments', post)"
           >
             审核评论
-          </n-button>
+          </XButton>
         </div>
       </div>
       <div class="post-actions">
         <div class="action-group">
-          <n-button
-            quaternary
-            size="small"
+          <XButton
+            color="neutral"
+            variant="ghost"
+            size="sm"
             :disabled="actionsDisabled"
             @click="emit('setCommentsLocked', post, !post.commentsLocked)"
           >
             {{ post.commentsLocked ? '解锁' : '锁定' }}
-          </n-button>
+          </XButton>
           <n-popover
             trigger="click"
             placement="bottom-start"
             :disabled="actionsDisabled"
           >
             <template #trigger>
-              <n-button quaternary size="small" :disabled="actionsDisabled">
+              <XButton
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                :disabled="actionsDisabled"
+              >
                 {{ post.pinOrder == null ? '置顶' : '置顶设置' }}
-              </n-button>
+              </XButton>
             </template>
             <div class="pin-settings">
-              <n-text strong>置顶设置</n-text>
+              <p class="font-semibold text-ink">置顶设置</p>
               <label :for="`pin-order-${post.id}`" class="action-label">
                 置顶顺序
               </label>
@@ -149,19 +141,20 @@ function formatDate(value: string) {
                 placeholder="输入顺序"
               />
               <div class="pin-actions">
-                <n-button
+                <XButton
                   v-if="post.pinOrder != null"
-                  quaternary
-                  size="small"
+                  color="neutral"
+                  variant="ghost"
+                  size="sm"
                   :disabled="actionsDisabled"
                   @click="emit('setPinOrder', post, null)"
                 >
                   取消置顶
-                </n-button>
-                <n-button
-                  secondary
-                  type="primary"
-                  size="small"
+                </XButton>
+                <XButton
+                  variant="soft"
+                  color="primary"
+                  size="sm"
                   :disabled="
                     actionsDisabled ||
                     pinOrderInput == null ||
@@ -170,31 +163,33 @@ function formatDate(value: string) {
                   @click="emit('setPinOrder', post, pinOrderInput)"
                 >
                   保存
-                </n-button>
+                </XButton>
               </div>
             </div>
           </n-popover>
         </div>
         <div class="action-group status-actions">
           <n-spin v-if="saving" size="small" />
-          <n-button
+          <XButton
             v-if="post.status !== 0"
-            quaternary
-            size="small"
+            color="neutral"
+            variant="ghost"
+            size="sm"
             :disabled="actionsDisabled"
             @click="emit('setStatus', post, 0)"
           >
             恢复
-          </n-button>
-          <n-button
+          </XButton>
+          <XButton
             v-if="post.status !== 1"
-            quaternary
-            size="small"
+            color="neutral"
+            variant="ghost"
+            size="sm"
             :disabled="actionsDisabled"
             @click="emit('setStatus', post, 1)"
           >
             隐藏
-          </n-button>
+          </XButton>
           <n-popconfirm
             v-if="post.status !== 2"
             positive-text="确认删除"
@@ -202,14 +197,14 @@ function formatDate(value: string) {
             @positive-click="emit('setStatus', post, 2)"
           >
             <template #trigger>
-              <n-button
-                quaternary
-                size="small"
-                type="error"
+              <XButton
+                color="danger"
+                variant="ghost"
+                size="sm"
                 :disabled="actionsDisabled"
               >
                 删除
-              </n-button>
+              </XButton>
             </template>
             确定将帖子「{{ post.title }}」标记为已删除？
           </n-popconfirm>
@@ -268,7 +263,7 @@ function formatDate(value: string) {
 }
 
 .action-label {
-  color: var(--n-text-color-3);
+  color: var(--color-muted);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -304,7 +299,7 @@ function formatDate(value: string) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--n-text-color-3);
+  color: var(--color-muted);
   font-size: 12px;
 }
 

@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  NButton,
-  NCard,
-  NList,
-  NListItem,
-  NSkeleton,
-  NTag,
-  NText,
-} from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
 
 import type { PostSummary } from '@/api';
 
@@ -29,93 +21,60 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <n-card class="activity-card" :bordered="false">
-    <template #header>
-      <div class="section-heading">
-        <div class="section-title">
-          <n-text strong>最近活跃</n-text>
-          <n-text depth="3" class="section-caption">按最后活跃时间排序</n-text>
-        </div>
-        <n-button text type="primary" @click="emit('viewAll')">
-          查看全部
-        </n-button>
+  <section
+    class="rounded-lg bg-surface p-6 text-ink shadow-sm"
+    aria-label="最近活跃"
+    :aria-busy="loading"
+  >
+    <header class="mb-5 flex items-center justify-between gap-4">
+      <div class="flex min-w-0 flex-col gap-[3px]">
+        <h2 class="font-semibold">最近活跃</h2>
+        <span class="text-xs text-muted">按最后活跃时间排序</span>
       </div>
-    </template>
+      <XButton
+        variant="ghost"
+        size="sm"
+        class="shrink-0"
+        @click="emit('viewAll')"
+      >
+        查看全部
+      </XButton>
+    </header>
 
-    <div v-if="loading" class="skeleton-list">
-      <n-skeleton v-for="index in 4" :key="index" text :repeat="2" />
+    <div v-if="loading" class="grid gap-[22px]">
+      <div
+        v-for="index in 4"
+        :key="index"
+        aria-hidden="true"
+        class="grid gap-2"
+      >
+        <div class="skeleton h-3.5"></div>
+        <div class="skeleton h-3.5 w-3/5"></div>
+      </div>
     </div>
-    <n-list v-else-if="posts.length" :show-divider="false">
-      <n-list-item v-for="post in posts" :key="post.id">
-        <div class="post-row">
-          <div class="post-main">
-            <n-text strong class="post-title">{{ post.title }}</n-text>
-            <n-text depth="3" class="post-meta">
+    <ul v-else-if="posts.length">
+      <li v-for="post in posts" :key="post.id" class="py-3">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex min-w-0 flex-col gap-[3px]">
+            <span class="truncate font-semibold">{{ post.title }}</span>
+            <span class="text-xs text-muted">
               {{ post.authorUsername }} · {{ formatDate(post.activeAt) }}
-            </n-text>
+            </span>
           </div>
-          <div class="post-stats">
-            <n-tag v-if="post.pinOrder != null" size="small" type="warning">
+          <div
+            class="flex shrink-0 items-center gap-2.5 max-[640px]:flex-col max-[640px]:items-end max-[640px]:gap-1"
+          >
+            <span
+              v-if="post.pinOrder != null"
+              class="rounded border border-warning/30 bg-warning-soft px-1.5 py-0.5 text-xs text-warning-text"
+            >
               置顶 {{ post.pinOrder }}
-            </n-tag>
-            <n-text depth="3">{{ post.commentsCount }} 评论</n-text>
+            </span>
+            <span class="text-muted">{{ post.commentsCount }} 评论</span>
           </div>
         </div>
-      </n-list-item>
-    </n-list>
-    <n-text v-else depth="3">暂无已发布帖子</n-text>
-  </n-card>
+      </li>
+    </ul>
+    <p v-else class="text-muted">暂无已发布帖子</p>
+  </section>
 </template>
-
-<style scoped>
-.activity-card {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.04);
-}
-
-.section-heading,
-.post-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.section-title,
-.post-main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.section-caption,
-.post-meta {
-  font-size: 12px;
-}
-
-.post-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.post-stats {
-  display: flex;
-  align-items: center;
-  flex: none;
-  gap: 10px;
-}
-
-.skeleton-list {
-  display: grid;
-  gap: 22px;
-}
-
-@media (max-width: 640px) {
-  .post-stats {
-    align-items: flex-end;
-    flex-direction: column;
-    gap: 4px;
-  }
-}
-</style>

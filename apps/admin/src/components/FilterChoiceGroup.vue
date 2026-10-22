@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NFlex, NText } from 'naive-ui';
+import { useId } from 'vue';
 
 interface FilterChoiceOption {
   label: string;
@@ -15,45 +15,29 @@ const emit = defineEmits<{
   'update:value': [value: string];
 }>();
 
-function selectWithKeyboard(event: KeyboardEvent, value: string) {
-  if (event.key !== 'Enter' && event.key !== ' ') return;
-  event.preventDefault();
-  emit('update:value', value);
-}
+const groupName = useId();
 </script>
 
 <template>
-  <n-flex :size="[16, 4]" role="radiogroup">
-    <n-text
-      v-for="option in options"
-      :key="option.value"
-      class="filter-choice"
-      :class="{ 'filter-choice--selected': value === option.value }"
-      :type="value === option.value ? 'primary' : 'default'"
-      role="radio"
-      :aria-checked="value === option.value"
-      tabindex="0"
-      @click="emit('update:value', option.value)"
-      @keydown="selectWithKeyboard($event, option.value)"
-    >
-      {{ option.label }}
-    </n-text>
-  </n-flex>
+  <div class="flex flex-wrap gap-x-4 gap-y-1" role="radiogroup">
+    <label v-for="option in options" :key="option.value" class="cursor-pointer">
+      <input
+        type="radio"
+        :name="groupName"
+        :value="option.value"
+        :checked="value === option.value"
+        class="peer sr-only"
+        @change="emit('update:value', option.value)"
+        @keydown.enter.prevent="emit('update:value', option.value)"
+      />
+      <span
+        class="rounded-sm select-none peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+        :class="
+          value === option.value ? 'font-medium text-primary' : 'text-ink'
+        "
+      >
+        {{ option.label }}
+      </span>
+    </label>
+  </div>
 </template>
-
-<style scoped>
-.filter-choice {
-  cursor: pointer;
-  user-select: none;
-}
-
-.filter-choice:focus-visible {
-  border-radius: 2px;
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.filter-choice--selected {
-  font-weight: 500;
-}
-</style>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { NInput, NInputNumber } from 'naive-ui';
+import { XInput } from '@novelia/web-kit';
+import { NInputNumber } from 'naive-ui';
 import FilterRow from '@/components/FilterRow.vue';
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import type { CommentStatusFilter } from '@/api';
@@ -31,22 +32,24 @@ function changePostId(value: number | null) {
 <template>
   <div class="filters">
     <FilterRow label="搜索">
-      <n-input
-        v-model:value="query"
+      <XInput
+        v-model="query"
         class="field-input"
         clearable
         placeholder="搜索评论内容"
         @change="emit('search')"
+        @clear="emit('search')"
         @keyup.enter="emit('search')"
       />
     </FilterRow>
     <FilterRow label="作者">
-      <n-input
-        v-model:value="authorName"
+      <XInput
+        v-model="authorName"
         class="field-input"
         clearable
         placeholder="搜索作者名字"
         @change="emit('search')"
+        @clear="emit('search')"
         @keyup.enter="emit('search')"
       />
     </FilterRow>

@@ -1,16 +1,6 @@
 <script setup lang="ts">
-import {
-  NButton,
-  NCard,
-  NEmpty,
-  NList,
-  NListItem,
-  NPagination,
-  NSkeleton,
-  NSpin,
-  NTag,
-  NText,
-} from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
+import { NPagination, NSpin } from 'naive-ui';
 import { computed } from 'vue';
 
 import type { Comment, CommentStatusName } from '@/api';
@@ -45,48 +35,69 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
 </script>
 
 <template>
-  <div class="comment-list">
-    <div class="list-summary">
-      <n-text depth="3">
+  <div class="flex flex-col gap-3">
+    <div class="flex min-h-7 items-center justify-between gap-3">
+      <span class="text-muted">
         {{ postId ? `帖子 #${postId}` : '全部帖子' }} · 最新评论优先
-      </n-text>
-      <n-tag size="small" type="success" :bordered="false">
+      </span>
+      <span
+        class="shrink-0 rounded bg-success/10 px-2 py-0.5 text-xs text-success"
+      >
         {{ total }} 条评论
-      </n-tag>
+      </span>
     </div>
 
-    <n-card class="list-card" content-style="padding: 0;">
-      <div v-if="loading && !comments.length" class="skeleton-list">
-        <div v-for="index in 5" :key="index" class="skeleton-row">
-          <n-skeleton text :repeat="3" />
+    <section class="rounded border-y border-border bg-surface">
+      <div v-if="loading && !comments.length" class="px-2.5 md:px-4">
+        <div
+          v-for="index in 5"
+          :key="index"
+          class="border-t border-border py-[18px] first:border-t-0"
+        >
+          <div aria-hidden="true" class="grid gap-2">
+            <div class="skeleton h-3.5"></div>
+            <div class="skeleton h-3.5"></div>
+            <div class="skeleton h-3.5 w-3/5"></div>
+          </div>
         </div>
       </div>
       <n-spin v-else :show="loading">
-        <n-list v-if="comments.length">
-          <n-list-item v-for="comment in comments" :key="comment.id">
+        <ul
+          v-if="comments.length"
+          class="m-0 list-none divide-y divide-border p-0"
+        >
+          <li
+            v-for="comment in comments"
+            :key="comment.id"
+            class="px-2.5 py-3 md:px-4 md:py-3.5"
+          >
             <CommentListItem
               :comment="comment"
               :actions-disabled="actionsDisabled"
               @moderate="forwardModeration"
               @filter-post="emit('filterPost', $event)"
             />
-          </n-list-item>
-        </n-list>
-        <n-empty
+          </li>
+        </ul>
+        <div
           v-else
-          class="empty"
-          :description="hasFilters ? '没有符合筛选条件的评论' : '暂无评论'"
+          class="flex flex-col items-center gap-3 px-4 py-16 text-sm text-muted"
         >
-          <template v-if="hasFilters" #extra>
-            <n-button size="small" @click="emit('resetFilters')">
-              重置筛选
-            </n-button>
-          </template>
-        </n-empty>
+          <p>{{ hasFilters ? '没有符合筛选条件的评论' : '暂无评论' }}</p>
+          <XButton
+            v-if="hasFilters"
+            size="sm"
+            color="neutral"
+            variant="outline"
+            @click="emit('resetFilters')"
+          >
+            重置筛选
+          </XButton>
+        </div>
       </n-spin>
-    </n-card>
+    </section>
 
-    <div v-if="total > pageSize" class="pagination">
+    <div v-if="total > pageSize" class="flex overflow-x-auto">
       <n-pagination
         :page="page"
         :page-count="pageCount"
@@ -96,59 +107,3 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
     </div>
   </div>
 </template>
-
-<style scoped>
-.comment-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.list-summary {
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.list-card {
-  border-right: 0;
-  border-left: 0;
-}
-
-.skeleton-list {
-  padding: 0 16px;
-}
-
-.skeleton-row {
-  padding: 18px 0;
-}
-
-.skeleton-row + .skeleton-row {
-  border-top: 1px solid var(--n-border-color);
-}
-
-:deep(.n-list-item) {
-  padding: 14px 16px;
-}
-
-.empty {
-  padding: 64px 16px;
-}
-
-.pagination {
-  display: flex;
-  overflow-x: auto;
-}
-
-@media (max-width: 767px) {
-  :deep(.n-list-item) {
-    padding: 12px 10px;
-  }
-
-  .skeleton-list {
-    padding-inline: 10px;
-  }
-}
-</style>

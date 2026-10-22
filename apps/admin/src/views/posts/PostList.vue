@@ -1,15 +1,6 @@
 <script setup lang="ts">
-import {
-  NButton,
-  NCard,
-  NEmpty,
-  NList,
-  NListItem,
-  NPagination,
-  NSkeleton,
-  NSpin,
-  NText,
-} from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
+import { NPagination, NSpin } from 'naive-ui';
 import { computed } from 'vue';
 
 import type { PostStatus, PostSummary } from '@/api';
@@ -49,22 +40,26 @@ const rangeEnd = computed(() =>
 
 <template>
   <div class="post-list">
-    <n-text v-if="!loading || posts.length" depth="3" class="list-summary">
+    <p v-if="!loading || posts.length" class="list-summary text-muted">
       <template v-if="total">
         显示 {{ rangeStart }}–{{ rangeEnd }}，共 {{ total }} 篇帖子
       </template>
       <template v-else>共 0 篇帖子</template>
-    </n-text>
+    </p>
 
-    <n-card class="list-card" content-style="padding: 0;">
+    <section class="border-y border-border bg-surface text-ink">
       <div v-if="loading && !posts.length" class="skeleton-list">
         <div v-for="index in 5" :key="index" class="skeleton-row">
-          <n-skeleton text :repeat="3" />
+          <div aria-hidden="true" class="grid gap-2">
+            <div class="skeleton h-3.5"></div>
+            <div class="skeleton h-3.5"></div>
+            <div class="skeleton h-3.5 w-3/5"></div>
+          </div>
         </div>
       </div>
       <n-spin v-else :show="loading">
-        <n-list v-if="posts.length">
-          <n-list-item v-for="post in posts" :key="post.id">
+        <ul v-if="posts.length" class="divide-y divide-divider">
+          <li v-for="post in posts" :key="post.id" class="list-item">
             <PostListItem
               :post="post"
               :category-name="
@@ -81,21 +76,22 @@ const rangeEnd = computed(() =>
               "
               @review-comments="emit('reviewComments', $event)"
             />
-          </n-list-item>
-        </n-list>
-        <n-empty
-          v-else
-          class="empty"
-          :description="hasFilters ? '没有符合条件的帖子' : '暂无帖子'"
-        >
-          <template v-if="hasFilters" #extra>
-            <n-button size="small" @click="emit('resetFilters')">
-              清除筛选
-            </n-button>
-          </template>
-        </n-empty>
+          </li>
+        </ul>
+        <div v-else class="empty flex flex-col items-center gap-4 text-muted">
+          <p>{{ hasFilters ? '没有符合条件的帖子' : '暂无帖子' }}</p>
+          <XButton
+            v-if="hasFilters"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="emit('resetFilters')"
+          >
+            清除筛选
+          </XButton>
+        </div>
       </n-spin>
-    </n-card>
+    </section>
 
     <div v-if="total > pageSize" class="pagination">
       <n-pagination
@@ -124,11 +120,6 @@ const rangeEnd = computed(() =>
   align-items: center;
 }
 
-.list-card {
-  border-right: 0;
-  border-left: 0;
-}
-
 .skeleton-list {
   padding: 0 16px;
 }
@@ -138,10 +129,10 @@ const rangeEnd = computed(() =>
 }
 
 .skeleton-row + .skeleton-row {
-  border-top: 1px solid var(--n-border-color);
+  border-top: 1px solid var(--color-border);
 }
 
-:deep(.n-list-item) {
+.list-item {
   padding: 14px 16px;
 }
 
@@ -155,7 +146,7 @@ const rangeEnd = computed(() =>
 }
 
 @media (max-width: 767px) {
-  :deep(.n-list-item) {
+  .list-item {
     padding: 12px 10px;
   }
 

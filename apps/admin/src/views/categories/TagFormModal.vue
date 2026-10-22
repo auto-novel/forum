@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import {
-  NButton,
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NModal,
-} from 'naive-ui';
+import { XButton, XInput } from '@novelia/web-kit';
+import { NForm, NFormItem, NInputNumber, NModal } from 'naive-ui';
 
 defineProps<{
   show: boolean;
@@ -29,16 +23,16 @@ const sortOrder = defineModel<number>('sortOrder', { required: true });
     :show="show"
     preset="card"
     :title="editing ? '编辑标签' : '新建标签'"
-    class="form-modal"
+    class="w-11/12! max-w-lg"
     :mask-closable="!saving"
     :close-on-esc="!saving"
     @update:show="(value) => !value && emit('close')"
   >
     <n-form label-placement="top">
       <n-form-item label="标签名称" required>
-        <n-input v-model:value="name" placeholder="输入标签名称" />
+        <XInput v-model="name" class="w-full" placeholder="输入标签名称" />
       </n-form-item>
-      <div class="form-grid">
+      <div class="grid grid-cols-2 gap-3.5">
         <n-form-item label="预定义色号">
           <n-input-number v-model:value="color" :min="0" />
         </n-form-item>
@@ -48,35 +42,23 @@ const sortOrder = defineModel<number>('sortOrder', { required: true });
       </div>
     </n-form>
     <template #footer>
-      <div class="modal-actions">
-        <n-button :disabled="saving" @click="emit('close')">取消</n-button>
-        <n-button
-          type="primary"
+      <div class="flex justify-end gap-4">
+        <XButton
+          color="neutral"
+          variant="outline"
+          :disabled="saving"
+          @click="emit('close')"
+        >
+          取消
+        </XButton>
+        <XButton
           :loading="saving"
           :disabled="!name.trim()"
           @click="emit('save')"
         >
           保存
-        </n-button>
+        </XButton>
       </div>
     </template>
   </n-modal>
 </template>
-
-<style scoped>
-:global(.form-modal) {
-  width: min(520px, calc(100vw - 32px));
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-}
-</style>

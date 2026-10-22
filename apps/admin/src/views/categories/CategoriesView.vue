@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NAlert, NEmpty, NSkeleton, NSpace } from 'naive-ui';
+import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { useForumApi, type Category, type Tag } from '@/api';
@@ -126,29 +126,39 @@ onMounted(loadCategories);
 </script>
 
 <template>
-  <n-space vertical :size="16" class="categories-page">
-    <n-alert
+  <div class="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <AdminAlert
       v-if="successMessage"
       type="success"
       closable
       @close="successMessage = ''"
     >
       {{ successMessage }}
-    </n-alert>
-    <n-alert
+    </AdminAlert>
+    <AdminAlert
       v-if="errorMessage"
       type="error"
       closable
       @close="errorMessage = ''"
     >
       {{ errorMessage }}
-    </n-alert>
+    </AdminAlert>
 
-    <div v-if="loading" class="skeleton-stack">
-      <n-skeleton v-for="index in 3" :key="index" height="120px" />
+    <div v-if="loading" class="grid gap-4">
+      <div
+        v-for="index in 3"
+        :key="index"
+        aria-hidden="true"
+        class="skeleton h-30"
+      ></div>
     </div>
-    <n-empty v-else-if="!displayedCategories.length" description="暂无分类" />
-    <div v-else class="category-list">
+    <p
+      v-else-if="!displayedCategories.length"
+      class="py-8 text-center text-sm text-muted"
+    >
+      暂无分类
+    </p>
+    <div v-else class="divide-y divide-divider">
       <TagList
         v-for="category in displayedCategories"
         :key="category.id"
@@ -172,18 +182,5 @@ onMounted(loadCategories);
       @close="tagModalOpen = false"
       @save="saveTag"
     />
-  </n-space>
+  </div>
 </template>
-
-<style scoped>
-.categories-page {
-  max-width: 840px;
-  margin-inline: auto;
-}
-
-.category-list,
-.skeleton-stack {
-  display: grid;
-  gap: 16px;
-}
-</style>

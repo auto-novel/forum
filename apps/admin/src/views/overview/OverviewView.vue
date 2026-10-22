@@ -5,11 +5,12 @@ import {
   ChatBubbleOutlineOutlined,
   LocalOfferOutlined,
 } from '@vicons/material';
-import { NAlert, NButton, NText } from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useForumApi, type PostSummary } from '@/api';
+import AdminAlert from '@/components/AdminAlert.vue';
 
 import OverviewMetrics from './OverviewMetrics.vue';
 import OverviewRecentPosts from './OverviewRecentPosts.vue';
@@ -32,25 +33,25 @@ const metrics = computed(() => [
     label: '内容分类',
     value: categoryCount.value,
     icon: CategoryOutlined,
-    tone: 'blue',
+    tone: 'info',
   },
   {
     label: '可用标签',
     value: tagCount.value,
     icon: LocalOfferOutlined,
-    tone: 'green',
+    tone: 'success',
   },
   {
     label: '已发布帖子',
     value: postCount.value,
     icon: ArticleOutlined,
-    tone: 'orange',
+    tone: 'warning',
   },
   {
     label: '近期帖评论',
     value: recentCommentCount.value,
     icon: ChatBubbleOutlineOutlined,
-    tone: 'purple',
+    tone: 'primary',
   },
 ]);
 
@@ -80,13 +81,20 @@ onMounted(loadOverview);
 </script>
 
 <template>
-  <main class="overview-page">
-    <n-alert v-if="errorMessage" type="error" title="概览加载失败">
-      <div class="error-content">
-        <n-text>{{ errorMessage }}</n-text>
-        <n-button size="small" @click="loadOverview">重新加载</n-button>
+  <main class="mx-auto flex max-w-[1000px] flex-col gap-5 text-ink">
+    <AdminAlert v-if="errorMessage" type="error" title="概览加载失败">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <span class="min-w-0 break-words">{{ errorMessage }}</span>
+        <XButton
+          size="sm"
+          color="neutral"
+          variant="outline"
+          @click="loadOverview"
+        >
+          重新加载
+        </XButton>
       </div>
-    </n-alert>
+    </AdminAlert>
 
     <OverviewMetrics :metrics="metrics" :loading="loading" />
     <OverviewRecentPosts
@@ -96,20 +104,3 @@ onMounted(loadOverview);
     />
   </main>
 </template>
-
-<style scoped>
-.overview-page {
-  max-width: 1000px;
-  margin-inline: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.error-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-</style>

@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { MoreHorizOutlined } from '@vicons/material';
-import {
-  NButton,
-  NDropdown,
-  NIcon,
-  NTag,
-  NText,
-  type DropdownOption,
-} from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
+import { NDropdown, type DropdownOption } from 'naive-ui';
 import { computed } from 'vue';
 
 import type { Comment, CommentStatusName } from '@/api';
@@ -65,96 +59,57 @@ function formatCommentId(comment: Comment) {
 </script>
 
 <template>
-  <div class="comment-row">
-    <div class="comment-header">
-      <div class="comment-author">
-        <n-text strong>{{ comment.authorUsername }}</n-text>
-        <div class="comment-meta">
-          <n-text depth="3">{{ formatCommentId(comment) }} ·</n-text>
-          <n-button
-            text
-            type="primary"
-            size="tiny"
-            tag="a"
+  <div class="flex flex-col gap-3.5">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex min-w-0 flex-col gap-[3px]">
+        <strong class="text-ink">{{ comment.authorUsername }}</strong>
+        <div class="flex flex-wrap items-center gap-x-1 text-xs text-muted">
+          <span>{{ formatCommentId(comment) }} ·</span>
+          <a
+            class="text-primary hover:underline"
             :href="`/p/${comment.postId}`"
             target="_blank"
             rel="noopener noreferrer"
           >
             帖子 #{{ comment.postId }}
-          </n-button>
-          <n-text depth="3">· {{ formatDate(comment.createdAt) }}</n-text>
+          </a>
+          <span>· {{ formatDate(comment.createdAt) }}</span>
         </div>
       </div>
-      <div class="comment-header-actions">
-        <n-tag
-          size="small"
-          :bordered="false"
-          :type="
+      <div class="flex shrink-0 items-center gap-1.5">
+        <span
+          class="rounded px-2 py-0.5 text-xs"
+          :class="
             comment.status === 0
-              ? 'success'
+              ? 'bg-success-soft text-success-text'
               : comment.status === 1
-                ? 'warning'
-                : 'error'
+                ? 'bg-warning-soft text-warning-text'
+                : 'bg-error-soft text-error-text'
           "
         >
           {{ ['正常发布', '隐藏', '删除'][comment.status] }}
-        </n-tag>
+        </span>
         <n-dropdown
           trigger="click"
           :options="actionOptions"
           @select="selectAction"
         >
-          <n-button quaternary circle size="small" aria-label="评论操作">
-            <template #icon>
-              <n-icon :component="MoreHorizOutlined" />
-            </template>
-          </n-button>
+          <XButton
+            color="neutral"
+            variant="ghost"
+            size="icon"
+            class="size-8"
+            aria-label="评论操作"
+          >
+            <MoreHorizOutlined class="size-5" aria-hidden="true" />
+          </XButton>
         </n-dropdown>
       </div>
     </div>
-    <n-text class="comment-content">{{ comment.content }}</n-text>
+    <p
+      class="whitespace-pre-wrap leading-[1.72] text-ink [overflow-wrap:anywhere]"
+    >
+      {{ comment.content }}
+    </p>
   </div>
 </template>
-
-<style scoped>
-.comment-row {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.comment-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.comment-header-actions {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-}
-
-.comment-author {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.comment-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 4px;
-  font-size: 12px;
-}
-
-.comment-content {
-  line-height: 1.72;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-</style>

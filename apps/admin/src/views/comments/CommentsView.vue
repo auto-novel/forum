@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { NAlert, NButton, NSpace, NText } from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
+import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -148,7 +149,7 @@ watch(
 </script>
 
 <template>
-  <n-space vertical :size="16" class="comments-page">
+  <div class="mx-auto flex w-full max-w-[1000px] flex-col gap-4">
     <CommentFilters
       v-model:post-id="postIdInput"
       v-model:query="queryInput"
@@ -157,29 +158,36 @@ watch(
       @search="search"
     />
 
-    <n-alert
+    <AdminAlert
       v-if="successMessage"
       type="success"
       closable
       @close="successMessage = ''"
     >
       {{ successMessage }}
-    </n-alert>
-    <n-alert v-if="errorMessage" type="error" title="评论加载失败">
-      <n-space vertical size="small">
-        <n-text>{{ errorMessage }}</n-text>
-        <n-button size="small" @click="loadComments">重新加载</n-button>
-      </n-space>
-    </n-alert>
+    </AdminAlert>
+    <AdminAlert v-if="errorMessage" type="error" title="评论加载失败">
+      <div class="flex flex-col items-start gap-2">
+        <p>{{ errorMessage }}</p>
+        <XButton
+          size="sm"
+          color="neutral"
+          variant="outline"
+          @click="loadComments"
+        >
+          重新加载
+        </XButton>
+      </div>
+    </AdminAlert>
 
-    <n-alert
+    <AdminAlert
       v-if="actionErrorMessage"
       type="error"
       closable
       @close="actionErrorMessage = ''"
     >
       {{ actionErrorMessage }}
-    </n-alert>
+    </AdminAlert>
 
     <CommentList
       v-if="!errorMessage"
@@ -204,12 +212,5 @@ watch(
       @success="handleModerationSuccess"
       @error="actionErrorMessage = $event"
     />
-  </n-space>
+  </div>
 </template>
-
-<style scoped>
-.comments-page {
-  max-width: 1000px;
-  margin-inline: auto;
-}
-</style>

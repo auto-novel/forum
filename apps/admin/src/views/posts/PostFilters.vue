@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { SearchOutlined } from '@vicons/material';
-import { NIcon, NInput, NSelect } from 'naive-ui';
+import { XInput } from '@novelia/web-kit';
+import { NSelect } from 'naive-ui';
 import { computed } from 'vue';
 
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
@@ -80,26 +81,28 @@ function changeSort(value: string) {
 <template>
   <div class="filters">
     <FilterRow label="搜索">
-      <n-input
-        v-model:value="query"
+      <XInput
+        v-model="query"
         class="query-input"
         clearable
         placeholder="搜索标题或正文"
         @change="emit('search')"
+        @clear="emit('search')"
       >
         <template #suffix>
-          <n-icon :component="SearchOutlined" />
+          <SearchOutlined class="size-5" aria-hidden="true" />
         </template>
-      </n-input>
+      </XInput>
     </FilterRow>
 
     <FilterRow label="作者">
-      <n-input
-        v-model:value="authorName"
+      <XInput
+        v-model="authorName"
         class="query-input"
         clearable
         placeholder="搜索作者名字"
         @change="emit('search')"
+        @clear="emit('search')"
       />
     </FilterRow>
 

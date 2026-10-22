@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { NAlert, NButton, NSpace, NText } from 'naive-ui';
+import { XButton } from '@novelia/web-kit';
+import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -173,7 +174,7 @@ onMounted(initialize);
 </script>
 
 <template>
-  <n-space vertical :size="16" class="posts-page">
+  <div class="posts-page flex flex-col gap-4">
     <PostFilters
       v-model:query="queryInput"
       v-model:category="categoryInput"
@@ -185,28 +186,30 @@ onMounted(initialize);
       @search="search"
     />
 
-    <n-alert
+    <AdminAlert
       v-if="successMessage"
       type="success"
       closable
       @close="successMessage = ''"
     >
       {{ successMessage }}
-    </n-alert>
-    <n-alert v-if="errorMessage" type="error" title="帖子列表加载失败">
-      <n-space vertical size="small">
-        <n-text>{{ errorMessage }}</n-text>
-        <n-button size="small" @click="loadPosts">重新加载</n-button>
-      </n-space>
-    </n-alert>
-    <n-alert
+    </AdminAlert>
+    <AdminAlert v-if="errorMessage" type="error" title="帖子列表加载失败">
+      <div class="flex flex-col items-start gap-2">
+        <p>{{ errorMessage }}</p>
+        <XButton color="neutral" variant="outline" size="sm" @click="loadPosts">
+          重新加载
+        </XButton>
+      </div>
+    </AdminAlert>
+    <AdminAlert
       v-if="actionErrorMessage"
       type="error"
       closable
       @close="actionErrorMessage = ''"
     >
       {{ actionErrorMessage }}
-    </n-alert>
+    </AdminAlert>
 
     <PostList
       v-if="!errorMessage"
@@ -225,7 +228,7 @@ onMounted(initialize);
       @set-pin-order="setPinOrder"
       @review-comments="reviewComments"
     />
-  </n-space>
+  </div>
 </template>
 
 <style scoped>
