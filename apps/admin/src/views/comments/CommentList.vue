@@ -23,6 +23,7 @@ const emit = defineEmits<{
   filterPost: [postId: number];
   resetFilters: [];
   moderate: [comment: Comment, status: CommentStatusName];
+  deleteAuthor: [comment: Comment];
 }>();
 
 const pageCount = computed(() =>
@@ -85,6 +86,7 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
               :comment="comment"
               :actions-disabled="actionsDisabled"
               @moderate="forwardModeration"
+              @delete-author="emit('deleteAuthor', $event)"
               @filter-post="emit('filterPost', $event)"
             />
           </li>

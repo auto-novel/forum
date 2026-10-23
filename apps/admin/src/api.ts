@@ -267,6 +267,9 @@ export function createForumApi(client: ApiClient) {
         json: { status },
       });
     },
+    async deleteCommentsByAuthor(authorId: number) {
+      await client.delete(endpoint(`admin/comment/author/${authorId}`));
+    },
   };
 }
 

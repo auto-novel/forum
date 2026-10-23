@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { MoreHorizOutlined } from '@vicons/material';
-import { XButton, XDropdownMenu, XDropdownMenuItem } from '@novelia/web-kit';
+import {
+  XButton,
+  XDropdownMenu,
+  XDropdownMenuItem,
+  XDropdownMenuSeparator,
+} from '@novelia/web-kit';
 
 import type { Comment, CommentStatusName } from '@/api';
 
@@ -8,14 +13,21 @@ const props = defineProps<{ comment: Comment; actionsDisabled: boolean }>();
 const emit = defineEmits<{
   filterPost: [postId: number];
   moderate: [comment: Comment, status: CommentStatusName];
+  deleteAuthor: [comment: Comment];
 }>();
 
-function selectAction(key: 'filter-post' | CommentStatusName) {
+function selectAction(
+  key: 'filter-post' | 'delete-author' | CommentStatusName,
+) {
   if (key === 'filter-post') {
     emit('filterPost', props.comment.postId);
     return;
   }
   if (props.actionsDisabled) return;
+  if (key === 'delete-author') {
+    emit('deleteAuthor', props.comment);
+    return;
+  }
   emit('moderate', props.comment, key);
 }
 
@@ -99,6 +111,14 @@ function formatCommentId(comment: Comment) {
             @select="selectAction('deleted')"
           >
             删除
+          </XDropdownMenuItem>
+          <XDropdownMenuSeparator />
+          <XDropdownMenuItem
+            :disabled="actionsDisabled"
+            destructive
+            @select="selectAction('delete-author')"
+          >
+            删除作者全部评论
           </XDropdownMenuItem>
         </XDropdownMenu>
       </div>

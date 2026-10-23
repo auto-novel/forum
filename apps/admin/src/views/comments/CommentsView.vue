@@ -16,6 +16,7 @@ import CommentList from './CommentList.vue';
 import CommentModerationModal, {
   type CommentModerationTarget,
 } from './CommentModerationModal.vue';
+import CommentAuthorDeleteModal from './CommentAuthorDeleteModal.vue';
 
 const PAGE_SIZE = 20;
 const api = useForumApi();
@@ -42,10 +43,15 @@ const total = ref(0);
 const page = ref(1);
 const loading = ref(false);
 const moderationSaving = ref(false);
+const authorDeletionSaving = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const actionErrorMessage = ref('');
 const pendingAction = ref<CommentModerationTarget | null>(null);
+const pendingAuthorDeletion = ref<Comment | null>(null);
+const actionsDisabled = computed(
+  () => moderationSaving.value || authorDeletionSaving.value,
+);
 let requestId = 0;
 
 async function loadComments() {
@@ -128,6 +134,18 @@ async function handleModerationSuccess(message: string) {
   await loadComments();
 }
 
+function requestAuthorDeletion(comment: Comment) {
+  actionErrorMessage.value = '';
+  successMessage.value = '';
+  pendingAuthorDeletion.value = comment;
+}
+
+async function handleAuthorDeletionSuccess(message: string) {
+  pendingAuthorDeletion.value = null;
+  successMessage.value = message;
+  await loadComments();
+}
+
 watch(
   () => route.query,
   (query) => {
@@ -198,9 +216,10 @@ watch(
       :page-size="PAGE_SIZE"
       :post-id="activePostId"
       :has-filters="hasFilters"
-      :actions-disabled="moderationSaving"
+      :actions-disabled="actionsDisabled"
       @update-page="changePage"
       @moderate="requestModeration"
+      @delete-author="requestAuthorDeletion"
       @filter-post="filterPost"
       @reset-filters="resetFilters"
     />
@@ -210,6 +229,14 @@ watch(
       :target="pendingAction"
       @close="pendingAction = null"
       @success="handleModerationSuccess"
+      @error="actionErrorMessage = $event"
+    />
+
+    <CommentAuthorDeleteModal
+      v-model:saving="authorDeletionSaving"
+      :target="pendingAuthorDeletion"
+      @close="pendingAuthorDeletion = null"
+      @success="handleAuthorDeletionSuccess"
       @error="actionErrorMessage = $event"
     />
   </div>
