@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { XButton, XDialog, XInput } from '@novelia/web-kit';
-import { NInputNumber } from 'naive-ui';
+import { XButton, XDialog, XInput, XNumberInput } from '@novelia/web-kit';
 import { useId } from 'vue';
 
 defineProps<{
@@ -16,8 +15,8 @@ const emit = defineEmits<{
 
 const fieldId = useId();
 const name = defineModel<string>('name', { required: true });
-const color = defineModel<number>('color', { required: true });
-const sortOrder = defineModel<number>('sortOrder', { required: true });
+const color = defineModel<number | null>('color', { required: true });
+const sortOrder = defineModel<number | null>('sortOrder', { required: true });
 </script>
 
 <template>
@@ -45,18 +44,11 @@ const sortOrder = defineModel<number>('sortOrder', { required: true });
       <div class="grid grid-cols-2 gap-3.5">
         <div class="grid gap-2">
           <label :for="`${fieldId}-color`" class="text-sm">预定义色号</label>
-          <NInputNumber
-            v-model:value="color"
-            :min="0"
-            :input-props="{ id: `${fieldId}-color` }"
-          />
+          <XNumberInput :id="`${fieldId}-color`" v-model="color" :min="0" />
         </div>
         <div class="grid gap-2">
           <label :for="`${fieldId}-sort-order`" class="text-sm">排序值</label>
-          <NInputNumber
-            v-model:value="sortOrder"
-            :input-props="{ id: `${fieldId}-sort-order` }"
-          />
+          <XNumberInput :id="`${fieldId}-sort-order`" v-model="sortOrder" />
         </div>
       </div>
     </div>
@@ -72,7 +64,7 @@ const sortOrder = defineModel<number>('sortOrder', { required: true });
         </XButton>
         <XButton
           :loading="saving"
-          :disabled="!name.trim()"
+          :disabled="!name.trim() || color == null || sortOrder == null"
           @click="emit('save')"
         >
           保存

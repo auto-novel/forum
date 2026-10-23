@@ -5,10 +5,15 @@ import {
   PushPinOutlined,
   VisibilityOutlined,
 } from '@vicons/material';
-import { XButton, XConfirmDialog } from '@novelia/web-kit';
-import { NInputNumber, NPopover, NSpin } from 'naive-ui';
+import {
+  XButton,
+  XConfirmDialog,
+  XDialog,
+  XNumberInput,
+} from '@novelia/web-kit';
 import { ref, watch } from 'vue';
 
+import AdminSpinner from '@/components/AdminSpinner.vue';
 import type { PostStatus, PostSummary } from '@/api';
 
 const props = defineProps<{
@@ -26,11 +31,28 @@ const emit = defineEmits<{
 }>();
 
 const deleteConfirmationOpen = ref(false);
+const pinDialogOpen = ref(false);
 const pinOrderInput = ref<number | null>(props.post.pinOrder ?? null);
 watch(
   () => props.post.pinOrder,
   (value) => (pinOrderInput.value = value ?? null),
 );
+
+function openPinSettings() {
+  pinOrderInput.value = props.post.pinOrder ?? null;
+  pinDialogOpen.value = true;
+}
+
+function savePinOrder() {
+  if (pinOrderInput.value == null) return;
+  pinDialogOpen.value = false;
+  emit('setPinOrder', props.post, pinOrderInput.value);
+}
+
+function clearPinOrder() {
+  pinDialogOpen.value = false;
+  emit('setPinOrder', props.post, null);
+}
 
 function confirmDelete() {
   if (
@@ -123,67 +145,73 @@ function formatDate(value: string) {
           >
             {{ post.commentsLocked ? '解锁' : '锁定' }}
           </XButton>
-          <n-popover
-            trigger="click"
-            placement="bottom-start"
+          <XButton
+            color="neutral"
+            variant="ghost"
+            size="sm"
             :disabled="actionsDisabled"
+            @click="openPinSettings"
           >
-            <template #trigger>
-              <XButton
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                :disabled="actionsDisabled"
-              >
-                {{ post.pinOrder == null ? '置顶' : '置顶设置' }}
-              </XButton>
-            </template>
-            <div class="pin-settings">
-              <p class="font-semibold text-ink">置顶设置</p>
-              <label :for="`pin-order-${post.id}`" class="action-label">
+            {{ post.pinOrder == null ? '置顶' : '置顶设置' }}
+          </XButton>
+          <XDialog
+            v-model:open="pinDialogOpen"
+            title="置顶设置"
+            class="w-11/12 max-w-sm"
+          >
+            <div class="grid gap-2">
+              <label :for="`pin-order-${post.id}`" class="text-sm">
                 置顶顺序
               </label>
-              <n-input-number
-                v-model:value="pinOrderInput"
-                :input-props="{ id: `pin-order-${post.id}` }"
-                size="small"
+              <XNumberInput
+                v-model="pinOrderInput"
+                :id="`pin-order-${post.id}`"
                 :min="-2147483648"
                 :max="2147483647"
-                :precision="0"
-                :show-button="false"
                 :disabled="actionsDisabled"
                 placeholder="输入顺序"
               />
-              <div class="pin-actions">
+              <p class="text-xs text-muted">数值越小越靠前。</p>
+            </div>
+            <template #footer>
+              <div class="flex justify-end gap-2">
                 <XButton
-                  v-if="post.pinOrder != null"
                   color="neutral"
                   variant="ghost"
                   size="sm"
+                  @click="pinDialogOpen = false"
+                >
+                  取消
+                </XButton>
+                <XButton
+                  v-if="post.pinOrder != null"
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
                   :disabled="actionsDisabled"
-                  @click="emit('setPinOrder', post, null)"
+                  @click="clearPinOrder"
                 >
                   取消置顶
                 </XButton>
                 <XButton
-                  variant="soft"
                   color="primary"
+                  variant="soft"
                   size="sm"
                   :disabled="
                     actionsDisabled ||
                     pinOrderInput == null ||
                     pinOrderInput === (post.pinOrder ?? null)
                   "
-                  @click="emit('setPinOrder', post, pinOrderInput)"
+                  @click="savePinOrder"
                 >
                   保存
                 </XButton>
               </div>
-            </div>
-          </n-popover>
+            </template>
+          </XDialog>
         </div>
         <div class="action-group status-actions">
-          <n-spin v-if="saving" size="small" />
+          <AdminSpinner v-if="saving" size="sm" label="正在保存" />
           <XButton
             v-if="post.status !== 0"
             color="neutral"
@@ -276,25 +304,6 @@ function formatDate(value: string) {
 
 .status-actions {
   margin-left: auto;
-}
-
-.action-label {
-  color: var(--color-muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.pin-settings {
-  display: flex;
-  width: 220px;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pin-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
 }
 
 .post-badges {

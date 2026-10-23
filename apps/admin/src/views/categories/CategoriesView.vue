@@ -20,7 +20,11 @@ const errorMessage = ref('');
 const successMessage = ref('');
 const tagModalOpen = ref(false);
 const editingTagId = ref<number>();
-const tagForm = reactive({ name: '', color: 0, sortOrder: 0 });
+const tagForm = reactive<{
+  name: string;
+  color: number | null;
+  sortOrder: number | null;
+}>({ name: '', color: 0, sortOrder: 0 });
 const displayedCategories = computed(() =>
   [...categories.value]
     .sort((left, right) => categoryOrder(left.slug) - categoryOrder(right.slug))
@@ -76,14 +80,21 @@ function openEditTag(categoryId: number, tag: Tag) {
 }
 
 async function saveTag() {
-  if (selectedCategoryId.value == null || !tagForm.name.trim()) return;
+  const { name, color, sortOrder } = tagForm;
+  if (
+    selectedCategoryId.value == null ||
+    !name.trim() ||
+    color == null ||
+    sortOrder == null
+  )
+    return;
   saving.value = true;
   errorMessage.value = '';
   try {
     const request = {
-      name: tagForm.name.trim(),
-      color: tagForm.color,
-      sortOrder: tagForm.sortOrder,
+      name: name.trim(),
+      color,
+      sortOrder,
     };
     if (editingTagId.value) {
       await api.updateTag(

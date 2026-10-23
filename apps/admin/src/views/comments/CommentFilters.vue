@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { XInput } from '@novelia/web-kit';
-import { NInputNumber } from 'naive-ui';
+import { XInput, XNumberInput } from '@novelia/web-kit';
 import FilterRow from '@/components/FilterRow.vue';
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import type { CommentStatusFilter } from '@/api';
@@ -54,16 +53,13 @@ function changePostId(value: number | null) {
       />
     </FilterRow>
     <FilterRow label="帖子">
-      <n-input-number
-        v-model:value="postId"
+      <XNumberInput
+        v-model="postId"
         class="field-input"
         :min="1"
         :max="Number.MAX_SAFE_INTEGER"
-        :precision="0"
-        :show-button="false"
-        clearable
         placeholder="全部帖子，可输入帖子 ID"
-        @change="changePostId"
+        @update:model-value="changePostId"
       />
     </FilterRow>
     <FilterRow label="状态">

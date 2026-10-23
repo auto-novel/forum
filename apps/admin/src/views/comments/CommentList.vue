@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { XButton, XPagination } from '@novelia/web-kit';
-import { NSpin } from 'naive-ui';
 import { computed } from 'vue';
 
+import AdminSpinner from '@/components/AdminSpinner.vue';
 import type { Comment, CommentStatusName } from '@/api';
 
 import CommentListItem from './CommentListItem.vue';
@@ -61,7 +61,17 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
           </div>
         </div>
       </div>
-      <n-spin v-else :show="loading">
+      <div v-else class="relative" :aria-busy="loading || undefined">
+        <div
+          v-if="loading"
+          class="absolute inset-0 z-10 cursor-progress bg-surface/60"
+          aria-hidden="true"
+        ></div>
+        <AdminSpinner
+          v-if="loading"
+          label="正在加载评论"
+          class="absolute top-4 right-4 z-20"
+        />
         <ul
           v-if="comments.length"
           class="m-0 list-none divide-y divide-border p-0"
@@ -94,7 +104,7 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
             重置筛选
           </XButton>
         </div>
-      </n-spin>
+      </div>
     </section>
 
     <XPagination

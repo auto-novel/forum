@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { XButton, XPagination } from '@novelia/web-kit';
-import { NSpin } from 'naive-ui';
 import { computed } from 'vue';
 
+import AdminSpinner from '@/components/AdminSpinner.vue';
 import type { PostStatus, PostSummary } from '@/api';
 
 import PostListItem from './PostListItem.vue';
@@ -63,7 +63,17 @@ const rangeEnd = computed(() =>
           </div>
         </div>
       </div>
-      <n-spin v-else :show="loading">
+      <div v-else class="relative" :aria-busy="loading || undefined">
+        <div
+          v-if="loading"
+          class="absolute inset-0 z-10 cursor-progress bg-surface/60"
+          aria-hidden="true"
+        ></div>
+        <AdminSpinner
+          v-if="loading"
+          label="正在加载帖子"
+          class="absolute top-4 right-4 z-20"
+        />
         <ul v-if="posts.length" class="divide-y divide-divider">
           <li
             v-for="post in posts"
@@ -103,7 +113,7 @@ const rangeEnd = computed(() =>
             清除筛选
           </XButton>
         </div>
-      </n-spin>
+      </div>
     </section>
 
     <XPagination

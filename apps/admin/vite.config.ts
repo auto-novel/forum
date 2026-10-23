@@ -102,7 +102,7 @@ export default defineConfig(({ command, mode }) => {
     },
     optimizeDeps: {
       exclude: ['@novelia/web-kit'],
-      include: ['@vicons/material', 'naive-ui'],
+      include: ['@vicons/material'],
     },
     server: {
       port: 5174,

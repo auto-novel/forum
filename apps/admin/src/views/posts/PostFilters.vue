@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { SearchOutlined } from '@vicons/material';
-import { XInput } from '@novelia/web-kit';
-import { NSelect } from 'naive-ui';
-import { computed } from 'vue';
+import { XButton, XInput } from '@novelia/web-kit';
+import { computed, ref } from 'vue';
 
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import FilterRow from '@/components/FilterRow.vue';
@@ -35,17 +34,33 @@ const categoryOptions = computed(() => [
       value: item.slug,
     })),
 ]);
-const tagOptions = computed(() =>
+const TAG_PREVIEW_LIMIT = 8;
+const showAllTags = ref(false);
+const tagChoices = computed(() =>
   [...props.categories]
     .sort((left, right) => categoryOrder(left.slug) - categoryOrder(right.slug))
     .filter((item) => !category.value || item.slug === category.value)
     .flatMap((item) =>
       item.tags.map((tag) => ({
         label: `${tag.name} · ${categoryTitle(item.slug)}`,
-        value: tag.id,
+        value: String(tag.id),
       })),
     ),
 );
+const tagOptions = computed(() => {
+  const selectedValue = tagId.value == null ? '' : String(tagId.value);
+  const visible = showAllTags.value
+    ? tagChoices.value
+    : tagChoices.value.slice(0, TAG_PREVIEW_LIMIT);
+  const selected = tagChoices.value.find(
+    (option) => option.value === selectedValue,
+  );
+  if (selected && !visible.some((option) => option.value === selectedValue)) {
+    return [{ label: '全部', value: '' }, ...visible, selected];
+  }
+  return [{ label: '全部', value: '' }, ...visible];
+});
+const hasMoreTags = computed(() => tagChoices.value.length > TAG_PREVIEW_LIMIT);
 const sortOptions: { label: string; value: PostSort }[] = [
   { label: '最近活跃', value: 'active' },
   { label: '最新发布', value: 'newest' },
@@ -54,6 +69,7 @@ const sortOptions: { label: string; value: PostSort }[] = [
 ];
 
 function changeCategory(value: string) {
+  showAllTags.value = false;
   category.value = value;
   if (
     tagId.value != null &&
@@ -64,6 +80,12 @@ function changeCategory(value: string) {
     )
   )
     tagId.value = null;
+  emit('search');
+}
+
+function changeTag(value: string) {
+  const id = Number(value);
+  tagId.value = value !== '' && Number.isSafeInteger(id) ? id : null;
   emit('search');
 }
 
@@ -107,15 +129,23 @@ function changeSort(value: string) {
     </FilterRow>
 
     <FilterRow label="标签">
-      <n-select
-        v-model:value="tagId"
-        class="query-input"
-        :options="tagOptions"
-        clearable
-        filterable
-        placeholder="全部标签"
-        @update:value="emit('search')"
-      />
+      <div class="flex flex-col items-start gap-1">
+        <FilterChoiceGroup
+          :value="tagId == null ? '' : String(tagId)"
+          :options="tagOptions"
+          @update:value="changeTag"
+        />
+        <XButton
+          v-if="hasMoreTags"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          :aria-expanded="showAllTags"
+          @click="showAllTags = !showAllTags"
+        >
+          {{ showAllTags ? '收起' : '更多标签' }}
+        </XButton>
+      </div>
     </FilterRow>
     <FilterRow label="分类">
       <FilterChoiceGroup
