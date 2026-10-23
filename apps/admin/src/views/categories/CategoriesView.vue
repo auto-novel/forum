@@ -127,6 +127,13 @@ onMounted(loadCategories);
 
 <template>
   <div class="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <header class="pb-2">
+      <h1 class="text-xl font-semibold text-ink">标签管理</h1>
+      <p class="mt-2 text-sm text-muted">
+        按分类维护标签，管理启用状态、色号与排序。
+      </p>
+    </header>
+
     <AdminAlert
       v-if="successMessage"
       type="success"
@@ -144,13 +151,21 @@ onMounted(loadCategories);
       {{ errorMessage }}
     </AdminAlert>
 
-    <div v-if="loading" class="grid gap-4">
-      <div
-        v-for="index in 3"
-        :key="index"
-        aria-hidden="true"
-        class="skeleton h-30"
-      ></div>
+    <div v-if="loading" role="status">
+      <span class="sr-only">正在加载分类</span>
+      <div aria-hidden="true" class="divide-y divide-divider">
+        <div v-for="index in 3" :key="index" class="py-6">
+          <div class="mb-4 flex items-center justify-between">
+            <div class="skeleton h-5 w-24"></div>
+            <div class="skeleton h-8 w-24"></div>
+          </div>
+          <div class="grid gap-4 border-y border-divider px-3 py-4">
+            <div class="skeleton h-4 w-2/3"></div>
+            <div class="skeleton h-4 w-1/2"></div>
+            <div class="skeleton h-4 w-3/5"></div>
+          </div>
+        </div>
+      </div>
     </div>
     <p
       v-else-if="!displayedCategories.length"
