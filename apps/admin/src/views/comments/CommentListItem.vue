@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { MoreHorizOutlined } from '@vicons/material';
-import { XButton } from '@novelia/web-kit';
-import { NDropdown, type DropdownOption } from 'naive-ui';
-import { computed } from 'vue';
+import { XButton, XDropdownMenu, XDropdownMenuItem } from '@novelia/web-kit';
 
 import type { Comment, CommentStatusName } from '@/api';
 
@@ -12,36 +10,13 @@ const emit = defineEmits<{
   moderate: [comment: Comment, status: CommentStatusName];
 }>();
 
-const actionOptions = computed<DropdownOption[]>(() => {
-  const options: DropdownOption[] = [{ label: '仅看此帖', key: 'filter-post' }];
-  if (props.comment.status !== 0)
-    options.push({
-      label: '恢复',
-      key: 'published',
-      disabled: props.actionsDisabled,
-    });
-  if (props.comment.status !== 1)
-    options.push({
-      label: '隐藏',
-      key: 'hidden',
-      disabled: props.actionsDisabled,
-    });
-  if (props.comment.status !== 2)
-    options.push({
-      label: '删除',
-      key: 'deleted',
-      disabled: props.actionsDisabled,
-    });
-  return options;
-});
-
-function selectAction(key: string | number) {
+function selectAction(key: 'filter-post' | CommentStatusName) {
   if (key === 'filter-post') {
     emit('filterPost', props.comment.postId);
     return;
   }
   if (props.actionsDisabled) return;
-  emit('moderate', props.comment, key as CommentStatusName);
+  emit('moderate', props.comment, key);
 }
 
 function formatDate(value: string) {
@@ -89,21 +64,43 @@ function formatCommentId(comment: Comment) {
         >
           {{ ['正常发布', '隐藏', '删除'][comment.status] }}
         </span>
-        <n-dropdown
-          trigger="click"
-          :options="actionOptions"
-          @select="selectAction"
-        >
-          <XButton
-            color="neutral"
-            variant="ghost"
-            size="icon"
-            class="size-8"
-            aria-label="评论操作"
+        <XDropdownMenu>
+          <template #trigger>
+            <XButton
+              color="neutral"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="评论操作"
+            >
+              <MoreHorizOutlined class="size-5" aria-hidden="true" />
+            </XButton>
+          </template>
+          <XDropdownMenuItem @select="selectAction('filter-post')">
+            仅看此帖
+          </XDropdownMenuItem>
+          <XDropdownMenuItem
+            v-if="comment.status !== 0"
+            :disabled="actionsDisabled"
+            @select="selectAction('published')"
           >
-            <MoreHorizOutlined class="size-5" aria-hidden="true" />
-          </XButton>
-        </n-dropdown>
+            恢复
+          </XDropdownMenuItem>
+          <XDropdownMenuItem
+            v-if="comment.status !== 1"
+            :disabled="actionsDisabled"
+            @select="selectAction('hidden')"
+          >
+            隐藏
+          </XDropdownMenuItem>
+          <XDropdownMenuItem
+            v-if="comment.status !== 2"
+            :disabled="actionsDisabled"
+            destructive
+            @select="selectAction('deleted')"
+          >
+            删除
+          </XDropdownMenuItem>
+        </XDropdownMenu>
       </div>
     </div>
     <p

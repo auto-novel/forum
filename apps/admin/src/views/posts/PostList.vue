@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { XButton } from '@novelia/web-kit';
-import { NPagination, NSpin } from 'naive-ui';
+import { XButton, XPagination } from '@novelia/web-kit';
+import { NSpin } from 'naive-ui';
 import { computed } from 'vue';
 
 import type { PostStatus, PostSummary } from '@/api';
@@ -39,8 +39,11 @@ const rangeEnd = computed(() =>
 </script>
 
 <template>
-  <div class="post-list">
-    <p v-if="!loading || posts.length" class="list-summary text-muted">
+  <div class="flex flex-col gap-3">
+    <p
+      v-if="!loading || posts.length"
+      class="flex min-h-7 items-center text-muted"
+    >
       <template v-if="total">
         显示 {{ rangeStart }}–{{ rangeEnd }}，共 {{ total }} 篇帖子
       </template>
@@ -48,8 +51,11 @@ const rangeEnd = computed(() =>
     </p>
 
     <section class="border-y border-border bg-surface text-ink">
-      <div v-if="loading && !posts.length" class="skeleton-list">
-        <div v-for="index in 5" :key="index" class="skeleton-row">
+      <div
+        v-if="loading && !posts.length"
+        class="divide-y divide-border px-2.5 md:px-4"
+      >
+        <div v-for="index in 5" :key="index" class="py-4.5">
           <div aria-hidden="true" class="grid gap-2">
             <div class="skeleton h-3.5"></div>
             <div class="skeleton h-3.5"></div>
@@ -59,7 +65,11 @@ const rangeEnd = computed(() =>
       </div>
       <n-spin v-else :show="loading">
         <ul v-if="posts.length" class="divide-y divide-divider">
-          <li v-for="post in posts" :key="post.id" class="list-item">
+          <li
+            v-for="post in posts"
+            :key="post.id"
+            class="px-2.5 py-3 md:px-4 md:py-3.5"
+          >
             <PostListItem
               :post="post"
               :category-name="
@@ -78,7 +88,10 @@ const rangeEnd = computed(() =>
             />
           </li>
         </ul>
-        <div v-else class="empty flex flex-col items-center gap-4 text-muted">
+        <div
+          v-else
+          class="flex flex-col items-center gap-4 px-4 py-16 text-muted"
+        >
           <p>{{ hasFilters ? '没有符合条件的帖子' : '暂无帖子' }}</p>
           <XButton
             v-if="hasFilters"
@@ -93,65 +106,12 @@ const rangeEnd = computed(() =>
       </n-spin>
     </section>
 
-    <div v-if="total > pageSize" class="pagination">
-      <n-pagination
-        :page="page"
-        :page-count="pageCount"
-        :page-slot="5"
-        show-quick-jumper
-        @update:page="emit('updatePage', $event)"
-      >
-        <template #goto>跳至</template>
-      </n-pagination>
-    </div>
+    <XPagination
+      v-if="total > pageSize"
+      :page="page"
+      :total-pages="pageCount"
+      class="border-t-0 px-0 sm:px-0"
+      @update:page="emit('updatePage', $event)"
+    />
   </div>
 </template>
-
-<style scoped>
-.post-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.list-summary {
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-}
-
-.skeleton-list {
-  padding: 0 16px;
-}
-
-.skeleton-row {
-  padding: 18px 0;
-}
-
-.skeleton-row + .skeleton-row {
-  border-top: 1px solid var(--color-border);
-}
-
-.list-item {
-  padding: 14px 16px;
-}
-
-.empty {
-  padding: 64px 16px;
-}
-
-.pagination {
-  display: flex;
-  overflow-x: auto;
-}
-
-@media (max-width: 767px) {
-  .list-item {
-    padding: 12px 10px;
-  }
-
-  .skeleton-list {
-    padding-inline: 10px;
-  }
-}
-</style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { XButton, XInput } from '@novelia/web-kit';
-import { NForm, NFormItem, NInputNumber, NModal } from 'naive-ui';
+import { XButton, XDialog, XInput } from '@novelia/web-kit';
+import { NInputNumber } from 'naive-ui';
+import { useId } from 'vue';
 
 defineProps<{
   show: boolean;
@@ -13,34 +14,52 @@ const emit = defineEmits<{
   save: [];
 }>();
 
+const fieldId = useId();
 const name = defineModel<string>('name', { required: true });
 const color = defineModel<number>('color', { required: true });
 const sortOrder = defineModel<number>('sortOrder', { required: true });
 </script>
 
 <template>
-  <n-modal
-    :show="show"
-    preset="card"
+  <XDialog
+    :open="show"
     :title="editing ? '编辑标签' : '新建标签'"
-    class="w-11/12! max-w-lg"
-    :mask-closable="!saving"
-    :close-on-esc="!saving"
-    @update:show="(value) => !value && emit('close')"
+    class="w-11/12 max-w-lg"
+    :closable="!saving"
+    @update:open="(value) => !value && !saving && emit('close')"
   >
-    <n-form label-placement="top">
-      <n-form-item label="标签名称" required>
-        <XInput v-model="name" class="w-full" placeholder="输入标签名称" />
-      </n-form-item>
-      <div class="grid grid-cols-2 gap-3.5">
-        <n-form-item label="预定义色号">
-          <n-input-number v-model:value="color" :min="0" />
-        </n-form-item>
-        <n-form-item label="排序值">
-          <n-input-number v-model:value="sortOrder" />
-        </n-form-item>
+    <div class="grid gap-5">
+      <div class="grid gap-2">
+        <label :for="`${fieldId}-name`" class="text-sm">
+          标签名称
+          <span class="text-error" aria-hidden="true">*</span>
+        </label>
+        <XInput
+          :id="`${fieldId}-name`"
+          v-model="name"
+          class="w-full"
+          placeholder="输入标签名称"
+          aria-required="true"
+        />
       </div>
-    </n-form>
+      <div class="grid grid-cols-2 gap-3.5">
+        <div class="grid gap-2">
+          <label :for="`${fieldId}-color`" class="text-sm">预定义色号</label>
+          <NInputNumber
+            v-model:value="color"
+            :min="0"
+            :input-props="{ id: `${fieldId}-color` }"
+          />
+        </div>
+        <div class="grid gap-2">
+          <label :for="`${fieldId}-sort-order`" class="text-sm">排序值</label>
+          <NInputNumber
+            v-model:value="sortOrder"
+            :input-props="{ id: `${fieldId}-sort-order` }"
+          />
+        </div>
+      </div>
+    </div>
     <template #footer>
       <div class="flex justify-end gap-4">
         <XButton
@@ -60,5 +79,5 @@ const sortOrder = defineModel<number>('sortOrder', { required: true });
         </XButton>
       </div>
     </template>
-  </n-modal>
+  </XDialog>
 </template>

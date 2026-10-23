@@ -5,8 +5,8 @@ import {
   PushPinOutlined,
   VisibilityOutlined,
 } from '@vicons/material';
-import { XButton } from '@novelia/web-kit';
-import { NInputNumber, NPopconfirm, NPopover, NSpin } from 'naive-ui';
+import { XButton, XConfirmDialog } from '@novelia/web-kit';
+import { NInputNumber, NPopover, NSpin } from 'naive-ui';
 import { ref, watch } from 'vue';
 
 import type { PostStatus, PostSummary } from '@/api';
@@ -25,11 +25,23 @@ const emit = defineEmits<{
   reviewComments: [post: PostSummary];
 }>();
 
+const deleteConfirmationOpen = ref(false);
 const pinOrderInput = ref<number | null>(props.post.pinOrder ?? null);
 watch(
   () => props.post.pinOrder,
   (value) => (pinOrderInput.value = value ?? null),
 );
+
+function confirmDelete() {
+  if (
+    !deleteConfirmationOpen.value ||
+    props.actionsDisabled ||
+    props.post.status === 2
+  )
+    return;
+  deleteConfirmationOpen.value = false;
+  emit('setStatus', props.post, 2);
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -73,29 +85,31 @@ function formatDate(value: string) {
           已锁评
         </span>
       </div>
-      <p class="post-title font-semibold text-ink">{{ post.title }}</p>
-      <div class="post-footer">
-        <span class="text-muted">
-          {{ post.authorUsername }} (ID {{ post.authorId }}) ·
-          {{ formatDate(post.activeAt) }}
-        </span>
-        <div class="post-metrics">
-          <span>
-            <VisibilityOutlined class="size-4" aria-hidden="true" />
-            {{ post.viewsCount }}
+      <div class="flex flex-col gap-1">
+        <p class="post-title font-medium text-ink">{{ post.title }}</p>
+        <div class="post-footer">
+          <span class="text-muted">
+            {{ post.authorUsername }} (ID {{ post.authorId }}) ·
+            {{ formatDate(post.activeAt) }}
           </span>
-          <span>
-            <CommentOutlined class="size-4" aria-hidden="true" />
-            {{ post.commentsCount }}
-          </span>
-          <XButton
-            variant="ghost"
-            color="primary"
-            size="sm"
-            @click="emit('reviewComments', post)"
-          >
-            审核评论
-          </XButton>
+          <div class="post-metrics">
+            <span>
+              <VisibilityOutlined class="size-4" aria-hidden="true" />
+              {{ post.viewsCount }}
+            </span>
+            <span>
+              <CommentOutlined class="size-4" aria-hidden="true" />
+              {{ post.commentsCount }}
+            </span>
+            <XButton
+              variant="ghost"
+              color="primary"
+              size="sm"
+              @click="emit('reviewComments', post)"
+            >
+              审核评论
+            </XButton>
+          </div>
         </div>
       </div>
       <div class="post-actions">
@@ -190,24 +204,26 @@ function formatDate(value: string) {
           >
             隐藏
           </XButton>
-          <n-popconfirm
+          <XButton
             v-if="post.status !== 2"
-            positive-text="确认删除"
-            negative-text="取消"
-            @positive-click="emit('setStatus', post, 2)"
+            color="danger"
+            variant="ghost"
+            size="sm"
+            :disabled="actionsDisabled"
+            @click="deleteConfirmationOpen = true"
           >
-            <template #trigger>
-              <XButton
-                color="danger"
-                variant="ghost"
-                size="sm"
-                :disabled="actionsDisabled"
-              >
-                删除
-              </XButton>
-            </template>
-            确定将帖子「{{ post.title }}」标记为已删除？
-          </n-popconfirm>
+            删除
+          </XButton>
+          <XConfirmDialog
+            v-if="post.status !== 2"
+            v-model:open="deleteConfirmationOpen"
+            title="确认删除帖子"
+            :description="`确定将帖子「${post.title}」标记为已删除？`"
+            confirm-label="确认删除"
+            :loading="actionsDisabled"
+            danger
+            @confirm="confirmDelete"
+          />
         </div>
       </div>
     </div>
@@ -289,10 +305,6 @@ function formatDate(value: string) {
   font-size: 17px;
   line-height: 1.4;
   overflow-wrap: anywhere;
-}
-
-.post-footer {
-  margin-top: 3px;
 }
 
 .post-metrics span {

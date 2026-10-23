@@ -56,7 +56,7 @@ function formatDate(value: string) {
       <li v-for="post in posts" :key="post.id" class="py-3">
         <div class="flex items-center justify-between gap-4">
           <div class="flex min-w-0 flex-col gap-[3px]">
-            <span class="truncate font-semibold">{{ post.title }}</span>
+            <span class="truncate font-medium">{{ post.title }}</span>
             <span class="text-xs text-muted">
               {{ post.authorUsername }} · {{ formatDate(post.activeAt) }}
             </span>

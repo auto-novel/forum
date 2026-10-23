@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { XButton } from '@novelia/web-kit';
-import { NPagination, NSpin } from 'naive-ui';
+import { XButton, XPagination } from '@novelia/web-kit';
+import { NSpin } from 'naive-ui';
 import { computed } from 'vue';
 
 import type { Comment, CommentStatusName } from '@/api';
@@ -97,13 +97,12 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
       </n-spin>
     </section>
 
-    <div v-if="total > pageSize" class="flex overflow-x-auto">
-      <n-pagination
-        :page="page"
-        :page-count="pageCount"
-        :page-slot="5"
-        @update:page="emit('updatePage', $event)"
-      />
-    </div>
+    <XPagination
+      v-if="total > pageSize"
+      :page="page"
+      :total-pages="pageCount"
+      class="border-t-0 px-0 sm:px-0"
+      @update:page="emit('updatePage', $event)"
+    />
   </div>
 </template>
