@@ -14,7 +14,6 @@ on:
       - pnpm-workspace.yaml
       - apps/web/**
       - apps/admin/**
-      - packages/forum-api/**
 
 permissions:
   contents: read
