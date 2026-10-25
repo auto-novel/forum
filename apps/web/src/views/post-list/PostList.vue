@@ -6,6 +6,7 @@ import {
   restoreScrollPosition,
   XAsyncContent,
   XPagination,
+  XSeparator,
 } from '@novelia/web-kit';
 
 import PostListItem from './PostListItem.vue';
@@ -65,9 +66,16 @@ const emit = defineEmits<{
       :page="page"
       :total-pages="paginationTotalPages"
       keyboard
-      class="border-0"
+      class="mt-6"
+      :ui="{ root: 'border-t-0 p-0 sm:px-0' }"
       aria-label="帖子列表顶部分页"
       @update:page="emit('changePage', $event)"
+    />
+
+    <XSeparator
+      :style="{
+        margin: !error && paginationTotalPages > 1 ? '12px 0 0' : '24px 0 0',
+      }"
     />
 
     <XAsyncContent
