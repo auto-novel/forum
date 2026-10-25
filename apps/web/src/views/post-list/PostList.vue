@@ -78,6 +78,16 @@ const emit = defineEmits<{
     aria-label="帖子列表"
     aria-live="polite"
   >
+    <XPagination
+      v-if="!loading && !error && totalPages > 1"
+      :page="page"
+      :total-pages="totalPages"
+      keyboard
+      class="border-t-0 border-b border-divider"
+      aria-label="帖子列表顶部分页"
+      @update:page="emit('changePage', $event)"
+    />
+
     <XAsyncContent
       :loading="loading"
       :error="error"
@@ -97,7 +107,7 @@ const emit = defineEmits<{
       </template>
 
       <div
-        class="hidden grid-cols-[minmax(0,1fr)_6rem_6rem] items-center gap-x-4 border-b border-divider pb-2 text-xs font-bold text-ink sm:grid"
+        class="hidden grid-cols-[minmax(0,1fr)_6rem_6rem] items-center gap-x-4 border-b border-divider py-2 text-xs font-bold text-ink sm:grid"
         aria-hidden="true"
       >
         <span>帖子</span>
@@ -115,6 +125,7 @@ const emit = defineEmits<{
       :total-pages="totalPages"
       keyboard
       :keyboard-scope="paginationScope"
+      aria-label="帖子列表底部分页"
       @update:page="emit('changePage', $event)"
     />
   </section>
