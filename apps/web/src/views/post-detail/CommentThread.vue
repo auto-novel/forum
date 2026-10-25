@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
 import type { PostComment } from '@/api';
 import {
@@ -18,6 +18,8 @@ const props = defineProps<{
   postId: number;
   replyToId?: number;
 }>();
+
+const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
 
 const emit = defineEmits<{
   reply: [comment: PostComment];
@@ -72,7 +74,14 @@ async function handleCreated(comment: PostComment) {
       @author-comments-deleted="emit('authorCommentsDeleted')"
     />
 
-    <div v-if="comment.replyCount > 0">
+    <!-- 回复区独立处理方向键，边界页也不冒泡到外层评论分页。 -->
+    <div
+      v-if="comment.replyCount > 0"
+      ref="paginationScope"
+      tabindex="0"
+      aria-label="回复列表"
+      @keydown.stop
+    >
       <XAsyncContent
         :loading="loading"
         :error="error"
@@ -118,6 +127,8 @@ async function handleCreated(comment: PostComment) {
           v-if="totalPages > 1"
           :page="replyPage"
           :total-pages="totalPages"
+          keyboard
+          :keyboard-scope="paginationScope"
           @update:page="replyPage = $event"
         />
       </XAsyncContent>

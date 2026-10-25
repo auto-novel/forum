@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted, useTemplateRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
 import {
@@ -47,6 +47,8 @@ async function restoreScroll() {
 onMounted(restoreScroll);
 watch(() => props.loading, restoreScroll, { flush: 'post' });
 
+const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
+
 const emit = defineEmits<{
   retry: [];
   changePage: [page: number];
@@ -54,7 +56,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section aria-live="polite">
+  <section
+    ref="paginationScope"
+    tabindex="0"
+    aria-label="帖子列表"
+    aria-live="polite"
+  >
     <XAsyncContent
       :loading="loading"
       :error="error"
@@ -90,6 +97,8 @@ const emit = defineEmits<{
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
+      keyboard
+      :keyboard-scope="paginationScope"
       @update:page="emit('changePage', $event)"
     />
   </section>

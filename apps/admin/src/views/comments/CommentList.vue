@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { XButton, XPagination } from '@novelia/web-kit';
-import { computed } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import AdminSpinner from '@/components/AdminSpinner.vue';
 import type { Comment, CommentStatusName, CommentSubjectFilter } from '@/api';
@@ -18,6 +18,8 @@ const props = defineProps<{
   hasFilters: boolean;
   actionsDisabled: boolean;
 }>();
+
+const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
 
 const emit = defineEmits<{
   updatePage: [page: number];
@@ -37,7 +39,12 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div
+    ref="paginationScope"
+    tabindex="0"
+    aria-label="评论列表"
+    class="flex flex-col gap-3"
+  >
     <div class="flex min-h-7 items-center justify-between gap-3">
       <span class="text-muted">
         {{
@@ -120,6 +127,8 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
       v-if="total > pageSize"
       :page="page"
       :total-pages="pageCount"
+      :keyboard="!loading && !actionsDisabled"
+      :keyboard-scope="paginationScope"
       class="border-t-0 px-0 sm:px-0"
       @update:page="emit('updatePage', $event)"
     />

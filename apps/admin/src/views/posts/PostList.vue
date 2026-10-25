@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { XButton, XPagination } from '@novelia/web-kit';
-import { computed } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import AdminSpinner from '@/components/AdminSpinner.vue';
 import type { PostStatus, PostSummary } from '@/api';
@@ -17,6 +17,8 @@ const props = defineProps<{
   categoryNames: Map<number, string>;
   busyPostId: number | null;
 }>();
+
+const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
 
 const emit = defineEmits<{
   updatePage: [page: number];
@@ -39,7 +41,12 @@ const rangeEnd = computed(() =>
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div
+    ref="paginationScope"
+    tabindex="0"
+    aria-label="帖子列表"
+    class="flex flex-col gap-3"
+  >
     <p
       v-if="!loading || posts.length"
       class="flex min-h-7 items-center text-muted"
@@ -120,6 +127,8 @@ const rangeEnd = computed(() =>
       v-if="total > pageSize"
       :page="page"
       :total-pages="pageCount"
+      :keyboard="!loading && busyPostId === null"
+      :keyboard-scope="paginationScope"
       class="border-t-0 px-0 sm:px-0"
       @update:page="emit('updatePage', $event)"
     />
