@@ -11,16 +11,16 @@ import type { Comment, CommentStatusName } from '@/api';
 
 const props = defineProps<{ comment: Comment; actionsDisabled: boolean }>();
 const emit = defineEmits<{
-  filterPost: [postId: number];
+  filterSubject: [comment: Comment];
   moderate: [comment: Comment, status: CommentStatusName];
   deleteAuthor: [comment: Comment];
 }>();
 
 function selectAction(
-  key: 'filter-post' | 'delete-author' | CommentStatusName,
+  key: 'filter-subject' | 'delete-author' | CommentStatusName,
 ) {
-  if (key === 'filter-post') {
-    emit('filterPost', props.comment.postId);
+  if (key === 'filter-subject') {
+    emit('filterSubject', props.comment);
     return;
   }
   if (props.actionsDisabled) return;
@@ -53,6 +53,7 @@ function formatCommentId(comment: Comment) {
         <div class="flex flex-wrap items-center gap-x-1 text-xs text-muted">
           <span>{{ formatCommentId(comment) }} ·</span>
           <a
+            v-if="comment.subjectType === 0 && comment.postId"
             class="text-primary hover:underline"
             :href="`/p/${comment.postId}`"
             target="_blank"
@@ -60,6 +61,7 @@ function formatCommentId(comment: Comment) {
           >
             帖子 #{{ comment.postId }}
           </a>
+          <span v-else class="break-all">小说 · {{ comment.subjectKey }}</span>
           <span>· {{ formatDate(comment.createdAt) }}</span>
         </div>
       </div>
@@ -87,8 +89,8 @@ function formatCommentId(comment: Comment) {
               <MoreHorizOutlined class="size-5" aria-hidden="true" />
             </XButton>
           </template>
-          <XDropdownMenuItem @select="selectAction('filter-post')">
-            仅看此帖
+          <XDropdownMenuItem @select="selectAction('filter-subject')">
+            仅看此资源
           </XDropdownMenuItem>
           <XDropdownMenuItem
             v-if="comment.status !== 0"

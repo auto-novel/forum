@@ -3,7 +3,7 @@ import { XButton, XPagination } from '@novelia/web-kit';
 import { computed } from 'vue';
 
 import AdminSpinner from '@/components/AdminSpinner.vue';
-import type { Comment, CommentStatusName } from '@/api';
+import type { Comment, CommentStatusName, CommentSubjectFilter } from '@/api';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -13,14 +13,15 @@ const props = defineProps<{
   total: number;
   page: number;
   pageSize: number;
-  postId?: number;
+  subjectType: CommentSubjectFilter;
+  subjectKey: string;
   hasFilters: boolean;
   actionsDisabled: boolean;
 }>();
 
 const emit = defineEmits<{
   updatePage: [page: number];
-  filterPost: [postId: number];
+  filterSubject: [comment: Comment];
   resetFilters: [];
   moderate: [comment: Comment, status: CommentStatusName];
   deleteAuthor: [comment: Comment];
@@ -39,7 +40,13 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
   <div class="flex flex-col gap-3">
     <div class="flex min-h-7 items-center justify-between gap-3">
       <span class="text-muted">
-        {{ postId ? `帖子 #${postId}` : '全部帖子' }} · 最新评论优先
+        {{
+          subjectType === '0'
+            ? '帖子'
+            : subjectType === '1'
+              ? '小说'
+              : '全部资源'
+        }}{{ subjectKey ? ` · ${subjectKey}` : '' }} · 最新评论优先
       </span>
       <span
         class="shrink-0 rounded bg-success/10 px-2 py-0.5 text-xs text-success"
@@ -87,7 +94,7 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
               :actions-disabled="actionsDisabled"
               @moderate="forwardModeration"
               @delete-author="emit('deleteAuthor', $event)"
-              @filter-post="emit('filterPost', $event)"
+              @filter-subject="emit('filterSubject', $event)"
             />
           </li>
         </ul>

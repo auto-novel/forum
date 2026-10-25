@@ -2,8 +2,10 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"forum/internal/domain"
 	"forum/internal/httpx"
@@ -28,6 +30,14 @@ func (h *commentHandler) setStatus(w http.ResponseWriter, r *http.Request) error
 	if err != nil {
 		return err
 	}
+	subjectType, err := parseAdminCommentSubjectType(r.URL.Query())
+	if err != nil {
+		return err
+	}
+	kind := domain.CommentSubjectPost
+	if subjectType != nil {
+		kind = *subjectType
+	}
 	input, err := httpx.Body[commentStatusInput](r)
 	if err != nil {
 		return err
@@ -41,7 +51,7 @@ func (h *commentHandler) setStatus(w http.ResponseWriter, r *http.Request) error
 		r.Context(),
 		actorFromPrincipal(principal),
 		usecase.SetCommentStatusCommand{
-			SubjectType: domain.CommentSubjectPost,
+			SubjectType: kind,
 			CommentID:   id,
 			Status:      status,
 		},
@@ -77,13 +87,27 @@ func (h *commentHandler) listAdmin(w http.ResponseWriter, r *http.Request) error
 	if err != nil {
 		return err
 	}
+	subjectType, err := parseAdminCommentSubjectType(query)
+	if err != nil {
+		return err
+	}
 	listQuery := usecase.ListAdminCommentsQuery{
-		Search:     strings.TrimSpace(query.Get("q")),
-		AuthorName: strings.TrimSpace(query.Get("author_name")),
-		Limit:      pagination.Limit,
-		Offset:     pagination.Offset,
+		SubjectType: subjectType,
+		Search:      strings.TrimSpace(query.Get("q")),
+		AuthorName:  strings.TrimSpace(query.Get("author_name")),
+		Limit:       pagination.Limit,
+		Offset:      pagination.Offset,
+	}
+	if values, ok := query["subject_key"]; ok {
+		if len(values) != 1 || values[0] == "" {
+			return httpx.BadRequest("评论对象 key 无效")
+		}
+		listQuery.SubjectKey = &values[0]
 	}
 	if values, ok := query["post_id"]; ok {
+		if subjectType != nil && *subjectType != domain.CommentSubjectPost {
+			return httpx.BadRequest("帖子 ID 不能用于非帖子评论")
+		}
 		if len(values) != 1 {
 			return httpx.BadRequest("帖子 ID 必须为正整数")
 		}
@@ -115,16 +139,66 @@ func (h *commentHandler) listAdmin(w http.ResponseWriter, r *http.Request) error
 	if err != nil {
 		return transportError(err)
 	}
-	responses := make([]commentResponse, len(items))
+	responses := make([]adminCommentResponse, len(items))
 	for i, item := range items {
-		response, err := newCommentResponse(item)
+		response, err := newAdminCommentResponse(item)
 		if err != nil {
 			return httpx.InternalError(err, "转换评论数据失败")
 		}
 		responses[i] = response
 	}
-	render.JSON(w, r, page[commentResponse]{Total: total, Items: responses})
+	render.JSON(w, r, page[adminCommentResponse]{Total: total, Items: responses})
 	return nil
+}
+
+// Admin responses carry subject metadata without changing the public post contract.
+type adminCommentResponse struct {
+	ID             int64                       `json:"id"`
+	SubjectType    domain.CommentSubjectType   `json:"subjectType"`
+	SubjectKey     string                      `json:"subjectKey"`
+	PostID         *int64                      `json:"postId"`
+	RootID         *int64                      `json:"rootId"`
+	Content        string                      `json:"content"`
+	AuthorID       int64                       `json:"authorId"`
+	AuthorUsername string                      `json:"authorUsername"`
+	AuthorBlocked  bool                        `json:"authorBlocked"`
+	Status         int16                       `json:"status"`
+	CreatedAt      time.Time                   `json:"createdAt"`
+	UpdatedAt      time.Time                   `json:"updatedAt"`
+	ReplyCount     int64                       `json:"replyCount"`
+	Replies        *page[adminCommentResponse] `json:"replies,omitempty"`
+}
+
+func newAdminCommentResponse(value domain.CommentReadModel) (adminCommentResponse, error) {
+	response := adminCommentResponse{
+		ID: value.ID, SubjectType: value.SubjectType, SubjectKey: value.SubjectKey,
+		RootID: value.RootID, Content: value.Content, AuthorID: value.AuthorID,
+		AuthorUsername: value.AuthorUsername, AuthorBlocked: value.AuthorBlocked,
+		Status: int16(value.Status), CreatedAt: value.CreatedAt, UpdatedAt: value.UpdatedAt,
+	}
+	if value.SubjectType == domain.CommentSubjectPost {
+		postID, err := domain.PostIDFromCommentSubjectKey(value.SubjectKey)
+		if err != nil {
+			return adminCommentResponse{}, err
+		}
+		response.PostID = &postID
+	}
+	return response, nil
+}
+
+func parseAdminCommentSubjectType(query url.Values) (*domain.CommentSubjectType, error) {
+	values, ok := query["subject_type"]
+	if !ok {
+		return nil, nil
+	}
+	if len(values) != 1 || (values[0] != "0" && values[0] != "1") {
+		return nil, httpx.BadRequest("评论对象类型无效")
+	}
+	kind := domain.CommentSubjectPost
+	if values[0] == "1" {
+		kind = domain.CommentSubjectNovel
+	}
+	return &kind, nil
 }
 
 func parseCommentStatus(value string) (domain.CommentStatus, error) {

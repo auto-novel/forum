@@ -77,12 +77,14 @@ func NewCommentUsecase(
 }
 
 type ListAdminCommentsQuery struct {
-	Search     string
-	AuthorName string
-	PostID     int64
-	Status     *domain.CommentStatus
-	Limit      int64
-	Offset     int64
+	Search      string
+	AuthorName  string
+	PostID      int64
+	SubjectType *domain.CommentSubjectType
+	SubjectKey  *string
+	Status      *domain.CommentStatus
+	Limit       int64
+	Offset      int64
 }
 
 func checkCommentAdmin(actor Actor) error {
@@ -104,10 +106,12 @@ func (u *CommentUsecase) ListAdmin(
 		return 0, nil, Invalid(CodeCommentStatusInvalid, "评论状态无效")
 	}
 	filter := repository.CommentFilter{
-		Search:     query.Search,
-		AuthorName: query.AuthorName,
-		PostID:     query.PostID,
-		Status:     query.Status,
+		Search:      query.Search,
+		AuthorName:  query.AuthorName,
+		PostID:      query.PostID,
+		SubjectType: query.SubjectType,
+		SubjectKey:  query.SubjectKey,
+		Status:      query.Status,
 	}
 	total, items, err := u.commentRepo.ListAdmin(ctx, filter, query.Limit, query.Offset)
 	if err != nil {

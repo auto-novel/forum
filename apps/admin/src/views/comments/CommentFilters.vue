@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { XInput, XNumberInput } from '@novelia/web-kit';
+import { XInput } from '@novelia/web-kit';
 import FilterRow from '@/components/FilterRow.vue';
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
-import type { CommentStatusFilter } from '@/api';
+import type { CommentStatusFilter, CommentSubjectFilter } from '@/api';
 
 const emit = defineEmits<{ search: [] }>();
 const query = defineModel<string>('query', { required: true });
 const authorName = defineModel<string>('authorName', { required: true });
-const postId = defineModel<number | null>('postId', { required: true });
+const subjectType = defineModel<CommentSubjectFilter>('subjectType', {
+  required: true,
+});
+const subjectKey = defineModel<string>('subjectKey', { required: true });
+const subjectOptions = [
+  { label: '全部', value: '' },
+  { label: '帖子', value: '0' },
+  { label: '小说', value: '1' },
+];
 const status = defineModel<CommentStatusFilter | ''>('status', {
   required: true,
 });
@@ -22,8 +30,8 @@ function changeStatus(value: string) {
   emit('search');
 }
 
-function changePostId(value: number | null) {
-  postId.value = value;
+function changeSubjectType(value: string) {
+  subjectType.value = value as CommentSubjectFilter;
   emit('search');
 }
 </script>
@@ -52,14 +60,22 @@ function changePostId(value: number | null) {
         @keyup.enter="emit('search')"
       />
     </FilterRow>
-    <FilterRow label="帖子">
-      <XNumberInput
-        v-model="postId"
+    <FilterRow label="Subject">
+      <FilterChoiceGroup
+        :value="subjectType"
+        :options="subjectOptions"
+        @update:value="changeSubjectType"
+      />
+    </FilterRow>
+    <FilterRow label="资源标识">
+      <XInput
+        v-model="subjectKey"
         class="field-input"
-        :min="1"
-        :max="Number.MAX_SAFE_INTEGER"
-        placeholder="全部帖子，可输入帖子 ID"
-        @update:model-value="changePostId"
+        clearable
+        placeholder="精确匹配 subject key（帖子 ID / 小说标识）"
+        @change="emit('search')"
+        @clear="emit('search')"
+        @keyup.enter="emit('search')"
       />
     </FilterRow>
     <FilterRow label="状态">

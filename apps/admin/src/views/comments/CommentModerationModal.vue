@@ -29,7 +29,11 @@ async function confirm() {
   confirming = true;
   saving.value = true;
   try {
-    await api.setCommentStatus(target.comment.id, target.status);
+    await api.setCommentStatus(
+      target.comment.id,
+      target.status,
+      target.comment.subjectType,
+    );
     emit(
       'success',
       target.status === 'published'

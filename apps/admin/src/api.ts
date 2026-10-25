@@ -11,6 +11,8 @@ export interface Page<T> {
 
 export type PostStatus = 0 | 1 | 2;
 export type CommentStatus = 0 | 1 | 2;
+export type CommentSubjectType = 0 | 1;
+export type CommentSubjectFilter = '' | '0' | '1';
 export type CommentStatusName = 'published' | 'hidden' | 'deleted';
 export type PostStatusFilter = 'all' | '0' | '1' | '2';
 export type CommentStatusFilter = 'all' | '0' | '1' | '2';
@@ -69,7 +71,9 @@ export interface PostSummary {
 
 export interface Comment {
   id: number;
-  postId: number;
+  postId: number | null;
+  subjectType: CommentSubjectType;
+  subjectKey: string;
   rootId: number | null;
   content: string;
   authorId: number;
@@ -85,6 +89,8 @@ export interface CommentListParams {
   query?: string;
   authorName?: string;
   postId?: number | null;
+  subjectType?: CommentSubjectFilter;
+  subjectKey?: string;
   status?: CommentStatusFilter;
 }
 
@@ -257,13 +263,20 @@ export function createForumApi(client: ApiClient) {
             q: params.query || undefined,
             author_name: params.authorName || undefined,
             post_id: params.postId ?? undefined,
+            subject_type: params.subjectType || undefined,
+            subject_key: params.subjectKey || undefined,
             status: params.status || undefined,
           },
         })
         .json<Page<Comment>>();
     },
-    async setCommentStatus(id: number, status: CommentStatusName) {
+    async setCommentStatus(
+      id: number,
+      status: CommentStatusName,
+      subjectType: CommentSubjectType,
+    ) {
       await client.put(endpoint(`admin/comment/${id}/status`), {
+        searchParams: { subject_type: subjectType },
         json: { status },
       });
     },

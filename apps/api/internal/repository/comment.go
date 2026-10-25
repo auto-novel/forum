@@ -17,6 +17,8 @@ const CommentReplyPageSize int64 = 20
 type CommentFilter struct {
 	Search, AuthorName string
 	PostID             int64
+	SubjectType        *domain.CommentSubjectType
+	SubjectKey         *string
 	Status             *domain.CommentStatus
 }
 
@@ -194,9 +196,16 @@ func (r *commentRepository) ListAdmin(
 	limit, offset int64,
 ) (total int64, items []domain.CommentReadModel, err error) {
 	defer func() { err = storageError(err, "comment.ListAdmin") }()
-	condition := table.Comment.SubjectType.EQ(Int16(int16(domain.CommentSubjectPost)))
+	condition := Bool(true)
+	if filter.SubjectType != nil {
+		condition = condition.AND(table.Comment.SubjectType.EQ(Int16(int16(*filter.SubjectType))))
+	}
+	if filter.SubjectKey != nil {
+		condition = condition.AND(table.Comment.SubjectKey.EQ(String(*filter.SubjectKey)))
+	}
 	if filter.PostID > 0 {
-		condition = condition.AND(table.Comment.SubjectKey.EQ(String(domain.PostCommentSubjectKey(filter.PostID))))
+		condition = condition.AND(table.Comment.SubjectType.EQ(Int16(int16(domain.CommentSubjectPost)))).
+			AND(table.Comment.SubjectKey.EQ(String(domain.PostCommentSubjectKey(filter.PostID))))
 	}
 	if filter.Status != nil {
 		condition = condition.AND(table.Comment.Status.EQ(Int16(int16(*filter.Status))))

@@ -8,6 +8,7 @@ import {
   useForumApi,
   type Comment,
   type CommentStatusFilter,
+  type CommentSubjectFilter,
   type CommentStatusName,
 } from '@/api';
 
@@ -22,8 +23,10 @@ const PAGE_SIZE = 20;
 const api = useForumApi();
 const route = useRoute();
 const router = useRouter();
-const postIdInput = ref<number | null>(null);
-const activePostId = ref<number>();
+const subjectTypeInput = ref<CommentSubjectFilter>('');
+const subjectKeyInput = ref('');
+const activeSubjectType = ref<CommentSubjectFilter>('');
+const activeSubjectKey = ref('');
 const queryInput = ref('');
 const authorNameInput = ref('');
 const statusInput = ref<CommentStatusFilter | ''>('');
@@ -32,7 +35,8 @@ const activeAuthorName = ref('');
 const activeStatus = ref<CommentStatusFilter | ''>('');
 const hasFilters = computed(() =>
   Boolean(
-    activePostId.value ||
+    activeSubjectType.value ||
+    activeSubjectKey.value ||
     activeQuery.value ||
     activeAuthorName.value ||
     activeStatus.value,
@@ -60,7 +64,8 @@ async function loadComments() {
   errorMessage.value = '';
   try {
     const result = await api.getComments({
-      postId: activePostId.value,
+      subjectType: activeSubjectType.value,
+      subjectKey: activeSubjectKey.value,
       page: page.value,
       pageSize: PAGE_SIZE,
       query: activeQuery.value,
@@ -89,11 +94,13 @@ function search() {
   const query = {
     q: queryInput.value.trim() || undefined,
     author: authorNameInput.value.trim() || undefined,
-    post: postIdInput.value == null ? undefined : String(postIdInput.value),
+    subject_type: subjectTypeInput.value || undefined,
+    subject_key: subjectKeyInput.value || undefined,
     status: statusInput.value || undefined,
   };
   if (
-    ['q', 'author', 'post', 'status'].every(
+    !route.query.post &&
+    ['q', 'author', 'subject_type', 'subject_key', 'status'].every(
       (key) => route.query[key] === query[key as keyof typeof query],
     )
   ) {
@@ -108,12 +115,14 @@ function resetFilters() {
   queryInput.value = '';
   authorNameInput.value = '';
   statusInput.value = '';
-  postIdInput.value = null;
+  subjectTypeInput.value = '';
+  subjectKeyInput.value = '';
   search();
 }
 
-function filterPost(postId: number) {
-  postIdInput.value = postId;
+function filterSubject(comment: Comment) {
+  subjectTypeInput.value = String(comment.subjectType) as CommentSubjectFilter;
+  subjectKeyInput.value = comment.subjectKey;
   search();
 }
 
@@ -151,9 +160,16 @@ watch(
   (query) => {
     const text = (value: unknown) => (typeof value === 'string' ? value : '');
     const postId = Number(text(query.post));
-    activePostId.value =
-      Number.isSafeInteger(postId) && postId > 0 ? postId : undefined;
-    postIdInput.value = activePostId.value ?? null;
+    const legacyPost = Number.isSafeInteger(postId) && postId > 0;
+    const subjectType = text(query.subject_type);
+    activeSubjectType.value = subjectTypeInput.value =
+      subjectType === '0' || subjectType === '1'
+        ? subjectType
+        : legacyPost
+          ? '0'
+          : '';
+    activeSubjectKey.value = subjectKeyInput.value =
+      text(query.subject_key) || (legacyPost ? String(postId) : '');
     activeQuery.value = queryInput.value = text(query.q).trim();
     activeAuthorName.value = authorNameInput.value = text(query.author).trim();
     const status = text(query.status);
@@ -169,7 +185,8 @@ watch(
 <template>
   <div class="mx-auto flex w-full max-w-[1000px] flex-col gap-4">
     <CommentFilters
-      v-model:post-id="postIdInput"
+      v-model:subject-type="subjectTypeInput"
+      v-model:subject-key="subjectKeyInput"
       v-model:query="queryInput"
       v-model:author-name="authorNameInput"
       v-model:status="statusInput"
@@ -214,13 +231,14 @@ watch(
       :total="total"
       :page="page"
       :page-size="PAGE_SIZE"
-      :post-id="activePostId"
+      :subject-type="activeSubjectType"
+      :subject-key="activeSubjectKey"
       :has-filters="hasFilters"
       :actions-disabled="actionsDisabled"
       @update-page="changePage"
       @moderate="requestModeration"
       @delete-author="requestAuthorDeletion"
-      @filter-post="filterPost"
+      @filter-subject="filterSubject"
       @reset-filters="resetFilters"
     />
 
