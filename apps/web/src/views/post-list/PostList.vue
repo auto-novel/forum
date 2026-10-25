@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
 import {
@@ -19,6 +19,11 @@ const props = defineProps<{
   emptyTitle?: string;
   emptyDescription?: string;
 }>();
+
+// 新页面请求期间查询会暂时清空总数，保留已知页数以免卸载分页。
+const paginationTotalPages = computed<number>((previous) =>
+  props.loading ? (previous ?? props.totalPages) : props.totalPages,
+);
 
 const route = useRoute();
 
@@ -56,9 +61,9 @@ const emit = defineEmits<{
 <template>
   <section aria-label="帖子列表" aria-live="polite">
     <XPagination
-      v-if="!loading && !error && totalPages > 1"
+      v-if="!error && paginationTotalPages > 1"
       :page="page"
-      :total-pages="totalPages"
+      :total-pages="paginationTotalPages"
       keyboard
       class="border-t-0 border-b border-divider"
       aria-label="帖子列表顶部分页"
@@ -97,9 +102,9 @@ const emit = defineEmits<{
     </XAsyncContent>
 
     <XPagination
-      v-if="!loading && !error && totalPages > 1"
+      v-if="!error && paginationTotalPages > 1"
       :page="page"
-      :total-pages="totalPages"
+      :total-pages="paginationTotalPages"
       keyboard="window"
       aria-label="帖子列表底部分页"
       @update:page="emit('changePage', $event)"
