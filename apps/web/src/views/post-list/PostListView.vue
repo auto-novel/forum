@@ -178,7 +178,6 @@ function changePage(nextPage: number) {
           </XButton>
         </template>
       </PostFilters>
-      <hr class="border-0 border-t border-border" />
       <PostList
         :posts="posts"
         :loading="postsLoading"

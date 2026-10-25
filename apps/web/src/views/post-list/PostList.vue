@@ -65,7 +65,7 @@ const emit = defineEmits<{
       :page="page"
       :total-pages="paginationTotalPages"
       keyboard
-      class="border-t-0 border-b border-divider"
+      class="border-0"
       aria-label="帖子列表顶部分页"
       @update:page="emit('changePage', $event)"
     />

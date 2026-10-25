@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
 import { XButton } from '@novelia/web-kit';
@@ -26,8 +25,6 @@ defineProps<{
   replyToId?: number;
 }>();
 
-const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
-
 const emit = defineEmits<{
   retry: [];
   comment: [];
@@ -42,7 +39,6 @@ const emit = defineEmits<{
 
 <template>
   <section
-    ref="paginationScope"
     tabindex="0"
     aria-label="评论列表"
     class="mt-5 border-t border-divider"
@@ -133,7 +129,7 @@ const emit = defineEmits<{
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
-      :keyboard="paginationScope"
+      keyboard="window"
       @update:page="emit('changePage', $event)"
     />
   </section>
