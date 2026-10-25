@@ -49,6 +49,22 @@ watch(() => props.loading, restoreScroll, { flush: 'post' });
 
 const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
 
+function focusList() {
+  const element = paginationScope.value;
+  if (!element) return;
+  const document = element.ownerDocument;
+  const activeElement = document.activeElement;
+  if (
+    activeElement &&
+    activeElement !== document.body &&
+    activeElement !== document.documentElement
+  )
+    return;
+  element.focus({ preventScroll: true });
+}
+
+onMounted(focusList);
+
 const emit = defineEmits<{
   retry: [];
   changePage: [page: number];
