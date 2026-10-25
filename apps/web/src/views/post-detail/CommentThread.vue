@@ -127,8 +127,7 @@ async function handleCreated(comment: PostComment) {
           v-if="totalPages > 1"
           :page="replyPage"
           :total-pages="totalPages"
-          keyboard
-          :keyboard-scope="paginationScope"
+          :keyboard="paginationScope"
           @update:page="replyPage = $event"
         />
       </XAsyncContent>

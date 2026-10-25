@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef, watch } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
 import {
@@ -47,24 +47,6 @@ async function restoreScroll() {
 onMounted(restoreScroll);
 watch(() => props.loading, restoreScroll, { flush: 'post' });
 
-const paginationScope = useTemplateRef<HTMLElement>('paginationScope');
-
-function focusList() {
-  const element = paginationScope.value;
-  if (!element) return;
-  const document = element.ownerDocument;
-  const activeElement = document.activeElement;
-  if (
-    activeElement &&
-    activeElement !== document.body &&
-    activeElement !== document.documentElement
-  )
-    return;
-  element.focus({ preventScroll: true });
-}
-
-onMounted(focusList);
-
 const emit = defineEmits<{
   retry: [];
   changePage: [page: number];
@@ -72,12 +54,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section
-    ref="paginationScope"
-    tabindex="0"
-    aria-label="帖子列表"
-    aria-live="polite"
-  >
+  <section aria-label="帖子列表" aria-live="polite">
     <XPagination
       v-if="!loading && !error && totalPages > 1"
       :page="page"
@@ -123,8 +100,7 @@ const emit = defineEmits<{
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
-      keyboard
-      :keyboard-scope="paginationScope"
+      keyboard="window"
       aria-label="帖子列表底部分页"
       @update:page="emit('changePage', $event)"
     />

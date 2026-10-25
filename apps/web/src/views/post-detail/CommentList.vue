@@ -133,8 +133,7 @@ const emit = defineEmits<{
       v-if="!loading && !error && totalPages > 1"
       :page="page"
       :total-pages="totalPages"
-      keyboard
-      :keyboard-scope="paginationScope"
+      :keyboard="paginationScope"
       @update:page="emit('changePage', $event)"
     />
   </section>
