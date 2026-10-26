@@ -44,7 +44,7 @@ const confirmationAction = ref<'delete' | 'hide'>();
 const userModerationAction = ref<'strike' | 'ban'>();
 
 const modificationDeadline =
-  new Date(props.comment.createdAt).getTime() + 20 * 60_000;
+  new Date(props.comment.createdAt).getTime() + 30 * 60_000;
 const expiryTimer = window.setTimeout(
   () => {
     now.value = Date.now();

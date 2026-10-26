@@ -181,10 +181,10 @@ func TestCommentModificationPermissions(t *testing.T) {
 				age       time.Duration
 				allowed   bool
 			}{
-				{"author", Actor{UserID: 1}, 19 * time.Minute, true},
-				{"expired", Actor{UserID: 1}, 21 * time.Minute, false},
+				{"author", Actor{UserID: 1}, time.Hour - time.Second, true},
+				{"expired", Actor{UserID: 1}, time.Hour + time.Second, false},
 				{"other author", Actor{UserID: 2}, time.Minute, false},
-				{"admin", Actor{UserID: 2, IsAdmin: true}, time.Hour, true},
+				{"admin", Actor{UserID: 2, IsAdmin: true}, 2 * time.Hour, true},
 			} {
 				t.Run(operation+"/"+tc.name+"/"+domain.PostCommentSubjectKey(int64(subjectType)), func(t *testing.T) {
 					repo := &commentRepoStub{

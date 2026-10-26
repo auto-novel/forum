@@ -204,11 +204,11 @@ func TestAdminCanEditCommentAfterWindow(t *testing.T) {
 		age        time.Duration
 		wantStatus int
 	}{
-		{"author within window", "member", 1, 19 * time.Minute, http.StatusOK},
-		{"author after window", "member", 1, 21 * time.Minute, http.StatusForbidden},
-		{"admin after window", "admin", 2, 21 * time.Minute, http.StatusOK},
-		{"admin editing own old comment", "admin", 1, 21 * time.Minute, http.StatusOK},
-		{"other member within window", "member", 2, 19 * time.Minute, http.StatusForbidden},
+		{"author within window", "member", 1, 59 * time.Minute, http.StatusOK},
+		{"author after window", "member", 1, 61 * time.Minute, http.StatusForbidden},
+		{"admin after window", "admin", 2, 61 * time.Minute, http.StatusOK},
+		{"admin editing own old comment", "admin", 1, 61 * time.Minute, http.StatusOK},
+		{"other member within window", "member", 2, 29 * time.Minute, http.StatusForbidden},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			repo := &editableCommentRepository{comment: domain.Comment{
@@ -252,7 +252,7 @@ func TestAdminCanModifyExternalCommentAfterWindow(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			repo := &editableCommentRepository{comment: domain.Comment{
 				ID: 7, SubjectType: domain.CommentSubjectNovel, SubjectKey: "chapter-1",
-				AuthorID: 1, CreatedAt: time.Now().Add(-21 * time.Minute),
+				AuthorID: 1, CreatedAt: time.Now().Add(-61 * time.Minute),
 			}}
 			router := chi.NewRouter()
 			resolver := handlerSubjectResolver{valid: true, exists: true}

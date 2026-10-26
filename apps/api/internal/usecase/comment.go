@@ -268,8 +268,8 @@ func (u *CommentUsecase) findModifiableComment(
 	if comment.AuthorID != actor.UserID && !actor.IsAdmin {
 		return nil, PermissionDenied(CodeCommentNotOwner, "只能修改自己的评论")
 	}
-	if !actor.IsAdmin && time.Now().After(comment.CreatedAt.Add(20*time.Minute)) {
-		return nil, PermissionDenied(CodeCommentEditExpired, "评论只能在发布后 20 分钟内编辑或删除")
+	if !actor.IsAdmin && time.Now().After(comment.CreatedAt.Add(time.Hour)) {
+		return nil, PermissionDenied(CodeCommentEditExpired, "评论已超过可编辑或删除的时限")
 	}
 	return comment, nil
 }
