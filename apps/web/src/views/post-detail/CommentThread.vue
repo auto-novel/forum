@@ -6,7 +6,7 @@ import {
   COMMENT_REPLY_PAGE_SIZE,
   useCommentReplyPageQuery,
 } from '@/stores/comment';
-import { XAsyncContent, XPagination } from '@novelia/web-kit';
+import { XButton, XError, XPagination, XSkeleton } from '@novelia/web-kit';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -82,34 +82,29 @@ async function handleCreated(comment: PostComment) {
       aria-label="回复列表"
       @keydown.stop
     >
-      <XAsyncContent
-        :loading="loading"
-        :error="error"
-        size="compact"
-        error-title=""
-        retry-label="重试"
-        :ui="{ error: 'min-h-0 pl-8' }"
-        @retry="retry"
-      >
-        <template #loading>
-          <div class="ml-8" role="status">
-            <span class="sr-only">正在加载回复…</span>
-            <div aria-hidden="true">
-              <div
-                v-for="index in Math.min(comment.replyCount, 3)"
-                :key="index"
-                class="py-4"
-              >
-                <div class="h-5 w-28 skeleton bg-border" />
-                <div class="mt-0.5 rounded-floating bg-embedded px-4 py-3">
-                  <div class="h-4 w-full skeleton" />
-                  <div class="mt-2 h-4 w-2/3 skeleton" />
-                </div>
-              </div>
-            </div>
+      <div v-if="loading" class="ml-8" role="status">
+        <span class="sr-only">正在加载回复…</span>
+        <div
+          v-for="index in Math.min(comment.replyCount, 3)"
+          :key="index"
+          class="py-4"
+        >
+          <XSkeleton class="h-5 w-28 bg-border" />
+          <div class="mt-0.5 rounded-floating bg-embedded px-4 py-3">
+            <XSkeleton class="h-4 w-full" />
+            <XSkeleton class="mt-2 h-4 w-2/3" />
           </div>
-        </template>
-
+        </div>
+      </div>
+      <XError
+        v-else-if="error"
+        title=""
+        :description="error"
+        class="min-h-0 p-6 pl-8"
+      >
+        <XButton @click="retry">重试</XButton>
+      </XError>
+      <template v-else>
         <CommentListItem
           v-for="reply in replies"
           :key="reply.id"
@@ -130,7 +125,7 @@ async function handleCreated(comment: PostComment) {
           :keyboard="paginationScope"
           @update:page="replyPage = $event"
         />
-      </XAsyncContent>
+      </template>
     </div>
   </section>
 </template>

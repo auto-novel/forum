@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
-import { XButton } from '@novelia/web-kit';
+import {
+  XButton,
+  XEmpty,
+  XError,
+  XPagination,
+  XSkeleton,
+} from '@novelia/web-kit';
 
 import type { PostComment } from '@/api';
 import { formatCount } from '@/utils/formatCount';
-import { XAsyncContent } from '@novelia/web-kit';
-import { XPagination } from '@novelia/web-kit';
 
 import CommentThread from './CommentThread.vue';
 
@@ -71,59 +75,47 @@ const emit = defineEmits<{
 
     <slot name="composer" />
 
-    <XAsyncContent
-      :loading="loading"
-      :error="error"
-      :empty="!comments.length"
-      size="compact"
-      error-title=""
-      :ui="{ icon: 'hidden', description: 'mt-0' }"
-      retry-label="重新加载评论"
-      empty-title="还没有评论"
-      empty-description="这里暂时安安静静的。"
-      @retry="emit('retry')"
-    >
-      <template #loading>
-        <div class="divide-y divide-divider" aria-label="正在加载评论">
-          <div v-for="index in 3" :key="index" class="py-4">
-            <div class="h-3 w-28 skeleton bg-border" />
-            <div class="mt-3 h-4 w-full skeleton" />
-            <div class="mt-2 h-4 w-2/3 skeleton" />
-          </div>
-        </div>
-      </template>
-
-      <template #empty>
-        <div class="grid min-h-52 place-items-center p-6 text-center">
-          <div>
-            <div
-              class="mx-auto grid size-11 place-items-center rounded-full bg-paper text-muted"
-              aria-hidden="true"
-            >
-              <ChatBubbleOutlineOutlined class="size-5" />
-            </div>
-            <h2 class="mt-3 text-sm font-medium text-ink">还没有评论</h2>
-            <p class="mt-1 text-xs text-muted">这里暂时安安静静的。</p>
-          </div>
-        </div>
-      </template>
-
-      <div class="divide-y divide-divider">
-        <CommentThread
-          v-for="comment in comments"
-          :key="comment.id"
-          :comment="comment"
-          :locked="locked"
-          :post-id="postId"
-          :reply-to-id="replyToId"
-          @reply="emit('reply', $event)"
-          @cancel-reply="emit('cancelReply')"
-          @created="emit('created', $event)"
-          @status-changed="(id, status) => emit('statusChanged', id, status)"
-          @author-comments-deleted="emit('authorCommentsDeleted')"
-        />
+    <div v-if="loading" class="divide-y divide-divider" role="status">
+      <span class="sr-only">正在加载评论…</span>
+      <div v-for="index in 3" :key="index" class="py-4">
+        <XSkeleton class="h-3 w-28 bg-border" />
+        <XSkeleton class="mt-3 h-4 w-full" />
+        <XSkeleton class="mt-2 h-4 w-2/3" />
       </div>
-    </XAsyncContent>
+    </div>
+    <XError
+      v-else-if="error"
+      title=""
+      :description="error"
+      class="min-h-52 p-6"
+      :ui="{ icon: 'hidden', description: 'mt-0' }"
+    >
+      <XButton @click="emit('retry')">重新加载评论</XButton>
+    </XError>
+    <XEmpty
+      v-else-if="!comments.length"
+      size="compact"
+      title="还没有评论"
+      description="这里暂时安安静静的。"
+      :ui="{ icon: 'size-11' }"
+    >
+      <template #icon><ChatBubbleOutlineOutlined class="size-5" /></template>
+    </XEmpty>
+    <div v-else class="divide-y divide-divider">
+      <CommentThread
+        v-for="comment in comments"
+        :key="comment.id"
+        :comment="comment"
+        :locked="locked"
+        :post-id="postId"
+        :reply-to-id="replyToId"
+        @reply="emit('reply', $event)"
+        @cancel-reply="emit('cancelReply')"
+        @created="emit('created', $event)"
+        @status-changed="(id, status) => emit('statusChanged', id, status)"
+        @author-comments-deleted="emit('authorCommentsDeleted')"
+      />
+    </div>
 
     <XPagination
       v-if="!loading && !error && totalPages > 1"

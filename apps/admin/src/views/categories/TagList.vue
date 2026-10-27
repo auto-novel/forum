@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { XSkeleton } from '@novelia/web-kit';
 import { XButton } from '@novelia/web-kit';
 import { AddOutlined, LocalOfferOutlined } from '@vicons/material';
 
@@ -54,9 +55,9 @@ const emit = defineEmits<{
           :key="index"
           class="flex items-center gap-6 px-3 py-4"
         >
-          <div class="skeleton h-4 w-1/3"></div>
-          <div class="skeleton h-4 w-12"></div>
-          <div class="skeleton ml-auto h-6 w-24"></div>
+          <XSkeleton class="h-4 w-1/3" />
+          <XSkeleton class="h-4 w-12" />
+          <XSkeleton class="ml-auto h-6 w-24" />
         </div>
       </div>
     </div>

@@ -4,7 +4,10 @@ import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
 import {
   restoreScrollPosition,
-  XAsyncContent,
+  XButton,
+  XError,
+  XEmpty,
+  XSkeleton,
   XPagination,
   XSeparator,
 } from '@novelia/web-kit';
@@ -78,24 +81,22 @@ const emit = defineEmits<{
       }"
     />
 
-    <XAsyncContent
-      :loading="loading"
-      :error="error"
-      :empty="!posts.length"
-      error-title="帖子列表加载失败"
-      :empty-title="emptyTitle ?? '暂无帖子'"
-      :empty-description="emptyDescription ?? '这个分类暂时没有帖子。'"
-      @retry="emit('retry')"
-    >
-      <template #loading>
-        <div class="divide-y divide-divider" aria-label="正在加载帖子">
-          <div v-for="index in 5" :key="index" class="py-2.5">
-            <div class="h-5 w-3/4 skeleton bg-border" />
-            <div class="mt-1.5 h-5 w-1/3 skeleton" />
-          </div>
-        </div>
-      </template>
-
+    <div v-if="loading" class="divide-y divide-divider" role="status">
+      <span class="sr-only">正在加载帖子…</span>
+      <div v-for="index in 5" :key="index" class="py-2.5">
+        <XSkeleton class="h-5 w-3/4 bg-border" />
+        <XSkeleton class="mt-1.5 h-5 w-1/3" />
+      </div>
+    </div>
+    <XError v-else-if="error" title="帖子列表加载失败" :description="error">
+      <XButton @click="emit('retry')">再试一次</XButton>
+    </XError>
+    <XEmpty
+      v-else-if="!posts.length"
+      :title="emptyTitle ?? '暂无帖子'"
+      :description="emptyDescription ?? '这个分类暂时没有帖子。'"
+    />
+    <template v-else>
       <div
         class="hidden grid-cols-[minmax(0,1fr)_6rem_6rem] items-center gap-x-4 border-b border-divider py-2 text-xs font-bold text-ink sm:grid"
         aria-hidden="true"
@@ -107,7 +108,7 @@ const emit = defineEmits<{
       <div class="divide-y divide-divider">
         <PostListItem v-for="post in posts" :key="post.id" :post="post" />
       </div>
-    </XAsyncContent>
+    </template>
 
     <XPagination
       v-if="!error && paginationTotalPages > 1"

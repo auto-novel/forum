@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { BlockOutlined } from '@vicons/material';
 import {
-  XAsyncContent,
+  XError,
+  XEmpty,
+  XSkeleton,
   XButton,
   XConfirmDialog,
   XTime,
@@ -48,39 +50,36 @@ const {
     </div>
 
     <div v-else aria-live="polite">
-      <XAsyncContent
-        :loading="loading"
-        :error="error"
-        :empty="!entries.length"
-        error-title="黑名单加载失败"
-        empty-title="黑名单为空"
-        empty-description="你还没有拉黑任何用户。"
-        @retry="load"
-      >
-        <template #loading>
-          <div role="status">
-            <span class="sr-only">正在加载黑名单…</span>
-            <div aria-hidden="true">
-              <div class="mb-3 h-5 w-32 skeleton" />
-              <div
-                class="divide-y divide-divider rounded-md border border-divider px-4"
-              >
-                <div
-                  v-for="index in 3"
-                  :key="index"
-                  class="flex items-center justify-between gap-4 py-4"
-                >
-                  <div class="min-w-0 flex-1">
-                    <div class="h-6 w-32 max-w-full skeleton bg-border" />
-                    <div class="mt-1 h-4 w-40 max-w-full skeleton" />
-                  </div>
-                  <div class="h-9 w-22 shrink-0 skeleton" />
-                </div>
+      <div v-if="loading" role="status">
+        <span class="sr-only">正在加载黑名单…</span>
+        <div aria-hidden="true">
+          <XSkeleton class="mb-3 h-5 w-32" />
+          <div
+            class="divide-y divide-divider rounded-md border border-divider px-4"
+          >
+            <div
+              v-for="index in 3"
+              :key="index"
+              class="flex items-center justify-between gap-4 py-4"
+            >
+              <div class="min-w-0 flex-1">
+                <XSkeleton class="h-6 w-32 max-w-full bg-border" />
+                <XSkeleton class="mt-1 h-4 w-40 max-w-full" />
               </div>
+              <XSkeleton class="h-9 w-22 shrink-0" />
             </div>
           </div>
-        </template>
-
+        </div>
+      </div>
+      <XError v-else-if="error" title="黑名单加载失败" :description="error">
+        <XButton @click="load">再试一次</XButton>
+      </XError>
+      <XEmpty
+        v-else-if="!entries.length"
+        title="黑名单为空"
+        description="你还没有拉黑任何用户。"
+      />
+      <template v-else>
         <p class="mb-3 text-sm text-muted">
           已拉黑 {{ entries.length }} 位用户
         </p>
@@ -114,7 +113,7 @@ const {
             </XButton>
           </li>
         </ul>
-      </XAsyncContent>
+      </template>
     </div>
 
     <XConfirmDialog

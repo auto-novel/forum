@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { XSkeleton } from '@novelia/web-kit';
 import { XButton, XPagination } from '@novelia/web-kit';
 import { computed, useTemplateRef } from 'vue';
 
@@ -64,9 +65,9 @@ const rangeEnd = computed(() =>
       >
         <div v-for="index in 5" :key="index" class="py-4.5">
           <div aria-hidden="true" class="grid gap-2">
-            <div class="skeleton h-3.5"></div>
-            <div class="skeleton h-3.5"></div>
-            <div class="skeleton h-3.5 w-3/5"></div>
+            <XSkeleton class="h-3.5" />
+            <XSkeleton class="h-3.5" />
+            <XSkeleton class="h-3.5 w-3/5" />
           </div>
         </div>
       </div>

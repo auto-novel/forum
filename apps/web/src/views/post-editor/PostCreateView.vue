@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useForumApi } from '@/api';
 import { usePostStore } from '@/stores/post';
-import { Toast, useWebKit, XAsyncContent } from '@novelia/web-kit';
+import { Toast, useWebKit, XError, XButton } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { useDraftStore } from '@/stores/draft';
 import PostPublishingNotice from './PostPublishingNotice.vue';
@@ -121,16 +121,21 @@ async function submitPost() {
           登录后才能发表帖子，请使用页面右上角的登录入口。
         </div>
 
-        <XAsyncContent
-          v-else
-          :loading="!categoriesReady && categoryStore.loading"
-          :error="categoriesReady ? undefined : categoryStore.error"
-          error-title="分类加载失败"
-          @retry="categoryStore.refresh"
+        <p
+          v-else-if="!categoriesReady && categoryStore.loading"
+          class="mt-6 py-4 text-sm text-muted"
+          role="status"
         >
-          <template #loading>
-            <p class="mt-6 py-4 text-sm text-muted">正在加载分类…</p>
-          </template>
+          正在加载分类…
+        </p>
+        <XError
+          v-else-if="!categoriesReady && categoryStore.error"
+          title="分类加载失败"
+          :description="categoryStore.error"
+        >
+          <XButton @click="categoryStore.refresh">再试一次</XButton>
+        </XError>
+        <template v-else>
           <PostForm
             v-model:title="title"
             v-model:category="categorySlug"
@@ -151,7 +156,7 @@ async function submitPost() {
               <PostPublishingNotice />
             </template>
           </PostForm>
-        </XAsyncContent>
+        </template>
       </section>
     </div>
   </div>

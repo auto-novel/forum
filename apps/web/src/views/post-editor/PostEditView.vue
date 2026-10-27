@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { useForumApi, type Post } from '@/api';
-import { Toast, XAsyncContent, XButton, useWebKit } from '@novelia/web-kit';
+import { Toast, XError, XSkeleton, XButton, useWebKit } from '@novelia/web-kit';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { useCategoryStore } from '@/stores/category';
 import { usePostQuery, usePostStore } from '@/stores/post';
@@ -153,39 +153,22 @@ void categoryStore.initialize().then(() => {
 <template>
   <div class="page-container py-4 md:py-6">
     <div class="mx-auto max-w-4xl">
-      <XAsyncContent
-        :loading="loading"
-        :error="error"
-        size="large"
-        error-title="帖子加载失败"
-        @retry="loadPost"
+      <div v-if="loading" class="py-6" role="status">
+        <span class="sr-only">正在加载帖子…</span>
+        <XSkeleton class="h-7 w-32 bg-border" />
+        <XSkeleton class="mt-6 h-10 w-full" />
+        <XSkeleton class="mt-5 h-10 w-full" />
+        <XSkeleton class="mt-5 h-80 w-full" />
+      </div>
+      <XError
+        v-else-if="error"
+        class="min-h-96"
+        title="帖子加载失败"
+        :description="error"
       >
-        <template #error="{ error: message, retry }">
-          <div class="grid min-h-96 place-items-center p-8 text-center">
-            <div>
-              <div
-                class="mx-auto grid size-12 place-items-center rounded-full bg-error-soft text-error-text"
-                aria-hidden="true"
-              >
-                !
-              </div>
-              <h1 class="mt-4 text-lg font-semibold text-ink">帖子加载失败</h1>
-              <p class="mt-2 text-sm text-muted">{{ message }}</p>
-              <XButton v-if="retry" class="mt-5" @click="retry()">
-                再试一次
-              </XButton>
-            </div>
-          </div>
-        </template>
-        <template #loading>
-          <div class="py-6">
-            <div class="h-7 w-32 skeleton bg-border" />
-            <div class="mt-6 h-10 w-full skeleton" />
-            <div class="mt-5 h-10 w-full skeleton" />
-            <div class="mt-5 h-80 w-full skeleton" />
-          </div>
-        </template>
-
+        <XButton @click="loadPost">再试一次</XButton>
+      </XError>
+      <template v-else>
         <section v-if="post && canEdit">
           <h1 class="text-2xl font-bold text-ink">编辑帖子</h1>
           <PostForm
@@ -227,7 +210,7 @@ void categoryStore.initialize().then(() => {
             返回帖子详情
           </XButton>
         </section>
-      </XAsyncContent>
+      </template>
     </div>
   </div>
 </template>
