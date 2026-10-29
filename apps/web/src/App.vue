@@ -34,7 +34,6 @@ watch(
   (userId, previousUserId) => {
     if (previousUserId && userId !== previousUserId) {
       draftStore.clearAllDrafts();
-      draftStore.$persist();
     }
   },
   { flush: 'sync' },
