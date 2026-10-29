@@ -15,6 +15,7 @@ import { postListReturn } from '@/utils/postNavigation';
 import CommentComposer from './comments/CommentComposer.vue';
 import CommentList from './comments/CommentList.vue';
 import PostActions from './PostActions.vue';
+import PostBackToTop from './PostBackToTop.vue';
 import PostContent from './PostContent.vue';
 
 const COMMENT_PAGE_SIZE = 50;
@@ -330,6 +331,7 @@ function returnToList() {
             </template>
           </CommentList>
         </div>
+        <PostBackToTop />
       </template>
     </div>
   </div>
