@@ -8,7 +8,7 @@ import {
   XConfirmDialog,
   XTime,
 } from '@novelia/web-kit';
-import { useBlacklistManagement } from '@/composables/useBlacklistManagement';
+import { useBlacklistManagement } from './useBlacklistManagement';
 
 const {
   whoami,

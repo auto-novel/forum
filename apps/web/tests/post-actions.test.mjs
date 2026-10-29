@@ -18,7 +18,7 @@ globalThis.__postActionsTest = fixture;
 globalThis.__postActionsVue = { computed };
 
 const favoriteUrl = new URL(
-  '../src/composables/usePostFavorite.ts',
+  '../src/views/post-detail/usePostFavorite.ts',
   import.meta.url,
 ).href;
 const actionsUrl = new URL(
@@ -117,7 +117,7 @@ registerHooks({
 });
 
 const { usePostFavorite } =
-  await import('../src/composables/usePostFavorite.ts');
+  await import('../src/views/post-detail/usePostFavorite.ts');
 const { default: PostActions } = await import(actionsUrl);
 
 function deferred() {

@@ -4,7 +4,7 @@ import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { type Post, type PostComment } from '@/api';
-import { usePostFavorite } from '@/composables/usePostFavorite';
+import { usePostFavorite } from './usePostFavorite';
 import { XButton, XError, XSkeleton } from '@novelia/web-kit';
 import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
@@ -12,8 +12,8 @@ import { useCommentPageQuery, useCommentStore } from '@/stores/comment';
 import { usePostQuery, usePostStore } from '@/stores/post';
 import { postListReturn } from '@/utils/postNavigation';
 
-import CommentComposer from './CommentComposer.vue';
-import CommentList from './CommentList.vue';
+import CommentComposer from './comments/CommentComposer.vue';
+import CommentList from './comments/CommentList.vue';
 import PostActions from './PostActions.vue';
 import PostContent from './PostContent.vue';
 

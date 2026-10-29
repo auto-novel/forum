@@ -102,7 +102,7 @@ test('reduced motion keeps feedback but disables smooth scrolling and CSS animat
   assert.equal(api.commentsHighlighted.value, true);
   assert.equal(calls[1][1].behavior, 'auto');
   const list = readFileSync(
-    new URL('../src/views/post-detail/CommentList.vue', import.meta.url),
+    new URL('../src/views/post-detail/comments/CommentList.vue', import.meta.url),
     'utf8',
   );
   assert.match(

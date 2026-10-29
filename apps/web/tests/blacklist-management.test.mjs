@@ -19,7 +19,7 @@ const fixture = {
 globalThis.__blacklistManagementTest = fixture;
 
 const composableUrl = new URL(
-  '../src/composables/useBlacklistManagement.ts',
+  '../src/views/settings/useBlacklistManagement.ts',
   import.meta.url,
 ).href;
 const mocks = {

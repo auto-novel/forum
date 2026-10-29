@@ -6,7 +6,7 @@ import { Toast, XButton, XTime, useWebKit } from '@novelia/web-kit';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
-import { useCommentValidation } from '@/composables/useCommentValidation';
+import { useCommentValidation } from './useCommentValidation';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { useCommentStore } from '@/stores/comment';
 

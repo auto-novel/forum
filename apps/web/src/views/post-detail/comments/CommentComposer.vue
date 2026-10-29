@@ -5,7 +5,7 @@ import type { PostComment } from '@/api';
 import CommentRulesNotice from './CommentRulesNotice.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
-import { useCommentValidation } from '@/composables/useCommentValidation';
+import { useCommentValidation } from './useCommentValidation';
 import { Toast, XButton, useWebKit } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 import { useDraftStore } from '@/stores/draft';
