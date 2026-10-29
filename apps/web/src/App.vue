@@ -69,6 +69,17 @@ const navigationOptions = computed<WebKitMenuOption[]>(() => [
         icon: HomeOutlined,
         href: 'https://n.novelia.cc/',
       },
+      ...(whoami.value.isSignedIn
+        ? [
+            {
+              type: 'external' as const,
+              key: 'novel-favorites',
+              label: '我的收藏',
+              icon: StarBorderOutlined,
+              href: 'https://n.novelia.cc/favorite/web',
+            },
+          ]
+        : []),
       {
         type: 'external',
         key: 'web-novels',
@@ -82,15 +93,6 @@ const navigationOptions = computed<WebKitMenuOption[]>(() => [
         label: '文库小说',
         icon: MenuBookOutlined,
         href: 'https://n.novelia.cc/wenku',
-      },
-      {
-        type: 'external',
-        key: 'novel-favorites',
-        label: '我的收藏',
-        icon: StarBorderOutlined,
-        href: whoami.value.isSignedIn
-          ? 'https://n.novelia.cc/favorite/web'
-          : 'https://n.novelia.cc/favorite/local',
       },
     ],
   },
