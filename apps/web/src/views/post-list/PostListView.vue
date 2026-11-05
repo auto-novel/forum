@@ -4,7 +4,12 @@ import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
-import { useWebKitViewport, XButton } from '@novelia/web-kit';
+import {
+  XButton,
+  XPage,
+  XPageHeader,
+  useWebKitViewport,
+} from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { usePostListQuery } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
@@ -115,11 +120,9 @@ function changePage(nextPage: number) {
 </script>
 
 <template>
-  <div class="page-container py-4 md:py-6">
-    <div class="mx-auto min-w-0 max-w-4xl space-y-4">
-      <h1 v-if="!isMobile" class="text-2xl font-semibold leading-7 text-ink">
-        {{ selectedCategoryItem.title }}
-      </h1>
+  <XPage>
+    <div class="min-w-0 space-y-4">
+      <XPageHeader v-if="!isMobile" :title="selectedCategoryItem.title" />
       <nav v-else aria-label="帖子板块" class="flex border-b border-border">
         <RouterLink
           v-for="category in categoryStore.categories"
@@ -192,5 +195,5 @@ function changePage(nextPage: number) {
         @change-page="changePage"
       />
     </div>
-  </div>
+  </XPage>
 </template>

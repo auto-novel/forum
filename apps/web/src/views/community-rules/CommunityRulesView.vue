@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CheckOutlined, CloseOutlined } from '@vicons/material';
+import { XPage, XPageHeader } from '@novelia/web-kit';
 import { RouterLink } from 'vue-router';
 
 const permissions = [
@@ -17,13 +18,10 @@ const permissions = [
 </script>
 
 <template>
-  <div class="page-container py-4 md:py-6">
-    <section class="mx-auto max-w-4xl text-sm leading-6">
-      <header class="mb-5">
-        <h1 class="text-2xl font-bold tracking-tight text-ink">社区守则</h1>
-      </header>
-
-      <h2 class="mt-6 text-lg font-semibold">违规处理</h2>
+  <XPage>
+    <XPageHeader title="社区守则" />
+    <section class="text-sm leading-6">
+      <h2 class="text-lg font-semibold">违规处理</h2>
       <p class="mt-3">
         <span>一般违规行为会受到记分处罚，</span>
         <strong class="font-semibold">100 天内处罚累计达到 3 分</strong>
@@ -142,5 +140,5 @@ const permissions = [
         </table>
       </div>
     </section>
-  </div>
+  </XPage>
 </template>

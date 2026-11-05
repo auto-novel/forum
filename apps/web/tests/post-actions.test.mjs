@@ -33,7 +33,16 @@ const mocks = {
     });
   `,
   '@/stores/post': `
-    export const usePostStore = () => ({ setPost: post => { globalThis.__postActionsTest.post.value = post; } });
+    export const usePostStore = () => ({
+      setPost: post => { globalThis.__postActionsTest.post.value = post; },
+      refreshBlacklist() {},
+    });
+  `,
+  '@/stores/comment': `
+    export const useCommentStore = () => ({
+      refreshBlacklist() {},
+      registerDeletedCommentsByAuthor() {},
+    });
   `,
   // Mirror web-kit: components read the session view from the kit, not a token profile.
   '@novelia/web-kit': `
@@ -60,26 +69,27 @@ const mocks = {
         if (messages.loading !== undefined) f.notices.push(['loading', messages.loading]);
         try {
           const value = await promise;
-          if (messages.success !== undefined) f.notices.push(['success', messages.success]);
+          const message = typeof messages.success === 'function' ? messages.success(value) : messages.success;
+          if (message !== undefined) f.notices.push(['success', message]);
           return value;
         } catch (reason) {
           const detail = reason instanceof Error ? reason.message : '';
-          if (messages.error !== undefined) f.notices.push(['error', messages.error + (detail ? '：' + detail : '')]);
-          return undefined;
+          const message = typeof messages.error === 'function' ? messages.error(reason) : messages.error;
+          if (message !== undefined) f.notices.push(['error', message + (detail ? '：' + detail : '')]);
+          throw reason;
         }
       },
       success(message) { f.notices.push(['success', message]); },
       error(message) { f.notices.push(['error', message]); },
     };
-    export const getApiErrorMessage = async (_, fallback) => fallback;
+    export const getApiErrorMessage = (_, fallback) => fallback;
     export const XButton = {}, XDropdownMenu = {}, XDropdownMenuItem = {}, XDropdownMenuSeparator = {}, XConfirmDialog = {};
+    export const UserBlacklistDialog = {}, UserModerationDialog = {};
   `,
   '@vicons/material':
     'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, ShareOutlined = {}, MoreVertOutlined = {};',
   './PostFavoriteButton.vue': 'export default {};',
   './PostShareDialog.vue': 'export default {};',
-  '@/components/UserBlacklistDialog.vue': 'export default {};',
-  '@/components/UserModerationDialog.vue': 'export default {};',
 };
 
 registerHooks({

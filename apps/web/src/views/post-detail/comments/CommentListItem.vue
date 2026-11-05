@@ -2,10 +2,16 @@
 import { computed, ref, useId, watch } from 'vue';
 
 import type { PostComment } from '@/api';
-import { Toast, XButton, XTime, useWebKit } from '@novelia/web-kit';
+import {
+  Toast,
+  XButton,
+  XMarkdownHelpDialog,
+  XTime,
+  getApiErrorMessage,
+  useWebKit,
+} from '@novelia/web-kit';
 import MarkdownContent from '@/components/markdown/MarkdownContent.vue';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 import { useCommentValidation } from './useCommentValidation';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { useCommentStore } from '@/stores/comment';
@@ -74,15 +80,12 @@ async function saveEdit() {
   const value = content.value.trim();
   if (!canSave.value) return;
   submitting.value = true;
-  await Toast.promise(
-    commentStore.updateComment(props.comment.id, value).then(() => {
-      editing.value = false;
-    }),
-    {
-      success: '评论修改已保存',
-      error: '更新评论失败',
-    },
-  );
+  await Toast.promise(commentStore.updateComment(props.comment.id, value), {
+    success: '评论修改已保存',
+    error: (reason) => getApiErrorMessage(reason, '更新评论失败'),
+  })
+    .then(() => (editing.value = false))
+    .catch(() => {});
   submitting.value = false;
 }
 </script>
@@ -157,7 +160,7 @@ async function saveEdit() {
         <p class="ml-auto text-muted">{{ commentLength }} / 1000</p>
       </div>
       <div class="mt-3 flex items-center justify-between gap-3">
-        <MarkdownHelpDialog mode="comment" />
+        <XMarkdownHelpDialog mode="comment" />
         <div class="flex gap-2">
           <XButton
             color="neutral"

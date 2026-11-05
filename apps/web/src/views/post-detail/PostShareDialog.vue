@@ -7,6 +7,7 @@ import {
   XDialog,
   XInput,
   copyToClipboard,
+  getApiErrorMessage,
 } from '@novelia/web-kit';
 import { postShareMarkdown, postShareUrl } from '@/utils/postShare';
 
@@ -47,13 +48,13 @@ function selectLink() {
 async function copy(content: string, successMessage: string) {
   if (copying.value) return;
   copying.value = true;
-  await Toast.promise(
-    copyToClipboard(content).then(() => emit('update:open', false)),
-    {
-      success: successMessage,
-      error: '复制失败，请手动选中链接复制',
-    },
-  );
+  await Toast.promise(copyToClipboard(content), {
+    success: successMessage,
+    error: (reason) =>
+      getApiErrorMessage(reason, '复制失败，请手动选中链接复制'),
+  })
+    .then(() => emit('update:open', false))
+    .catch(() => {});
   copying.value = false;
 }
 

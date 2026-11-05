@@ -11,6 +11,8 @@ import {
   XDropdownMenu,
   XDropdownMenuItem,
   XDropdownMenuSeparator,
+  UserBlacklistDialog,
+  UserModerationDialog,
   XButton,
   XConfirmDialog,
   copyToClipboard,
@@ -19,10 +21,10 @@ import {
 } from '@novelia/web-kit';
 
 import { useForumApi, type Post } from '@/api';
+import { useCommentStore } from '@/stores/comment';
+import { usePostStore } from '@/stores/post';
 import PostFavoriteButton from './PostFavoriteButton.vue';
 import PostShareDialog from './PostShareDialog.vue';
-import UserBlacklistDialog from '@/components/UserBlacklistDialog.vue';
-import UserModerationDialog from '@/components/UserModerationDialog.vue';
 
 const props = defineProps<{
   post: Post;
@@ -41,6 +43,8 @@ const emit = defineEmits<{
 
 const forumApi = useForumApi();
 const { whoami } = useWebKit();
+const postStore = usePostStore();
+const commentStore = useCommentStore();
 const blacklistOpen = ref(false);
 const canBlockAuthor = computed(
   () => whoami.value.isSignedIn && !isOwner.value,
@@ -99,11 +103,26 @@ const confirmation = computed(() =>
 async function copyPost() {
   if (copying.value) return;
   copying.value = true;
+  // 失败文案已由 Toast 展示，这里只等待操作结束。
   await Toast.promise(copyToClipboard(props.post.content), {
     success: '帖子原文已复制',
-    error: '复制失败，请手动选择帖子内容复制',
-  });
+    error: (reason) =>
+      getApiErrorMessage(reason, '复制失败，请手动选择帖子内容复制'),
+  }).catch(() => {});
   copying.value = false;
+}
+
+/** 由共享黑名单弹窗调用，请求成功后同步帖子与评论缓存。 */
+async function setUserBlocked(userId: number, blocked: boolean) {
+  await forumApi.setUserBlocked(userId, blocked);
+  postStore.refreshBlacklist(userId, blocked);
+  commentStore.refreshBlacklist(userId, blocked);
+}
+
+/** 由共享处罚弹窗调用，删除评论后同步评论缓存。 */
+async function deleteCommentsByAuthor(userId: number) {
+  await forumApi.deleteCommentsByAuthor(userId);
+  commentStore.registerDeletedCommentsByAuthor(userId);
 }
 
 function editPost() {
@@ -333,6 +352,7 @@ function toggleLock() {
       :user-id="post.authorId"
       :username="post.authorUsername"
       :author-blocked="post.authorBlocked"
+      :set-user-blocked="setUserBlocked"
       @close="blacklistOpen = false"
     />
     <UserModerationDialog
@@ -342,6 +362,7 @@ function toggleLock() {
       :user-id="post.authorId"
       :username="post.authorUsername"
       :evidence="moderationEvidence"
+      :delete-comments-by-author="deleteCommentsByAuthor"
       @update:open="handleUserModerationOpenChange"
       @comments-deleted="emit('authorCommentsDeleted')"
     />

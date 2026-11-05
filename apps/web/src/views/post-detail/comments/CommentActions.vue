@@ -3,19 +3,22 @@ import { MoreVertOutlined } from '@vicons/material';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import type { PostComment } from '@/api';
+import { useForumApi } from '@/api';
 import {
   Toast,
+  UserBlacklistDialog,
+  UserModerationDialog,
   XDropdownMenu,
   XDropdownMenuItem,
   XDropdownMenuSeparator,
   XButton,
   XConfirmDialog,
   copyToClipboard,
+  getApiErrorMessage,
   useWebKit,
 } from '@novelia/web-kit';
-import UserBlacklistDialog from '@/components/UserBlacklistDialog.vue';
-import UserModerationDialog from '@/components/UserModerationDialog.vue';
 import { useCommentStore } from '@/stores/comment';
+import { usePostStore } from '@/stores/post';
 
 const props = defineProps<{
   comment: PostComment;
@@ -32,11 +35,13 @@ const emit = defineEmits<{
 }>();
 
 const { whoami } = useWebKit();
+const forumApi = useForumApi();
 const blacklistOpen = ref(false);
 const canBlockAuthor = computed(
   () => whoami.value.isSignedIn && !isOwner.value,
 );
 const commentStore = useCommentStore();
+const postStore = usePostStore();
 const submitting = ref(false);
 const copying = ref(false);
 const now = ref(Date.now());
@@ -100,52 +105,65 @@ async function copyComment() {
   copying.value = true;
   await Toast.promise(copyToClipboard(props.comment.content), {
     success: '评论原文已复制',
-    error: '复制失败，请手动选择评论内容复制',
-  });
+    error: (reason) =>
+      getApiErrorMessage(reason, '复制失败，请手动选择评论内容复制'),
+  }).catch(() => {});
   copying.value = false;
 }
 
 async function removeComment() {
   submitting.value = true;
   await Toast.promise(
-    commentStore
-      .deleteComment(props.comment.id, asAdmin.value)
-      .then(() => emit('statusChanged', 2)),
+    commentStore.deleteComment(props.comment.id, asAdmin.value),
     {
       success: '评论已删除',
-      error: '删除评论失败',
+      error: (reason) => getApiErrorMessage(reason, '删除评论失败'),
     },
-  );
+  )
+    .then(() => emit('statusChanged', 2))
+    .catch(() => {});
   submitting.value = false;
 }
 
 async function unhideComment() {
   if (submitting.value || !asAdmin.value || props.comment.status !== 1) return;
   submitting.value = true;
-  await Toast.promise(
-    commentStore
-      .unhideComment(props.comment.id)
-      .then(() => emit('statusChanged', 0)),
-    {
-      success: '评论已取消隐藏',
-      error: '取消隐藏失败',
-    },
-  );
+  await Toast.promise(commentStore.unhideComment(props.comment.id), {
+    success: '评论已取消隐藏',
+    error: (reason) => getApiErrorMessage(reason, '取消隐藏失败'),
+  })
+    .then(() => emit('statusChanged', 0))
+    .catch(() => {});
   submitting.value = false;
 }
 
 async function hideComment() {
   submitting.value = true;
-  await Toast.promise(
-    commentStore
-      .hideComment(props.comment.id)
-      .then(() => emit('statusChanged', 1)),
-    {
-      success: '评论已隐藏',
-      error: '隐藏评论失败',
-    },
-  );
+  await Toast.promise(commentStore.hideComment(props.comment.id), {
+    success: '评论已隐藏',
+    error: (reason) => getApiErrorMessage(reason, '隐藏评论失败'),
+  })
+    .then(() => emit('statusChanged', 1))
+    .catch(() => {});
   submitting.value = false;
+}
+
+/** 由共享黑名单弹窗调用，请求成功后同步帖子与评论缓存。 */
+async function setUserBlocked(userId: number, blocked: boolean) {
+  await forumApi.setUserBlocked(userId, blocked);
+  postStore.refreshBlacklist(userId, blocked);
+  commentStore.refreshBlacklist(userId, blocked);
+}
+
+/** 由共享处罚弹窗调用，处罚后删除目标评论。 */
+function deletePunishedComment() {
+  return commentStore.deleteComment(props.comment.id, true);
+}
+
+/** 由共享处罚弹窗调用，删除评论后同步评论缓存。 */
+async function deleteCommentsByAuthor(userId: number) {
+  await forumApi.deleteCommentsByAuthor(userId);
+  commentStore.registerDeletedCommentsByAuthor(userId);
 }
 
 function confirmAction() {
@@ -265,6 +283,7 @@ function handleUserModerationOpenChange(open: boolean) {
       :user-id="comment.authorId"
       :username="comment.authorUsername"
       :author-blocked="comment.authorBlocked"
+      :set-user-blocked="setUserBlocked"
       @close="blacklistOpen = false"
     />
     <UserModerationDialog
@@ -274,7 +293,8 @@ function handleUserModerationOpenChange(open: boolean) {
       :user-id="comment.authorId"
       :username="comment.authorUsername"
       :evidence="moderationEvidence"
-      :comment-id="comment.id"
+      :delete-comment="deletePunishedComment"
+      :delete-comments-by-author="deleteCommentsByAuthor"
       @comment-deleted="emit('statusChanged', 2)"
       @update:open="handleUserModerationOpenChange"
       @comments-deleted="emit('authorCommentsDeleted')"

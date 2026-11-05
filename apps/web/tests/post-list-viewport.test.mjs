@@ -18,6 +18,10 @@ const passthrough = {
     return () => h('div', [slots.default?.(), slots.actions?.()]);
   },
 };
+const pageHeader = {
+  props: ['title'],
+  setup: (props) => () => h('h1', props.title),
+};
 
 for (const mode of ['mobile', 'tablet', 'desktop']) {
   test(`post list uses web-kit viewport for ${mode} navigation and publish label`, async () => {
@@ -47,9 +51,10 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
         changePage() {},
       }),
     });
-    for (const name of ['RouterLink', 'PostFilters', 'XButton']) {
+    for (const name of ['RouterLink', 'PostFilters', 'XButton', 'XPage']) {
       app.component(name, passthrough);
     }
+    app.component('XPageHeader', pageHeader);
     for (const name of ['AddOutlined', 'PostList']) {
       app.component(name, { render: () => null });
     }

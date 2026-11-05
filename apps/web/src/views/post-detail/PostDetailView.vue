@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { type Post, type PostComment } from '@/api';
 import { usePostFavorite } from './usePostFavorite';
-import { XButton, XError, XSkeleton } from '@novelia/web-kit';
+import { XButton, XError, XPage, XSkeleton } from '@novelia/web-kit';
 import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
 import { useCommentPageQuery, useCommentStore } from '@/stores/comment';
@@ -239,100 +239,98 @@ function returnToList() {
 </script>
 
 <template>
-  <div class="page-container py-4 md:py-6">
-    <div class="mx-auto max-w-4xl">
-      <div class="mb-3 flex flex-wrap items-center gap-1.5">
-        <XButton
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          class="min-h-9 rounded-sm px-0 text-xs font-medium text-primary hover:bg-transparent hover:text-primary-hover"
-          title="返回列表"
-          aria-label="返回列表"
-          @click="returnToList"
-        >
-          <ArrowBackOutlined class="size-4" aria-hidden="true" />
-          {{ post && !postError ? (category?.title ?? '未分类') : '返回列表' }}
-        </XButton>
-        <PostTagList
-          v-if="post && !postLoading && !postError"
-          class="min-w-0"
-          :tags="post.tags"
-          :pinned="post.pinOrder != null"
-          :locked="post.commentsLocked"
-        />
-        <XSkeleton v-else-if="postLoading" class="h-3 w-24" />
-      </div>
-      <div v-if="postLoading" class="py-6" role="status">
-        <span class="sr-only">正在加载帖子…</span>
-        <XSkeleton class="mt-4 h-8 w-4/5 bg-border" />
-        <XSkeleton class="mt-5 h-4 w-56" />
-        <div class="my-6 h-px bg-divider" />
-        <XSkeleton class="h-4 w-full" />
-        <XSkeleton class="mt-3 h-4 w-full" />
-        <XSkeleton class="mt-3 h-4 w-2/3" />
-      </div>
-      <XError
-        v-else-if="postError"
-        class="min-h-96"
-        title="帖子加载失败"
-        :description="postError"
+  <XPage>
+    <div class="mb-3 flex flex-wrap items-center gap-1.5">
+      <XButton
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        class="min-h-9 rounded-sm px-0 text-xs font-medium text-primary hover:bg-transparent hover:text-primary-hover"
+        title="返回列表"
+        aria-label="返回列表"
+        @click="returnToList"
       >
-        <XButton @click="loadPost">再试一次</XButton>
-      </XError>
-      <template v-else-if="post">
-        <PostContent :post="post">
-          <template #actions>
-            <PostActions
-              :key="post.id"
-              :post="post"
-              :can-favorite="canFavorite"
-              :favorite-loading="favoriteLoading"
-              @favorite="toggleFavorite"
-              @comments="jumpToComments"
-              @edit="editPost"
-              @deleted="leaveDeletedPost"
-              @updated="handlePostUpdated"
-              @author-comments-deleted="handleAuthorCommentsDeleted"
+        <ArrowBackOutlined class="size-4" aria-hidden="true" />
+        {{ post && !postError ? (category?.title ?? '未分类') : '返回列表' }}
+      </XButton>
+      <PostTagList
+        v-if="post && !postLoading && !postError"
+        class="min-w-0"
+        :tags="post.tags"
+        :pinned="post.pinOrder != null"
+        :locked="post.commentsLocked"
+      />
+      <XSkeleton v-else-if="postLoading" class="h-3 w-24" />
+    </div>
+    <div v-if="postLoading" class="py-6" role="status">
+      <span class="sr-only">正在加载帖子…</span>
+      <XSkeleton class="mt-4 h-8 w-4/5 bg-border" />
+      <XSkeleton class="mt-5 h-4 w-56" />
+      <div class="my-6 h-px bg-divider" />
+      <XSkeleton class="h-4 w-full" />
+      <XSkeleton class="mt-3 h-4 w-full" />
+      <XSkeleton class="mt-3 h-4 w-2/3" />
+    </div>
+    <XError
+      v-else-if="postError"
+      class="min-h-96"
+      title="帖子加载失败"
+      :description="postError"
+    >
+      <XButton @click="loadPost">再试一次</XButton>
+    </XError>
+    <template v-else-if="post">
+      <PostContent :post="post">
+        <template #actions>
+          <PostActions
+            :key="post.id"
+            :post="post"
+            :can-favorite="canFavorite"
+            :favorite-loading="favoriteLoading"
+            @favorite="toggleFavorite"
+            @comments="jumpToComments"
+            @edit="editPost"
+            @deleted="leaveDeletedPost"
+            @updated="handlePostUpdated"
+            @author-comments-deleted="handleAuthorCommentsDeleted"
+          />
+        </template>
+      </PostContent>
+      <div id="comments" tabindex="-1" class="scroll-mt-20">
+        <CommentList
+          :comments="comments"
+          :highlighted="commentsHighlighted"
+          :highlight-version="commentsHighlightVersion"
+          :loading="commentsLoading"
+          :error="commentsError"
+          :page="commentPage"
+          :comments-count="post.commentsCount"
+          :total-pages="commentTotalPages"
+          :locked="post.commentsLocked"
+          :post-id="post.id"
+          :composing="composingComment"
+          :reply-to-id="replyTo?.id"
+          @retry="retryComments"
+          @comment="startComment"
+          @change-page="changeCommentPage"
+          @reply="startReply"
+          @cancel-reply="replyTo = undefined"
+          @created="handleCommentCreated"
+          @status-changed="handleCommentStatusChanged"
+          @author-comments-deleted="handleAuthorCommentsDeleted"
+        >
+          <template #composer>
+            <CommentComposer
+              v-if="composingComment"
+              id="comment-composer"
+              :post-id="post.id"
+              :locked="post.commentsLocked"
+              @created="handleCommentCreated"
             />
           </template>
-        </PostContent>
-        <div id="comments" tabindex="-1" class="scroll-mt-20">
-          <CommentList
-            :comments="comments"
-            :highlighted="commentsHighlighted"
-            :highlight-version="commentsHighlightVersion"
-            :loading="commentsLoading"
-            :error="commentsError"
-            :page="commentPage"
-            :comments-count="post.commentsCount"
-            :total-pages="commentTotalPages"
-            :locked="post.commentsLocked"
-            :post-id="post.id"
-            :composing="composingComment"
-            :reply-to-id="replyTo?.id"
-            @retry="retryComments"
-            @comment="startComment"
-            @change-page="changeCommentPage"
-            @reply="startReply"
-            @cancel-reply="replyTo = undefined"
-            @created="handleCommentCreated"
-            @status-changed="handleCommentStatusChanged"
-            @author-comments-deleted="handleAuthorCommentsDeleted"
-          >
-            <template #composer>
-              <CommentComposer
-                v-if="composingComment"
-                id="comment-composer"
-                :post-id="post.id"
-                :locked="post.commentsLocked"
-                @created="handleCommentCreated"
-              />
-            </template>
-          </CommentList>
-        </div>
-        <PostBackToTop />
-      </template>
-    </div>
-  </div>
+        </CommentList>
+      </div>
+      <PostBackToTop />
+    </template>
+  </XPage>
 </template>

@@ -2,9 +2,13 @@
 import { computed, useId } from 'vue';
 
 import type { PostTag } from '@/api';
-import { XButton, XInput, XSelect } from '@novelia/web-kit';
+import {
+  XButton,
+  XInput,
+  XMarkdownHelpDialog,
+  XSelect,
+} from '@novelia/web-kit';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -150,7 +154,7 @@ function submit() {
     <div>
       <div class="mb-2 flex items-center justify-between gap-3">
         <label class="text-sm font-semibold text-ink">正文</label>
-        <MarkdownHelpDialog mode="article" />
+        <XMarkdownHelpDialog mode="article" />
       </div>
       <MarkdownEditor
         v-model="content"

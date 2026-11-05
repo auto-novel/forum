@@ -4,7 +4,15 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useForumApi } from '@/api';
 import { usePostStore } from '@/stores/post';
-import { Toast, useWebKit, XError, XButton } from '@novelia/web-kit';
+import {
+  Toast,
+  XError,
+  XButton,
+  XPage,
+  XPageHeader,
+  getApiErrorMessage,
+  useWebKit,
+} from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { useDraftStore } from '@/stores/draft';
 import PostPublishingNotice from './PostPublishingNotice.vue';
@@ -84,80 +92,77 @@ async function submitPost() {
     return;
   submitting.value = true;
   await Toast.promise(
-    forumApi
-      .createPost({
-        categoryId: selectedCategory.value.id,
-        title: title.value.trim(),
-        content: content.value,
-        tagIds: selectedTagIds.value,
-      })
-      .then((post) => {
-        postStore.setPost(post);
-        draftStore.clearPostDraft(draftUserId.value);
-        title.value = '';
-        content.value = '';
-        selectedTagIds.value = [];
-        return Toast.promise(
-          router.replace({ name: 'post-detail', params: { id: post.id } }),
-          { error: '无法打开帖子详情' },
-        );
-      }),
+    forumApi.createPost({
+      categoryId: selectedCategory.value.id,
+      title: title.value.trim(),
+      content: content.value,
+      tagIds: selectedTagIds.value,
+    }),
     {
       success: '帖子已发布',
-      error: '帖子发布失败',
+      error: (reason) => getApiErrorMessage(reason, '帖子发布失败'),
     },
-  );
+  )
+    .then((post) => {
+      postStore.setPost(post);
+      draftStore.clearPostDraft(draftUserId.value);
+      title.value = '';
+      content.value = '';
+      selectedTagIds.value = [];
+      // 帖子已发布，导航失败无需改变提交结果。
+      return Toast.promise(
+        router.replace({ name: 'post-detail', params: { id: post.id } }),
+        { error: '无法打开帖子详情' },
+      );
+    })
+    .catch(() => {});
   submitting.value = false;
 }
 </script>
 
 <template>
-  <div class="page-container py-4 md:py-6">
-    <div class="mx-auto max-w-4xl">
-      <section>
-        <h1 class="text-2xl font-bold text-ink">发表帖子</h1>
+  <XPage>
+    <XPageHeader title="发表帖子" />
+    <section>
+      <div v-if="!whoami.isSignedIn" class="py-4 text-sm text-muted">
+        登录后才能发表帖子，请使用页面右上角的登录入口。
+      </div>
 
-        <div v-if="!whoami.isSignedIn" class="mt-6 py-4 text-sm text-muted">
-          登录后才能发表帖子，请使用页面右上角的登录入口。
-        </div>
-
-        <p
-          v-else-if="!categoriesReady && categoryStore.loading"
-          class="mt-6 py-4 text-sm text-muted"
-          role="status"
+      <p
+        v-else-if="!categoriesReady && categoryStore.loading"
+        class="py-4 text-sm text-muted"
+        role="status"
+      >
+        正在加载分类…
+      </p>
+      <XError
+        v-else-if="!categoriesReady && categoryStore.error"
+        title="分类加载失败"
+        :description="categoryStore.error"
+      >
+        <XButton @click="categoryStore.refresh">再试一次</XButton>
+      </XError>
+      <template v-else>
+        <PostForm
+          v-model:title="title"
+          v-model:category="categorySlug"
+          v-model:content="content"
+          v-model:tag-ids="selectedTagIds"
+          :categories="categoryStore.writableCategories"
+          :tags="tags"
+          :submitting="submitting"
+          submit-label="发布帖子"
+          submitting-label="发布中…"
+          title-placeholder="用一句话概括你想讨论的内容"
+          content-placeholder="详细说明你想分享或讨论的内容…"
+          @category-change="changeCategory"
+          @submit="submitPost"
         >
-          正在加载分类…
-        </p>
-        <XError
-          v-else-if="!categoriesReady && categoryStore.error"
-          title="分类加载失败"
-          :description="categoryStore.error"
-        >
-          <XButton @click="categoryStore.refresh">再试一次</XButton>
-        </XError>
-        <template v-else>
-          <PostForm
-            v-model:title="title"
-            v-model:category="categorySlug"
-            v-model:content="content"
-            v-model:tag-ids="selectedTagIds"
-            class="mt-6"
-            :categories="categoryStore.writableCategories"
-            :tags="tags"
-            :submitting="submitting"
-            submit-label="发布帖子"
-            submitting-label="发布中…"
-            title-placeholder="用一句话概括你想讨论的内容"
-            content-placeholder="详细说明你想分享或讨论的内容…"
-            @category-change="changeCategory"
-            @submit="submitPost"
-          >
-            <template #notice>
-              <PostPublishingNotice />
-            </template>
-          </PostForm>
-        </template>
-      </section>
-    </div>
-  </div>
+          <template #notice>
+            <PostPublishingNotice />
+          </template>
+        </PostForm>
+      </template>
+    </section>
+  </XPage>
 </template>

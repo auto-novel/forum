@@ -2,13 +2,18 @@
 import { computed, ref, useId, watch } from 'vue';
 
 import type { PostComment } from '@/api';
-import CommentRulesNotice from './CommentRulesNotice.vue';
+import {
+  CommentRulesNotice,
+  Toast,
+  XButton,
+  XMarkdownHelpDialog,
+  getApiErrorMessage,
+  useWebKit,
+} from '@novelia/web-kit';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
-import MarkdownHelpDialog from '@/components/markdown/MarkdownHelpDialog.vue';
-import { useCommentValidation } from './useCommentValidation';
-import { Toast, XButton, useWebKit } from '@novelia/web-kit';
 import { useCommentStore } from '@/stores/comment';
 import { useDraftStore } from '@/stores/draft';
+import { useCommentValidation } from './useCommentValidation';
 
 const props = defineProps<{
   postId: number;
@@ -68,21 +73,21 @@ async function submitComment() {
   if (!canSubmit.value || props.locked) return;
   submitting.value = true;
   await Toast.promise(
-    commentStore
-      .createComment(props.postId, {
-        content: value,
-        rootId: props.replyTo?.rootId ?? props.replyTo?.id,
-      })
-      .then((comment) => {
-        content.value = '';
-        draftStore.clearCommentDraft(draftKey.value);
-        emit('created', comment);
-      }),
+    commentStore.createComment(props.postId, {
+      content: value,
+      rootId: props.replyTo?.rootId ?? props.replyTo?.id,
+    }),
     {
       success: '评论已发表',
-      error: '评论发布失败',
+      error: (reason) => getApiErrorMessage(reason, '评论发布失败'),
     },
-  );
+  )
+    .then((comment) => {
+      content.value = '';
+      draftStore.clearCommentDraft(draftKey.value);
+      emit('created', comment);
+    })
+    .catch(() => {});
   submitting.value = false;
 }
 </script>
@@ -104,7 +109,7 @@ async function submitComment() {
     </div>
 
     <form v-else @submit.prevent="submitComment">
-      <CommentRulesNotice class="mb-3" />
+      <CommentRulesNotice :to="{ name: 'community-rules' }" class="mb-3" />
       <MarkdownEditor
         v-model="content"
         mode="comment"
@@ -128,7 +133,7 @@ async function submitComment() {
         <p class="ml-auto text-muted">{{ commentLength }} / 1000</p>
       </div>
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <MarkdownHelpDialog mode="comment" />
+        <XMarkdownHelpDialog mode="comment" />
         <div class="flex items-center gap-2">
           <XButton
             v-if="replyTo"

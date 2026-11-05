@@ -3,7 +3,16 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { useForumApi, type Post } from '@/api';
-import { Toast, XError, XSkeleton, XButton, useWebKit } from '@novelia/web-kit';
+import {
+  Toast,
+  XError,
+  XSkeleton,
+  XButton,
+  XPage,
+  XPageHeader,
+  getApiErrorMessage,
+  useWebKit,
+} from '@novelia/web-kit';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { useCategoryStore } from '@/stores/category';
 import { usePostQuery, usePostStore } from '@/stores/post';
@@ -100,29 +109,30 @@ async function save() {
   if (!post.value || submitting.value) return;
   submitting.value = true;
   await Toast.promise(
-    forumApi
-      .updatePost(post.value.id, {
-        categoryId: selectedCategory.value.id,
-        title: title.value.trim(),
-        content: content.value,
-        tagIds: selectedTagIds.value,
-      })
-      .then((updatedPost) => {
-        applyPost(updatedPost);
-        postStore.setPost(updatedPost);
-        return Toast.promise(
-          router.replace({
-            name: 'post-detail',
-            params: { id: updatedPost.id },
-          }),
-          { error: '无法打开帖子详情' },
-        );
-      }),
+    forumApi.updatePost(post.value.id, {
+      categoryId: selectedCategory.value.id,
+      title: title.value.trim(),
+      content: content.value,
+      tagIds: selectedTagIds.value,
+    }),
     {
       success: '帖子修改已保存',
-      error: '更新帖子失败',
+      error: (reason) => getApiErrorMessage(reason, '更新帖子失败'),
     },
-  );
+  )
+    .then((updatedPost) => {
+      applyPost(updatedPost);
+      postStore.setPost(updatedPost);
+      // 修改已保存，导航失败无需改变保存结果。
+      return Toast.promise(
+        router.replace({
+          name: 'post-detail',
+          params: { id: updatedPost.id },
+        }),
+        { error: '无法打开帖子详情' },
+      );
+    })
+    .catch(() => {});
   submitting.value = false;
 }
 
@@ -151,66 +161,62 @@ void categoryStore.initialize().then(() => {
 </script>
 
 <template>
-  <div class="page-container py-4 md:py-6">
-    <div class="mx-auto max-w-4xl">
-      <div v-if="loading" class="py-6" role="status">
-        <span class="sr-only">正在加载帖子…</span>
-        <XSkeleton class="h-7 w-32 bg-border" />
-        <XSkeleton class="mt-6 h-10 w-full" />
-        <XSkeleton class="mt-5 h-10 w-full" />
-        <XSkeleton class="mt-5 h-80 w-full" />
-      </div>
-      <XError
-        v-else-if="error"
-        class="min-h-96"
-        title="帖子加载失败"
-        :description="error"
-      >
-        <XButton @click="loadPost">再试一次</XButton>
-      </XError>
-      <template v-else>
-        <section v-if="post && canEdit">
-          <h1 class="text-2xl font-bold text-ink">编辑帖子</h1>
-          <PostForm
-            v-model:title="title"
-            v-model:category="categorySlug"
-            v-model:content="content"
-            v-model:tag-ids="selectedTagIds"
-            class="mt-6"
-            :categories="categoryStore.writableCategories"
-            :tags="tags"
-            :submitting="submitting"
-            submit-label="保存修改"
-            submitting-label="保存中…"
-            title-placeholder="用一句话概括你想讨论的内容"
-            content-placeholder="详细说明你想分享或讨论的内容…"
-            show-cancel
-            @category-change="changeCategory"
-            @submit="save"
-            @cancel="cancel"
-          />
-        </section>
-
-        <section v-else-if="post" class="py-8 text-center">
-          <h1 class="text-2xl font-bold text-ink">无法编辑帖子</h1>
-          <p class="mt-2 text-sm text-muted">
-            {{
-              whoami.isSignedIn
-                ? '只有具有该板块发帖权限的作者或管理员可以编辑这篇帖子。'
-                : '登录后才能编辑帖子，请使用页面右上角的登录入口。'
-            }}
-          </p>
-          <XButton
-            :as="RouterLink"
-            :to="detailRoute"
-            color="neutral"
-            variant="outline"
-            class="mt-5"
-          >
-            返回帖子详情
-          </XButton>
-        </section>
-      </template>
+  <XPage>
+    <XPageHeader title="编辑帖子" />
+    <div v-if="loading" class="py-6" role="status">
+      <span class="sr-only">正在加载帖子…</span>
+      <XSkeleton class="h-10 w-full" />
+      <XSkeleton class="mt-5 h-10 w-full" />
+      <XSkeleton class="mt-5 h-80 w-full" />
     </div>
-  </div>
+    <XError
+      v-else-if="error"
+      class="min-h-96"
+      title="帖子加载失败"
+      :description="error"
+    >
+      <XButton @click="loadPost">再试一次</XButton>
+    </XError>
+    <template v-else>
+      <section v-if="post && canEdit">
+        <PostForm
+          v-model:title="title"
+          v-model:category="categorySlug"
+          v-model:content="content"
+          v-model:tag-ids="selectedTagIds"
+          :categories="categoryStore.writableCategories"
+          :tags="tags"
+          :submitting="submitting"
+          submit-label="保存修改"
+          submitting-label="保存中…"
+          title-placeholder="用一句话概括你想讨论的内容"
+          content-placeholder="详细说明你想分享或讨论的内容…"
+          show-cancel
+          @category-change="changeCategory"
+          @submit="save"
+          @cancel="cancel"
+        />
+      </section>
+
+      <section v-else-if="post" class="py-8 text-center">
+        <h1 class="text-2xl font-bold text-ink">无法编辑帖子</h1>
+        <p class="mt-2 text-sm text-muted">
+          {{
+            whoami.isSignedIn
+              ? '只有具有该板块发帖权限的作者或管理员可以编辑这篇帖子。'
+              : '登录后才能编辑帖子，请使用页面右上角的登录入口。'
+          }}
+        </p>
+        <XButton
+          :as="RouterLink"
+          :to="detailRoute"
+          color="neutral"
+          variant="outline"
+          class="mt-5"
+        >
+          返回帖子详情
+        </XButton>
+      </section>
+    </template>
+  </XPage>
 </template>
