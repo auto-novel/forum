@@ -17,8 +17,8 @@ docker compose up -d
 服务启动后，可通过以下地址访问：
 
 - Web：http://localhost:5000
-- API：http://localhost:5000/api
-- PostgreSQL：localhost:5001
+- API：http://localhost:5001
+- PostgreSQL：localhost:5002
 
 ## 前端开发
 
@@ -31,6 +31,7 @@ pnpm install   # 安装依赖
 pnpm dev:web   # 启动用户端开发服务器
 pnpm dev:admin # 启动管理端开发服务器
 pnpm build     # 构建工作区包和前端
+pnpm test      # 运行前端测试
 ```
 
 开发服务器默认连接线上后端，请勿污染线上数据。

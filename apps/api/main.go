@@ -60,7 +60,7 @@ func main() {
 	// infra
 	db := infra.NewSQLDB(
 		env("DB_HOST", "localhost"),
-		envInt("DB_PORT", 5001),
+		envInt("DB_PORT", 5002),
 		env("DB_USER", "forum"),
 		env("DB_PASSWORD", ""),
 		env("DB_NAME", "forum"),
@@ -117,8 +117,8 @@ func main() {
 	})
 
 	// start server
-	slog.Info("Listening on localhost:8080...")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	slog.Info("Listening on localhost:5001...")
+	if err := http.ListenAndServe(":5001", router); err != nil {
 		slog.Error("HTTP server failed", "error", err)
 	}
 }

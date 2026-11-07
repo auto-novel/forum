@@ -7,11 +7,11 @@ RUN --mount=type=cache,id=go-mod,target=/go/pkg/mod \
 FROM deps AS builder
 WORKDIR /app
 COPY apps/api/. .
-RUN go build -o api
+RUN CGO_ENABLED=0 go build -trimpath -o api .
 
 FROM alpine:3.24.2
 WORKDIR /app
 COPY --from=builder /app/api /app/api
 COPY apps/api/domain-blacklist.txt /app/domain-blacklist.txt
-EXPOSE 8080
+EXPOSE 5001
 CMD ["./api"]
