@@ -76,6 +76,7 @@ const emit = defineEmits<{
     />
 
     <XSeparator
+      v-if="loading || (!error && posts.length > 0)"
       :style="{
         margin: !error && paginationTotalPages > 1 ? '12px 0 0' : '24px 0 0',
       }"
