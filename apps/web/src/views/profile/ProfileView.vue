@@ -40,24 +40,36 @@ const sections = [
     </header>
 
     <nav
-      class="mb-5 flex gap-6 border-b border-divider"
+      class="mb-5 border-b border-divider"
       aria-label="个人主页栏目"
     >
-      <RouterLink
-        v-for="section in sections"
-        :key="section.name"
-        :to="{ name: section.name }"
-        :aria-current="route.name === section.name ? 'page' : undefined"
-        class="flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-        :class="
-          route.name === section.name
-            ? 'border-primary text-primary'
-            : 'border-transparent text-muted hover:text-ink'
-        "
-      >
-        <component :is="section.icon" class="size-5" aria-hidden="true" />
-        {{ section.label }}
-      </RouterLink>
+      <div class="relative inline-grid grid-cols-2 gap-6 align-bottom">
+        <RouterLink
+          v-for="section in sections"
+          :key="section.name"
+          :to="{ name: section.name }"
+          :aria-current="route.name === section.name ? 'page' : undefined"
+          class="flex items-center gap-2 border-b-2 border-transparent px-1 pb-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:transition-none"
+          :class="
+            route.name === section.name
+              ? 'text-primary'
+              : 'text-muted hover:text-ink'
+          "
+        >
+          <component :is="section.icon" class="size-5" aria-hidden="true" />
+          {{ section.label }}
+        </RouterLink>
+        <span
+          aria-hidden="true"
+          class="pointer-events-none absolute -bottom-px left-0 h-0.5 w-[calc((100%-1.5rem)/2)] bg-primary transition-transform duration-200 ease-out motion-reduce:transition-none"
+          :style="{
+            transform:
+              route.name === 'favorites'
+                ? 'translateX(calc(100% + 1.5rem))'
+                : 'translateX(0)',
+          }"
+        />
+      </div>
     </nav>
 
     <RouterView />
