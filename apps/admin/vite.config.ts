@@ -73,13 +73,10 @@ export default defineConfig(({ command, mode }) => {
   const buildTime = isServe
     ? readGitValue(['show', '-s', '--format=%cI', 'HEAD'])
     : env.VITE_BUILD_TIME || new Date().toISOString();
-  const apiMode = env.VITE_API_MODE;
-  const apiUrl =
-    apiMode === 'native'
-      ? 'http://localhost:8080'
-      : apiMode === 'local'
-        ? 'http://localhost:5000'
-        : 'https://forum.novelia.cc';
+  const isLocalApi = env.VITE_LOCAL_API === 'true';
+  const apiUrl = isLocalApi
+    ? 'http://localhost:5001'
+    : 'https://forum.novelia.cc';
 
   const config: UserConfig = {
     base: '/admin/',
@@ -110,10 +107,9 @@ export default defineConfig(({ command, mode }) => {
         '/api': {
           target: apiUrl,
           changeOrigin: true,
-          rewrite:
-            apiMode === 'native'
-              ? (path: string) => path.replace(/^\/api/, '')
-              : undefined,
+          rewrite: isLocalApi
+            ? (path: string) => path.replace(/^\/api/, '')
+            : undefined,
         },
       },
     },
