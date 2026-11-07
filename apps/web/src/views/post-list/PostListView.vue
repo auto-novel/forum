@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { AddOutlined } from '@vicons/material';
+import {
+  AddOutlined,
+  CheckOutlined,
+  ExpandMoreOutlined,
+} from '@vicons/material';
 import { computed } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
 import {
   XButton,
+  XDropdownMenu,
+  XDropdownMenuItem,
   XPage,
   XPageHeader,
   useWebKitViewport,
@@ -104,6 +110,18 @@ function applyFilters(filters: {
   });
 }
 
+function changeCategory(slug: string) {
+  if (slug === selectedCategory.value) return;
+  void router.push({
+    name: 'posts',
+    params: { slug },
+    query: {
+      ...(searchQuery.value ? { q: searchQuery.value } : {}),
+      ...(selectedSort.value !== 'active' ? { sort: selectedSort.value } : {}),
+    },
+  });
+}
+
 function changePage(nextPage: number) {
   void router.push({
     name: 'posts',
@@ -122,32 +140,58 @@ function changePage(nextPage: number) {
 <template>
   <XPage>
     <div class="min-w-0 space-y-4">
-      <XPageHeader v-if="!isMobile" :title="selectedCategoryItem.title" />
-      <nav v-else aria-label="帖子板块" class="flex border-b border-border">
-        <RouterLink
-          v-for="category in categoryStore.categories"
-          :key="category.slug"
-          :to="{
-            name: 'posts',
-            params: { slug: category.slug },
-            query: {
-              ...(searchQuery ? { q: searchQuery } : {}),
-              ...(selectedSort !== 'active' ? { sort: selectedSort } : {}),
-            },
-          }"
-          :aria-current="
-            selectedCategory === category.slug ? 'page' : undefined
-          "
-          class="min-w-0 flex-1 border-b-2 px-2 py-3 text-center text-sm whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          :class="
-            selectedCategory === category.slug
-              ? 'border-primary font-medium text-primary'
-              : 'border-transparent text-muted hover:text-ink'
-          "
-        >
-          {{ category.title }}
-        </RouterLink>
-      </nav>
+      <XPageHeader
+        :title="selectedCategoryItem.title"
+        class="flex-nowrap items-center"
+      >
+        <template v-if="isMobile" #title>
+          <XDropdownMenu align="start" class="min-w-40">
+            <template #trigger>
+              <button
+                type="button"
+                class="inline-flex min-h-11 max-w-full items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label="切换帖子板块"
+              >
+                <span class="truncate">{{ selectedCategoryItem.title }}</span>
+                <ExpandMoreOutlined
+                  class="size-6 shrink-0"
+                  aria-hidden="true"
+                />
+              </button>
+            </template>
+            <XDropdownMenuItem
+              v-for="category in categoryStore.categories"
+              :key="category.slug"
+              :aria-current="
+                selectedCategory === category.slug ? 'page' : undefined
+              "
+              @select="changeCategory(category.slug)"
+            >
+              <span class="flex-1">{{ category.title }}</span>
+              <CheckOutlined
+                v-if="selectedCategory === category.slug"
+                class="size-4 shrink-0"
+                aria-hidden="true"
+              />
+            </XDropdownMenuItem>
+          </XDropdownMenu>
+        </template>
+        <template #actions>
+          <XButton
+            v-if="categoryStore.canPublish(selectedCategory)"
+            class="shrink-0 whitespace-nowrap"
+            :as="RouterLink"
+            :to="{
+              name: 'post-create',
+              query: { category: selectedCategory },
+            }"
+            aria-label="发帖"
+          >
+            <AddOutlined class="size-4" aria-hidden="true" />
+            <span>发帖</span>
+          </XButton>
+        </template>
+      </XPageHeader>
 
       <aside
         v-if="selectedCategory === 'feedback'"
@@ -164,23 +208,7 @@ function changePage(nextPage: number) {
         :tag-id="selectedTagId"
         :sort="selectedSort"
         @apply="applyFilters"
-      >
-        <template #actions>
-          <XButton
-            v-if="categoryStore.canPublish(selectedCategory)"
-            class="shrink-0 whitespace-nowrap"
-            :as="RouterLink"
-            :to="{
-              name: 'post-create',
-              query: { category: selectedCategory },
-            }"
-            aria-label="发表帖子"
-          >
-            <AddOutlined class="size-4" aria-hidden="true" />
-            <span>{{ !isMobile ? '发表帖子' : '发帖' }}</span>
-          </XButton>
-        </template>
-      </PostFilters>
+      />
       <PostList
         :posts="posts"
         :loading="postsLoading"

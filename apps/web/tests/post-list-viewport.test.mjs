@@ -20,7 +20,16 @@ const passthrough = {
 };
 const pageHeader = {
   props: ['title'],
-  setup: (props) => () => h('h1', props.title),
+  setup:
+    (props, { slots }) =>
+    () =>
+      h('header', [h('h1', slots.title?.() ?? props.title), slots.actions?.()]),
+};
+const dropdownMenu = {
+  setup:
+    (_, { slots }) =>
+    () =>
+      h('div', [slots.trigger?.(), slots.default?.()]),
 };
 
 for (const mode of ['mobile', 'tablet', 'desktop']) {
@@ -40,6 +49,7 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
         selectedSort: 'updated',
         selectedTagId: undefined,
         applyFilters() {},
+        changeCategory() {},
         RouterLink: passthrough,
         posts: [],
         postsLoading: false,
@@ -55,14 +65,24 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
       app.component(name, passthrough);
     }
     app.component('XPageHeader', pageHeader);
-    for (const name of ['AddOutlined', 'PostList']) {
+    app.component('XDropdownMenu', dropdownMenu);
+    app.component('XDropdownMenuItem', passthrough);
+    for (const name of [
+      'AddOutlined',
+      'CheckOutlined',
+      'ExpandMoreOutlined',
+      'PostList',
+    ]) {
       app.component(name, { render: () => null });
     }
+    const warnings = [];
+    app.config.warnHandler = (message) => warnings.push(message);
     const html = await renderToString(app);
-    assert.equal(html.includes('<h1'), mode !== 'mobile');
-    assert.equal(html.includes('aria-label="帖子板块"'), mode === 'mobile');
-    assert.ok(
-      html.includes(`<span>${mode !== 'mobile' ? '发表帖子' : '发帖'}</span>`),
-    );
+    assert.deepEqual(warnings, []);
+    assert.ok(html.includes('<h1>'));
+    assert.ok(html.includes('小说'));
+    assert.equal(html.includes('aria-label="切换帖子板块"'), mode === 'mobile');
+    assert.ok(html.includes('aria-label="发帖"'));
+    assert.ok(html.includes('<span>发帖</span>'));
   });
 }
