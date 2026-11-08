@@ -10,7 +10,7 @@
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "@novelia/web-kit": "github:auto-novel/web-kit#ceaf9a42c4c74ac9a482dc8bfff246de4f382b96",
+    "@novelia/web-kit": "github:auto-novel/web-kit#b413db7591ea386c7a971756f1119a0239cd7625",
     "@pinia/colada": "^1.4.4",
     "@tailwindcss/vite": "^4.3.3",
     "@vicons/material": "^0.13.0",
