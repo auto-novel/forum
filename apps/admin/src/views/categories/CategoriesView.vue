@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XSkeleton } from '@novelia/web-kit';
+import { XPage, XPageHeader, XSkeleton } from '@novelia/web-kit';
 import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -138,76 +138,75 @@ onMounted(loadCategories);
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-4xl flex-col gap-4">
-    <header class="pb-2">
-      <h1 class="text-xl font-semibold text-ink">标签管理</h1>
-      <p class="mt-2 text-sm text-muted">
-        按分类维护标签，管理启用状态、色号与排序。
-      </p>
-    </header>
+  <XPage>
+    <XPageHeader
+      title="标签管理"
+      description="按分类维护标签，管理启用状态、色号与排序。"
+    />
+    <div class="flex flex-col gap-4">
+      <AdminAlert
+        v-if="successMessage"
+        type="success"
+        closable
+        @close="successMessage = ''"
+      >
+        {{ successMessage }}
+      </AdminAlert>
+      <AdminAlert
+        v-if="errorMessage"
+        type="error"
+        closable
+        @close="errorMessage = ''"
+      >
+        {{ errorMessage }}
+      </AdminAlert>
 
-    <AdminAlert
-      v-if="successMessage"
-      type="success"
-      closable
-      @close="successMessage = ''"
-    >
-      {{ successMessage }}
-    </AdminAlert>
-    <AdminAlert
-      v-if="errorMessage"
-      type="error"
-      closable
-      @close="errorMessage = ''"
-    >
-      {{ errorMessage }}
-    </AdminAlert>
-
-    <div v-if="loading" role="status">
-      <span class="sr-only">正在加载分类</span>
-      <div aria-hidden="true" class="divide-y divide-divider">
-        <div v-for="index in 3" :key="index" class="py-6">
-          <div class="mb-4 flex items-center justify-between">
-            <XSkeleton class="h-5 w-24" />
-            <XSkeleton class="h-8 w-24" />
-          </div>
-          <div class="grid gap-4 border-y border-divider px-3 py-4">
-            <XSkeleton class="h-4 w-2/3" />
-            <XSkeleton class="h-4 w-1/2" />
-            <XSkeleton class="h-4 w-3/5" />
+      <div v-if="loading" role="status">
+        <span class="sr-only">正在加载分类</span>
+        <div aria-hidden="true" class="divide-y divide-divider">
+          <div v-for="index in 3" :key="index" class="py-6">
+            <div class="mb-4 flex items-center justify-between">
+              <XSkeleton class="h-5 w-24" />
+              <XSkeleton class="h-8 w-24" />
+            </div>
+            <div class="grid gap-4 border-y border-divider px-3 py-4">
+              <XSkeleton class="h-4 w-2/3" />
+              <XSkeleton class="h-4 w-1/2" />
+              <XSkeleton class="h-4 w-3/5" />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <p
-      v-else-if="!displayedCategories.length"
-      class="py-8 text-center text-sm text-muted"
-    >
-      暂无分类
-    </p>
-    <div v-else class="divide-y divide-divider">
-      <TagList
-        v-for="category in displayedCategories"
-        :key="category.id"
-        :category-name="category.title"
-        :tags="tagsByCategory[category.id] ?? []"
-        :loading="tagsLoadingByCategory[category.id] ?? false"
-        :active-updating-id="activeUpdatingTagId"
-        @create="openCreateTag(category.id)"
-        @edit="openEditTag(category.id, $event)"
-        @toggle-active="toggleTagActive(category.id, $event)"
+      <p
+        v-else-if="!displayedCategories.length"
+        class="py-8 text-center text-sm text-muted"
+      >
+        暂无分类
+      </p>
+      <div v-else class="divide-y divide-divider">
+        <TagList
+          v-for="category in displayedCategories"
+          :key="category.id"
+          :category-name="category.title"
+          :tags="tagsByCategory[category.id] ?? []"
+          :loading="tagsLoadingByCategory[category.id] ?? false"
+          :active-updating-id="activeUpdatingTagId"
+          @create="openCreateTag(category.id)"
+          @edit="openEditTag(category.id, $event)"
+          @toggle-active="toggleTagActive(category.id, $event)"
+        />
+      </div>
+
+      <TagFormModal
+        v-model:name="tagForm.name"
+        v-model:color="tagForm.color"
+        v-model:sort-order="tagForm.sortOrder"
+        :show="tagModalOpen"
+        :editing="editingTagId != null"
+        :saving="saving"
+        @close="tagModalOpen = false"
+        @save="saveTag"
       />
     </div>
-
-    <TagFormModal
-      v-model:name="tagForm.name"
-      v-model:color="tagForm.color"
-      v-model:sort-order="tagForm.sortOrder"
-      :show="tagModalOpen"
-      :editing="editingTagId != null"
-      :saving="saving"
-      @close="tagModalOpen = false"
-      @save="saveTag"
-    />
-  </div>
+  </XPage>
 </template>

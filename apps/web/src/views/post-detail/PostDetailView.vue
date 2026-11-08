@@ -262,9 +262,9 @@ function returnToList() {
       />
       <XSkeleton v-else-if="postLoading" class="h-3 w-24" />
     </div>
-    <div v-if="postLoading" class="py-6" role="status">
+    <div v-if="postLoading" class="pb-6" role="status">
       <span class="sr-only">正在加载帖子…</span>
-      <XSkeleton class="mt-4 h-8 w-4/5 bg-border" />
+      <XSkeleton class="h-8 w-4/5 bg-border" />
       <XSkeleton class="mt-5 h-4 w-56" />
       <div class="my-6 h-px bg-divider" />
       <XSkeleton class="h-4 w-full" />

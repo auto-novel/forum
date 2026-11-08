@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XButton } from '@novelia/web-kit';
+import { XButton, XPage, XPageHeader } from '@novelia/web-kit';
 import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -183,79 +183,82 @@ watch(
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-[1000px] flex-col gap-4">
-    <CommentFilters
-      v-model:subject-type="subjectTypeInput"
-      v-model:subject-key="subjectKeyInput"
-      v-model:query="queryInput"
-      v-model:author-name="authorNameInput"
-      v-model:status="statusInput"
-      @search="search"
-    />
+  <XPage>
+    <XPageHeader title="评论管理" />
+    <div class="flex flex-col gap-4">
+      <CommentFilters
+        v-model:subject-type="subjectTypeInput"
+        v-model:subject-key="subjectKeyInput"
+        v-model:query="queryInput"
+        v-model:author-name="authorNameInput"
+        v-model:status="statusInput"
+        @search="search"
+      />
 
-    <AdminAlert
-      v-if="successMessage"
-      type="success"
-      closable
-      @close="successMessage = ''"
-    >
-      {{ successMessage }}
-    </AdminAlert>
-    <AdminAlert v-if="errorMessage" type="error" title="评论加载失败">
-      <div class="flex flex-col items-start gap-2">
-        <p>{{ errorMessage }}</p>
-        <XButton
-          size="sm"
-          color="neutral"
-          variant="outline"
-          @click="loadComments"
-        >
-          重新加载
-        </XButton>
-      </div>
-    </AdminAlert>
+      <AdminAlert
+        v-if="successMessage"
+        type="success"
+        closable
+        @close="successMessage = ''"
+      >
+        {{ successMessage }}
+      </AdminAlert>
+      <AdminAlert v-if="errorMessage" type="error" title="评论加载失败">
+        <div class="flex flex-col items-start gap-2">
+          <p>{{ errorMessage }}</p>
+          <XButton
+            size="sm"
+            color="neutral"
+            variant="outline"
+            @click="loadComments"
+          >
+            重新加载
+          </XButton>
+        </div>
+      </AdminAlert>
 
-    <AdminAlert
-      v-if="actionErrorMessage"
-      type="error"
-      closable
-      @close="actionErrorMessage = ''"
-    >
-      {{ actionErrorMessage }}
-    </AdminAlert>
+      <AdminAlert
+        v-if="actionErrorMessage"
+        type="error"
+        closable
+        @close="actionErrorMessage = ''"
+      >
+        {{ actionErrorMessage }}
+      </AdminAlert>
 
-    <CommentList
-      v-if="!errorMessage"
-      :comments="comments"
-      :loading="loading"
-      :total="total"
-      :page="page"
-      :page-size="PAGE_SIZE"
-      :subject-type="activeSubjectType"
-      :subject-key="activeSubjectKey"
-      :has-filters="hasFilters"
-      :actions-disabled="actionsDisabled"
-      @update-page="changePage"
-      @moderate="requestModeration"
-      @delete-author="requestAuthorDeletion"
-      @filter-subject="filterSubject"
-      @reset-filters="resetFilters"
-    />
+      <CommentList
+        v-if="!errorMessage"
+        :comments="comments"
+        :loading="loading"
+        :total="total"
+        :page="page"
+        :page-size="PAGE_SIZE"
+        :subject-type="activeSubjectType"
+        :subject-key="activeSubjectKey"
+        :has-filters="hasFilters"
+        :actions-disabled="actionsDisabled"
+        @update-page="changePage"
+        @moderate="requestModeration"
+        @delete-author="requestAuthorDeletion"
+        @filter-subject="filterSubject"
+        @reset-filters="resetFilters"
+      />
 
-    <CommentModerationModal
-      v-model:saving="moderationSaving"
-      :target="pendingAction"
-      @close="pendingAction = null"
-      @success="handleModerationSuccess"
-      @error="actionErrorMessage = $event"
-    />
+      <CommentModerationModal
+        v-model:saving="moderationSaving"
+        :target="pendingAction"
+        @close="pendingAction = null"
+        @success="handleModerationSuccess"
+        @error="actionErrorMessage = $event"
+      />
 
-    <CommentAuthorDeleteModal
-      v-model:saving="authorDeletionSaving"
-      :target="pendingAuthorDeletion"
-      @close="pendingAuthorDeletion = null"
-      @success="handleAuthorDeletionSuccess"
-      @error="actionErrorMessage = $event"
-    />
-  </div>
+      <CommentAuthorDeleteModal
+        v-model:saving="authorDeletionSaving"
+        :target="pendingAuthorDeletion"
+        @close="pendingAuthorDeletion = null"
+        @success="handleAuthorDeletionSuccess"
+        @error="actionErrorMessage = $event"
+      />
+    </div>
+  </XPage>
 </template>

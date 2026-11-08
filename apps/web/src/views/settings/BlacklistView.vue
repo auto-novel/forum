@@ -6,6 +6,7 @@ import {
   XSkeleton,
   XButton,
   XConfirmDialog,
+  XPageHeader,
   XTime,
 } from '@novelia/web-kit';
 import { useBlacklistManagement } from './useBlacklistManagement';
@@ -23,18 +24,11 @@ const {
 </script>
 
 <template>
-  <section aria-labelledby="blacklist-heading">
-    <header class="mb-4 border-b border-divider pb-3">
-      <h2
-        id="blacklist-heading"
-        class="text-2xl font-normal tracking-tight text-ink"
-      >
-        黑名单管理
-      </h2>
-    </header>
-    <p class="mb-5 text-sm leading-relaxed text-muted">
-      拉黑后，帖子列表和收藏列表将不再显示该用户的帖子，评论区将隐藏其评论及其发起的评论串。
-    </p>
+  <section aria-label="黑名单管理">
+    <XPageHeader
+      title="黑名单管理"
+      description="拉黑后，帖子列表和收藏列表将不再显示该用户的帖子，评论区将隐藏其评论及其发起的评论串。"
+    />
 
     <div v-if="!whoami.isSignedIn" class="py-8 text-center">
       <div

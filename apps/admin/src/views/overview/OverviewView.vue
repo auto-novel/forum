@@ -5,7 +5,7 @@ import {
   ChatBubbleOutlineOutlined,
   LocalOfferOutlined,
 } from '@vicons/material';
-import { XButton } from '@novelia/web-kit';
+import { XButton, XPage, XPageHeader } from '@novelia/web-kit';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -81,26 +81,29 @@ onMounted(loadOverview);
 </script>
 
 <template>
-  <main class="mx-auto flex max-w-[1000px] flex-col gap-5 text-ink">
-    <AdminAlert v-if="errorMessage" type="error" title="概览加载失败">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <span class="min-w-0 break-words">{{ errorMessage }}</span>
-        <XButton
-          size="sm"
-          color="neutral"
-          variant="outline"
-          @click="loadOverview"
-        >
-          重新加载
-        </XButton>
-      </div>
-    </AdminAlert>
+  <XPage>
+    <XPageHeader title="概览" />
+    <div class="flex flex-col gap-5 text-ink">
+      <AdminAlert v-if="errorMessage" type="error" title="概览加载失败">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <span class="min-w-0 break-words">{{ errorMessage }}</span>
+          <XButton
+            size="sm"
+            color="neutral"
+            variant="outline"
+            @click="loadOverview"
+          >
+            重新加载
+          </XButton>
+        </div>
+      </AdminAlert>
 
-    <OverviewMetrics :metrics="metrics" :loading="loading" />
-    <OverviewRecentPosts
-      :posts="recentPosts"
-      :loading="loading"
-      @view-all="router.push('/posts')"
-    />
-  </main>
+      <OverviewMetrics :metrics="metrics" :loading="loading" />
+      <OverviewRecentPosts
+        :posts="recentPosts"
+        :loading="loading"
+        @view-all="router.push('/posts')"
+      />
+    </div>
+  </XPage>
 </template>

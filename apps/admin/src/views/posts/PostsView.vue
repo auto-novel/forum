@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XButton } from '@novelia/web-kit';
+import { XButton, XPage, XPageHeader } from '@novelia/web-kit';
 import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -174,66 +174,67 @@ onMounted(initialize);
 </script>
 
 <template>
-  <div class="posts-page flex flex-col gap-4">
-    <PostFilters
-      v-model:query="queryInput"
-      v-model:category="categoryInput"
-      v-model:status="statusInput"
-      v-model:tag-id="tagIdInput"
-      v-model:author-name="authorNameInput"
-      v-model:sort="sortInput"
-      :categories="categories"
-      @search="search"
-    />
+  <XPage>
+    <XPageHeader title="帖子管理" />
+    <div class="flex flex-col gap-4">
+      <PostFilters
+        v-model:query="queryInput"
+        v-model:category="categoryInput"
+        v-model:status="statusInput"
+        v-model:tag-id="tagIdInput"
+        v-model:author-name="authorNameInput"
+        v-model:sort="sortInput"
+        :categories="categories"
+        @search="search"
+      />
 
-    <AdminAlert
-      v-if="successMessage"
-      type="success"
-      closable
-      @close="successMessage = ''"
-    >
-      {{ successMessage }}
-    </AdminAlert>
-    <AdminAlert v-if="errorMessage" type="error" title="帖子列表加载失败">
-      <div class="flex flex-col items-start gap-2">
-        <p>{{ errorMessage }}</p>
-        <XButton color="neutral" variant="outline" size="sm" @click="loadPosts">
-          重新加载
-        </XButton>
-      </div>
-    </AdminAlert>
-    <AdminAlert
-      v-if="actionErrorMessage"
-      type="error"
-      closable
-      @close="actionErrorMessage = ''"
-    >
-      {{ actionErrorMessage }}
-    </AdminAlert>
+      <AdminAlert
+        v-if="successMessage"
+        type="success"
+        closable
+        @close="successMessage = ''"
+      >
+        {{ successMessage }}
+      </AdminAlert>
+      <AdminAlert v-if="errorMessage" type="error" title="帖子列表加载失败">
+        <div class="flex flex-col items-start gap-2">
+          <p>{{ errorMessage }}</p>
+          <XButton
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="loadPosts"
+          >
+            重新加载
+          </XButton>
+        </div>
+      </AdminAlert>
+      <AdminAlert
+        v-if="actionErrorMessage"
+        type="error"
+        closable
+        @close="actionErrorMessage = ''"
+      >
+        {{ actionErrorMessage }}
+      </AdminAlert>
 
-    <PostList
-      v-if="!errorMessage"
-      :posts="posts"
-      :loading="loading"
-      :total="total"
-      :page="page"
-      :page-size="PAGE_SIZE"
-      :has-filters="hasFilters"
-      :category-names="categoryMap"
-      :busy-post-id="busyPostId"
-      @update-page="changePage"
-      @reset-filters="resetFilters"
-      @set-status="setStatus"
-      @set-comments-locked="setCommentsLocked"
-      @set-pin-order="setPinOrder"
-      @review-comments="reviewComments"
-    />
-  </div>
+      <PostList
+        v-if="!errorMessage"
+        :posts="posts"
+        :loading="loading"
+        :total="total"
+        :page="page"
+        :page-size="PAGE_SIZE"
+        :has-filters="hasFilters"
+        :category-names="categoryMap"
+        :busy-post-id="busyPostId"
+        @update-page="changePage"
+        @reset-filters="resetFilters"
+        @set-status="setStatus"
+        @set-comments-locked="setCommentsLocked"
+        @set-pin-order="setPinOrder"
+        @review-comments="reviewComments"
+      />
+    </div>
+  </XPage>
 </template>
-
-<style scoped>
-.posts-page {
-  max-width: 1000px;
-  margin-inline: auto;
-}
-</style>

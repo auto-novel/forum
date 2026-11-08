@@ -8,8 +8,6 @@ const route = useRoute();
 
 <template>
   <XPage>
-    <h1 class="sr-only">账户设置</h1>
-
     <div class="grid min-w-0 gap-6 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-8">
       <aside class="min-w-0">
         <nav
