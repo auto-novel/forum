@@ -1,64 +1,8 @@
 import { htmlBootstrapPlugin } from '@novelia/web-kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig, loadEnv, type UserConfig } from 'vite';
-
-const repositoryRoot = fileURLToPath(new URL('../..', import.meta.url));
-
-function readGitValue(args: string[]) {
-  return execFileSync('git', args, {
-    cwd: repositoryRoot,
-    encoding: 'utf8',
-  }).trim();
-}
-
-function setupAuthProxy(config: UserConfig) {
-  const authUrl = 'https://auth.novelia.cc';
-  const proxy = config.server!.proxy!;
-
-  proxy['^/api(?!/v1/auth)'] = proxy['/api'];
-  delete proxy['/api'];
-
-  proxy['/api/v1/auth'] = {
-    target: authUrl,
-    changeOrigin: true,
-  };
-
-  proxy['/auth-proxy/assets'] = {
-    target: authUrl,
-    changeOrigin: true,
-    rewrite: (path) => path.replace(/^\/auth-proxy\/assets/, '/assets'),
-  };
-
-  proxy['/auth-proxy'] = {
-    target: authUrl,
-    changeOrigin: true,
-    rewrite: (path) => path.replace(/^\/auth-proxy/, ''),
-    selfHandleResponse: true,
-    headers: { 'accept-encoding': 'identity' },
-    configure(proxyServer) {
-      proxyServer.on('proxyRes', (proxyResponse, _request, response) => {
-        const chunks: Buffer[] = [];
-        proxyResponse.on('data', (chunk: Buffer) => chunks.push(chunk));
-        proxyResponse.on('end', () => {
-          const body = Buffer.concat(chunks)
-            .toString()
-            .replaceAll('/assets', '/auth-proxy/assets');
-
-          response.statusCode = proxyResponse.statusCode ?? 200;
-          response.statusMessage = proxyResponse.statusMessage ?? '';
-          for (const [key, value] of Object.entries(proxyResponse.headers)) {
-            if (value !== undefined) response.setHeader(key, value);
-          }
-          response.removeHeader('content-length');
-          response.end(body);
-        });
-      });
-    },
-  };
-}
+import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(
@@ -66,35 +10,35 @@ export default defineConfig(({ command, mode }) => {
     fileURLToPath(new URL('.', import.meta.url)),
     'VITE_',
   );
-  const isServe = command === 'serve';
-  const commitSha = isServe
-    ? readGitValue(['rev-parse', 'HEAD'])
-    : env.VITE_COMMIT_SHA || 'unknown';
-  const buildTime = isServe
-    ? readGitValue(['show', '-s', '--format=%cI', 'HEAD'])
-    : env.VITE_BUILD_TIME || new Date().toISOString();
   const isLocalApi = env.VITE_LOCAL_API === 'true';
-  const apiUrl = isLocalApi
-    ? 'http://localhost:5001'
-    : 'https://forum.novelia.cc';
 
-  const config: UserConfig = {
+  return {
     define: {
-      __BUILD_TIME__: JSON.stringify(buildTime),
-      __COMMIT_SHA__: JSON.stringify(commitSha),
       __AUTH_URL__: JSON.stringify(
-        isServe ? '/auth-proxy/' : 'https://auth.novelia.cc',
+        command === 'serve' ? '/auth-proxy/' : 'https://auth.novelia.cc',
       ),
+      __BUILD_TIME__: JSON.stringify(
+        env.VITE_BUILD_TIME || new Date().toISOString(),
+      ),
+      __COMMIT_SHA__: JSON.stringify(env.VITE_COMMIT_SHA || 'unknown'),
     },
     plugins: [htmlBootstrapPlugin(), vue(), tailwindcss()],
     build: {
       cssCodeSplit: false,
       rolldownOptions: {
         output: {
-          manualChunks: (id) =>
-            id.replaceAll('\\', '/').includes('/node_modules/')
-              ? 'vendor'
-              : undefined,
+          // 按更新频率分离应用代码、web-kit 和第三方依赖，减少更新时的缓存失效范围；
+          // 第三方依赖集中为 vendor，兼顾高带宽、高 RTT 环境下的请求数量与缓存复用。
+          manualChunks: (id) => {
+            const normalizedId = id.replaceAll('\\', '/');
+            if (normalizedId.includes('/node_modules/@novelia/web-kit/')) {
+              return 'web-kit';
+            }
+            if (normalizedId.includes('/node_modules/')) {
+              return 'vendor';
+            }
+            return undefined;
+          },
         },
       },
     },
@@ -104,8 +48,15 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       proxy: {
+        '/auth-proxy/': {
+          target: 'https://auth.novelia.cc',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/auth-proxy/, ''),
+        },
         '/api': {
-          target: apiUrl,
+          target: isLocalApi
+            ? 'http://localhost:5001'
+            : 'https://forum.novelia.cc',
           changeOrigin: true,
           rewrite: isLocalApi
             ? (path) => path.replace(/^\/api/, '')
@@ -119,8 +70,4 @@ export default defineConfig(({ command, mode }) => {
       },
     },
   };
-
-  if (isServe) setupAuthProxy(config);
-
-  return config;
 });
