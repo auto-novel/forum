@@ -1,4 +1,4 @@
-import { themeBootstrapPlugin } from '@novelia/web-kit/vite';
+import { htmlBootstrapPlugin } from '@novelia/web-kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import { execFileSync } from 'node:child_process';
@@ -86,7 +86,7 @@ export default defineConfig(({ command, mode }) => {
         isServe ? '/auth-proxy/' : 'https://auth.novelia.cc',
       ),
     },
-    plugins: [themeBootstrapPlugin(), vue(), tailwindcss()],
+    plugins: [htmlBootstrapPlugin(), vue(), tailwindcss()],
     build: {
       cssCodeSplit: false,
       rolldownOptions: {

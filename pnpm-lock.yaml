@@ -15,8 +15,8 @@ importers:
   apps/admin:
     dependencies:
       '@novelia/web-kit':
-        specifier: github:auto-novel/web-kit#7af98d68fe97ad1a35add10761b86697e634cef3
-        version: https://codeload.github.com/auto-novel/web-kit/tar.gz/7af98d68fe97ad1a35add10761b86697e634cef3(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
+        specifier: github:auto-novel/web-kit#ceaf9a42c4c74ac9a482dc8bfff246de4f382b96
+        version: https://codeload.github.com/auto-novel/web-kit/tar.gz/ceaf9a42c4c74ac9a482dc8bfff246de4f382b96(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))
@@ -55,8 +55,8 @@ importers:
   apps/web:
     dependencies:
       '@novelia/web-kit':
-        specifier: github:auto-novel/web-kit#7af98d68fe97ad1a35add10761b86697e634cef3
-        version: https://codeload.github.com/auto-novel/web-kit/tar.gz/7af98d68fe97ad1a35add10761b86697e634cef3(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
+        specifier: github:auto-novel/web-kit#ceaf9a42c4c74ac9a482dc8bfff246de4f382b96
+        version: https://codeload.github.com/auto-novel/web-kit/tar.gz/ceaf9a42c4c74ac9a482dc8bfff246de4f382b96(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@pinia/colada':
         specifier: ^1.4.4
         version: 1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
@@ -192,8 +192,8 @@ packages:
       markdown-it:
         optional: true
 
-  '@novelia/web-kit@https://codeload.github.com/auto-novel/web-kit/tar.gz/7af98d68fe97ad1a35add10761b86697e634cef3':
-    resolution: {gitHosted: true, integrity: sha512-FtDI9Wmj+JugwaffRUU04WHHG9BR/XM2RwtoA/aP2rY2MSduHz39oggHv9bjysREddAJhvdag3YT7u8a8bSAtQ==, tarball: https://codeload.github.com/auto-novel/web-kit/tar.gz/7af98d68fe97ad1a35add10761b86697e634cef3}
+  '@novelia/web-kit@https://codeload.github.com/auto-novel/web-kit/tar.gz/ceaf9a42c4c74ac9a482dc8bfff246de4f382b96':
+    resolution: {gitHosted: true, integrity: sha512-m7SxyKfaNlanOkur7Zxl/25vrGRsg4gbMeBGk/80OQF77xCdXbQGMq7snyGNQ77S+/ZxiPUOch9e4IqZsZF4Zg==, tarball: https://codeload.github.com/auto-novel/web-kit/tar.gz/ceaf9a42c4c74ac9a482dc8bfff246de4f382b96}
     version: 0.1.0
     engines: {node: '>=22.18.0'}
     peerDependencies:
@@ -1129,7 +1129,7 @@ snapshots:
     optionalDependencies:
       markdown-it: 15.0.3
 
-  '@novelia/web-kit@https://codeload.github.com/auto-novel/web-kit/tar.gz/7af98d68fe97ad1a35add10761b86697e634cef3(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
+  '@novelia/web-kit@https://codeload.github.com/auto-novel/web-kit/tar.gz/ceaf9a42c4c74ac9a482dc8bfff246de4f382b96(@vicons/material@0.13.0)(tailwindcss@4.3.3)(vue-router@5.3.1(@pinia/colada@1.4.4(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3)))(@vue/compiler-sfc@3.5.42)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.7)(vite@8.2.2(@types/node@25.9.5)(jiti@2.7.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
       '@internationalized/date': 3.12.4
       '@mdit/plugin-container': 2.0.2(markdown-it@15.0.3)
