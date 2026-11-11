@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XPage, XPageHeader, XSkeleton } from '@novelia/web-kit';
+import { XPage } from '@novelia/web-kit';
 import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -139,7 +139,7 @@ onMounted(loadCategories);
 
 <template>
   <XPage>
-    <XPageHeader
+    <UPageHeader
       title="标签管理"
       description="按分类维护标签，管理启用状态、色号与排序。"
     />
@@ -166,13 +166,13 @@ onMounted(loadCategories);
         <div aria-hidden="true" class="divide-y divide-divider">
           <div v-for="index in 3" :key="index" class="py-6">
             <div class="mb-4 flex items-center justify-between">
-              <XSkeleton class="h-5 w-24" />
-              <XSkeleton class="h-8 w-24" />
+              <USkeleton class="h-5 w-24" />
+              <USkeleton class="h-8 w-24" />
             </div>
             <div class="grid gap-4 border-y border-divider px-3 py-4">
-              <XSkeleton class="h-4 w-2/3" />
-              <XSkeleton class="h-4 w-1/2" />
-              <XSkeleton class="h-4 w-3/5" />
+              <USkeleton class="h-4 w-2/3" />
+              <USkeleton class="h-4 w-1/2" />
+              <USkeleton class="h-4 w-3/5" />
             </div>
           </div>
         </div>

@@ -4,7 +4,6 @@ import { computed, ref, useId, watch } from 'vue';
 import type { PostComment } from '@/api';
 import {
   Toast,
-  XButton,
   XMarkdownHelpDialog,
   XTime,
   getApiErrorMessage,
@@ -117,7 +116,7 @@ async function saveEdit() {
       v-if="!isPublished"
       class="mt-0.5 rounded-floating bg-embedded px-4 py-3"
     >
-      <XButton
+      <UButton
         v-if="asAdmin"
         color="neutral"
         variant="ghost"
@@ -128,7 +127,7 @@ async function saveEdit() {
         @click="showModeratedContent = !showModeratedContent"
       >
         {{ statusLabel }}
-      </XButton>
+      </UButton>
       <p v-else class="text-sm leading-6 text-muted">{{ statusLabel }}</p>
       <div v-if="asAdmin" :id="`comment-${comment.id}-moderated-content`">
         <MarkdownContent
@@ -162,18 +161,18 @@ async function saveEdit() {
       <div class="mt-3 flex items-center justify-between gap-3">
         <XMarkdownHelpDialog mode="comment" />
         <div class="flex gap-2">
-          <XButton
+          <UButton
             color="neutral"
             variant="ghost"
-            size="xs"
+            size="sm"
             :disabled="submitting"
             @click="editing = false"
           >
             取消
-          </XButton>
-          <XButton type="submit" size="xs" :disabled="!canSave">
+          </UButton>
+          <UButton type="submit" size="sm" :disabled="!canSave">
             {{ submitting ? '保存中…' : '保存' }}
-          </XButton>
+          </UButton>
         </div>
       </div>
     </form>

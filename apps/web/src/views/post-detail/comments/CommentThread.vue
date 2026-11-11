@@ -6,7 +6,7 @@ import {
   COMMENT_REPLY_PAGE_SIZE,
   useCommentReplyPageQuery,
 } from '@/stores/comment';
-import { XButton, XError, XPagination, XSkeleton } from '@novelia/web-kit';
+import { XPagination } from '@novelia/web-kit';
 
 import CommentListItem from './CommentListItem.vue';
 
@@ -89,21 +89,31 @@ async function handleCreated(comment: PostComment) {
           :key="index"
           class="py-4"
         >
-          <XSkeleton class="h-5 w-28 bg-border" />
+          <USkeleton class="h-5 w-28" />
           <div class="mt-0.5 rounded-floating bg-embedded px-4 py-3">
-            <XSkeleton class="h-4 w-full" />
-            <XSkeleton class="mt-2 h-4 w-2/3" />
+            <USkeleton class="h-4 w-full" />
+            <USkeleton class="mt-2 h-4 w-2/3" />
           </div>
         </div>
       </div>
-      <XError
+      <UError
+        :ui="{
+          root: 'min-h-0 py-8',
+          statusMessage: 'text-lg font-medium sm:text-xl',
+          message: 'mt-2 text-sm',
+          links: 'mt-5 flex-wrap gap-3',
+        }"
         v-else-if="error"
-        title=""
-        :description="error"
+        :error="{ statusMessage: '', message: error }"
         class="min-h-0 p-6 pl-8"
+        :clear="false"
+        :as="{ root: 'div', statusMessage: 'h2' }"
+        role="alert"
       >
-        <XButton @click="retry">重试</XButton>
-      </XError>
+        <template #links>
+          <UButton size="lg" @click="retry">重试</UButton>
+        </template>
+      </UError>
       <template v-else>
         <CommentListItem
           v-for="reply in replies"

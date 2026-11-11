@@ -5,7 +5,7 @@ import {
   ChatBubbleOutlineOutlined,
   LocalOfferOutlined,
 } from '@vicons/material';
-import { XButton, XPage, XPageHeader } from '@novelia/web-kit';
+import { XPage } from '@novelia/web-kit';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -82,19 +82,19 @@ onMounted(loadOverview);
 
 <template>
   <XPage>
-    <XPageHeader title="概览" />
+    <UPageHeader title="概览" />
     <div class="flex flex-col gap-5 text-ink">
       <AdminAlert v-if="errorMessage" type="error" title="概览加载失败">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <span class="min-w-0 break-words">{{ errorMessage }}</span>
-          <XButton
-            size="sm"
+          <UButton
+            size="lg"
             color="neutral"
             variant="outline"
             @click="loadOverview"
           >
             重新加载
-          </XButton>
+          </UButton>
         </div>
       </AdminAlert>
 

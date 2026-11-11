@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { XSkeleton } from '@novelia/web-kit';
-import { XButton, XPagination } from '@novelia/web-kit';
+import { XPagination } from '@novelia/web-kit';
 import { computed, useTemplateRef } from 'vue';
 
 import AdminSpinner from '@/components/AdminSpinner.vue';
@@ -71,9 +70,9 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
           class="border-t border-border py-[18px] first:border-t-0"
         >
           <div aria-hidden="true" class="grid gap-2">
-            <XSkeleton class="h-3.5" />
-            <XSkeleton class="h-3.5" />
-            <XSkeleton class="h-3.5 w-3/5" />
+            <USkeleton class="h-3.5" />
+            <USkeleton class="h-3.5" />
+            <USkeleton class="h-3.5 w-3/5" />
           </div>
         </div>
       </div>
@@ -111,15 +110,15 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
           class="flex flex-col items-center gap-3 px-4 py-16 text-sm text-muted"
         >
           <p>{{ hasFilters ? '没有符合筛选条件的评论' : '暂无评论' }}</p>
-          <XButton
+          <UButton
             v-if="hasFilters"
-            size="sm"
+            size="lg"
             color="neutral"
             variant="outline"
             @click="emit('resetFilters')"
           >
             重置筛选
-          </XButton>
+          </UButton>
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import ui from '@nuxt/ui/vue-plugin';
 import App from './App.vue';
 
 import { createWebKit } from '@novelia/web-kit';
@@ -34,6 +35,7 @@ createApp(App)
       ),
     ),
   )
+  .use(ui)
   .use(webKit)
   .use(router)
   .mount('#app');

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CheckOutlined, CloseOutlined } from '@vicons/material';
-import { XPage, XPageHeader } from '@novelia/web-kit';
+import { XPage } from '@novelia/web-kit';
 import { RouterLink } from 'vue-router';
 
 const permissions = [
@@ -19,7 +19,7 @@ const permissions = [
 
 <template>
   <XPage>
-    <XPageHeader title="社区守则" />
+    <UPageHeader title="社区守则" />
     <section class="text-sm leading-6">
       <h2 class="text-lg font-semibold">违规处理</h2>
       <p class="mt-3">

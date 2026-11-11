@@ -2,12 +2,7 @@
 import { computed, useId } from 'vue';
 
 import type { PostTag } from '@/api';
-import {
-  XButton,
-  XInput,
-  XMarkdownHelpDialog,
-  XSelect,
-} from '@novelia/web-kit';
+import { XMarkdownHelpDialog } from '@novelia/web-kit';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 
 const props = withDefaults(
@@ -80,15 +75,23 @@ function submit() {
       <label for="post-title" class="mb-2 block text-sm font-semibold text-ink">
         标题
       </label>
-      <XInput
+      <UInput
         id="post-title"
         v-model="title"
-        class="rounded-md"
+        class="w-full"
         :placeholder="titlePlaceholder"
         :disabled="submitting"
         required
         :aria-describedby="titleHint ? 'post-title-hint' : undefined"
-        :invalid="titleLength > 100 || (titleLength > 0 && titleLength < 2)"
+        :color="
+          titleLength > 100 || (titleLength > 0 && titleLength < 2)
+            ? 'error'
+            : undefined
+        "
+        :highlight="titleLength > 100 || (titleLength > 0 && titleLength < 2)"
+        :aria-invalid="
+          titleLength > 100 || (titleLength > 0 && titleLength < 2)
+        "
       />
       <div class="mt-1 flex items-center justify-between gap-3 text-xs">
         <p
@@ -110,12 +113,12 @@ function submit() {
       >
         分类
       </label>
-      <XSelect
+      <USelect
         id="post-category"
         v-model="category"
-        :options="categoryOptions"
+        :items="categoryOptions"
         :disabled="submitting"
-        class="rounded-md"
+        class="w-full"
         required
         @update:model-value="emit('categoryChange')"
       />
@@ -181,19 +184,25 @@ function submit() {
     <div
       class="fixed right-4 bottom-4 z-30 flex items-center gap-3 sm:right-6 sm:bottom-6"
     >
-      <XButton
+      <UButton
         v-if="showCancel"
+        size="xl"
         color="neutral"
         variant="outline"
-        class="bg-surface shadow-lg"
+        class="bg-surface text-sm shadow-lg"
         :disabled="submitting"
         @click="emit('cancel')"
       >
         取消
-      </XButton>
-      <XButton type="submit" class="shadow-lg" :disabled="!canSubmit">
+      </UButton>
+      <UButton
+        type="submit"
+        size="xl"
+        class="text-sm shadow-lg"
+        :disabled="!canSubmit"
+      >
         {{ submitting ? submittingLabel : submitLabel }}
-      </XButton>
+      </UButton>
     </div>
   </form>
 </template>

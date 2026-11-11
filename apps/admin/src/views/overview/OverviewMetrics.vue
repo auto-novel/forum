@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { XSkeleton } from '@novelia/web-kit';
 import type { Component } from 'vue';
 
 interface Metric {
@@ -34,8 +33,8 @@ const tones: Record<string, string> = {
       class="min-h-[108px] rounded-lg border border-border bg-surface p-[18px] text-ink"
     >
       <div v-if="loading" aria-hidden="true" class="grid gap-2">
-        <XSkeleton class="h-3.5" />
-        <XSkeleton class="h-3.5 w-3/5" />
+        <USkeleton class="h-3.5" />
+        <USkeleton class="h-3.5 w-3/5" />
       </div>
       <div v-else class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 flex-col gap-[7px]">

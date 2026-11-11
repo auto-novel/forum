@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { FavoriteBorderOutlined, FavoriteFilled } from '@vicons/material';
-import { XButton } from '@novelia/web-kit';
 
 withDefaults(
   defineProps<{
@@ -15,10 +14,10 @@ defineEmits<{ toggle: [] }>();
 </script>
 
 <template>
-  <XButton
+  <UButton
     :color="prominent !== favorited ? 'primary' : 'neutral'"
     :variant="prominent ? (favorited ? 'outline' : 'solid') : 'ghost'"
-    size="sm"
+    size="lg"
     :disabled="loading"
     :title="favorited ? '取消收藏' : '收藏帖子，稍后阅读'"
     :aria-label="favorited ? '取消收藏帖子' : '收藏帖子'"
@@ -29,5 +28,5 @@ defineEmits<{ toggle: [] }>();
     <FavoriteFilled v-if="favorited" class="size-4" aria-hidden="true" />
     <FavoriteBorderOutlined v-else class="size-4" aria-hidden="true" />
     {{ loading ? '处理中…' : favorited ? '取消收藏' : '收藏' }}
-  </XButton>
+  </UButton>
 </template>

@@ -1,19 +1,16 @@
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui';
 import {
   ChatBubbleOutlineOutlined,
   EditOutlined,
   MoreVertOutlined,
   ShareOutlined,
 } from '@vicons/material';
-import { computed, onScopeDispose, ref, watch } from 'vue';
+import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
 import {
   Toast,
-  XDropdownMenu,
-  XDropdownMenuItem,
-  XDropdownMenuSeparator,
   UserBlacklistDialog,
   UserModerationDialog,
-  XButton,
   XConfirmDialog,
   copyToClipboard,
   getApiErrorMessage,
@@ -46,12 +43,14 @@ const { whoami } = useWebKit();
 const postStore = usePostStore();
 const commentStore = useCommentStore();
 const blacklistOpen = ref(false);
+const menuTrigger = ref<{ $el: HTMLElement }>();
 const canBlockAuthor = computed(
   () => whoami.value.isSignedIn && !isOwner.value,
 );
 const actionLoading = ref(false);
 const copying = ref(false);
 const shareOpen = ref(false);
+const shareTrigger = ref<{ $el: HTMLElement }>();
 const confirmationAction = ref<'delete' | 'hide'>();
 const userModerationAction = ref<'strike' | 'ban'>();
 let context = 0;
@@ -215,6 +214,96 @@ function toggleLock() {
     commentsLocked ? '锁定评论失败' : '开放评论失败',
   );
 }
+
+// 菜单项并不是受控弹窗的 DialogTrigger，显式保留关闭后的回焦目标。
+function restoreMenuFocus(event?: Event) {
+  if (!menuTrigger.value?.$el.isConnected) return;
+  event?.preventDefault();
+  menuTrigger.value.$el.focus({ preventScroll: true });
+}
+
+function handleMenuCloseAutoFocus(event: Event) {
+  if (
+    confirmationAction.value ||
+    blacklistOpen.value ||
+    userModerationAction.value
+  )
+    event.preventDefault();
+}
+
+function closeBlacklist() {
+  blacklistOpen.value = false;
+  void nextTick(() => restoreMenuFocus());
+}
+
+const menuItems = computed<DropdownMenuItem[][]>(() => {
+  const management: DropdownMenuItem[] = [];
+  if (asAdmin.value) {
+    management.push(
+      {
+        label: props.post.pinOrder == null ? '置顶帖子' : '取消置顶',
+        disabled: actionLoading.value,
+        onSelect: togglePin,
+      },
+      {
+        label: props.post.commentsLocked ? '开放评论' : '锁定评论',
+        disabled: actionLoading.value,
+        onSelect: toggleLock,
+      },
+      {
+        label: '隐藏帖子',
+        disabled: actionLoading.value,
+        onSelect: () => {
+          confirmationAction.value = 'hide';
+        },
+      },
+    );
+  }
+
+  if (canDelete.value)
+    management.push({
+      label: '删除帖子',
+      color: 'error',
+      disabled: actionLoading.value,
+      onSelect: () => {
+        confirmationAction.value = 'delete';
+      },
+    });
+  const author: DropdownMenuItem[] = [];
+  if (canBlockAuthor.value)
+    author.push({
+      label: props.post.authorBlocked ? '取消屏蔽' : '屏蔽用户',
+      color: props.post.authorBlocked ? undefined : 'error',
+      disabled: actionLoading.value,
+      onSelect: () => {
+        blacklistOpen.value = true;
+      },
+    });
+  if (canModerateAuthor.value)
+    author.push(
+      {
+        label: '处罚用户',
+        color: 'error',
+        disabled: actionLoading.value,
+        onSelect: () => {
+          userModerationAction.value = 'strike';
+        },
+      },
+      {
+        label: '封禁用户',
+        color: 'error',
+        disabled: actionLoading.value,
+        onSelect: () => {
+          userModerationAction.value = 'ban';
+        },
+      },
+    );
+  return [
+    [{ label: '复制原文', disabled: copying.value, onSelect: copyPost }],
+    ...(management.length ? [management] : []),
+    ...(author.length ? [author] : []),
+  ];
+});
 </script>
 
 <template>
@@ -227,36 +316,34 @@ function toggleLock() {
         :loading="favoriteLoading"
         @toggle="emit('favorite')"
       />
-      <XButton
-        as="a"
-        href="#comments"
+      <UButton
+        to="#comments"
         color="neutral"
         variant="outline"
-        size="sm"
-        class="text-ink!"
+        size="lg"
         aria-controls="comments"
         @click.prevent="emit('comments')"
       >
         <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
         评论
-      </XButton>
-      <XButton
+      </UButton>
+      <UButton
         v-if="canManagePost"
         color="neutral"
         variant="outline"
-        size="sm"
-        class="text-ink!"
+        size="lg"
         :disabled="actionLoading"
         @click="editPost"
       >
         <EditOutlined class="size-4" aria-hidden="true" />
         编辑
-      </XButton>
-      <XButton
+      </UButton>
+      <UButton
+        ref="shareTrigger"
         color="neutral"
         variant="ghost"
-        size="icon"
-        class="w-auto min-h-9 px-1.5 text-ink!"
+        square
+        size="lg"
         aria-label="分享帖子"
         title="分享帖子"
         aria-haspopup="dialog"
@@ -264,77 +351,34 @@ function toggleLock() {
         @click="shareOpen = true"
       >
         <ShareOutlined class="size-5" aria-hidden="true" />
-      </XButton>
+      </UButton>
       <span class="inline-flex" :inert="actionLoading">
-        <XDropdownMenu align="end" class="w-40">
-          <template #trigger>
-            <XButton
-              color="neutral"
-              variant="ghost"
-              size="icon"
-              aria-label="更多操作"
-              title="更多操作"
-            >
-              <MoreVertOutlined class="size-5" aria-hidden="true" />
-            </XButton>
-          </template>
-          <XDropdownMenuItem :disabled="copying" @select="copyPost">
-            复制原文
-          </XDropdownMenuItem>
-          <XDropdownMenuSeparator v-if="asAdmin || canDelete" />
-          <template v-if="asAdmin">
-            <XDropdownMenuItem :disabled="actionLoading" @select="togglePin">
-              {{ post.pinOrder == null ? '置顶帖子' : '取消置顶' }}
-            </XDropdownMenuItem>
-            <XDropdownMenuItem :disabled="actionLoading" @select="toggleLock">
-              {{ post.commentsLocked ? '开放评论' : '锁定评论' }}
-            </XDropdownMenuItem>
-            <XDropdownMenuItem
-              :disabled="actionLoading"
-              @select="confirmationAction = 'hide'"
-            >
-              隐藏帖子
-            </XDropdownMenuItem>
-          </template>
-          <XDropdownMenuItem
-            v-if="canDelete"
-            destructive
-            :disabled="actionLoading"
-            @select="confirmationAction = 'delete'"
+        <UDropdownMenu
+          :items="menuItems"
+          :content="{
+            align: 'end',
+            onCloseAutoFocus: handleMenuCloseAutoFocus,
+          }"
+          :ui="{ content: 'w-40' }"
+        >
+          <UButton
+            ref="menuTrigger"
+            color="neutral"
+            variant="ghost"
+            square
+            size="lg"
+            aria-label="更多操作"
+            title="更多操作"
           >
-            删除帖子
-          </XDropdownMenuItem>
-          <XDropdownMenuSeparator v-if="canBlockAuthor || canModerateAuthor" />
-          <XDropdownMenuItem
-            v-if="canBlockAuthor"
-            :destructive="!post.authorBlocked"
-            :disabled="actionLoading"
-            @select="blacklistOpen = true"
-          >
-            {{ post.authorBlocked ? '取消屏蔽' : '屏蔽用户' }}
-          </XDropdownMenuItem>
-          <template v-if="canModerateAuthor">
-            <XDropdownMenuItem
-              destructive
-              :disabled="actionLoading"
-              @select="userModerationAction = 'strike'"
-            >
-              处罚用户
-            </XDropdownMenuItem>
-            <XDropdownMenuItem
-              destructive
-              :disabled="actionLoading"
-              @select="userModerationAction = 'ban'"
-            >
-              封禁用户
-            </XDropdownMenuItem>
-          </template>
-        </XDropdownMenu>
+            <MoreVertOutlined class="size-5" aria-hidden="true" />
+          </UButton>
+        </UDropdownMenu>
       </span>
     </div>
     <PostShareDialog
       :open="shareOpen"
       :post="post"
+      :return-focus="shareTrigger?.$el"
       @update:open="shareOpen = $event"
     />
     <XConfirmDialog
@@ -345,6 +389,7 @@ function toggleLock() {
       :loading="actionLoading"
       danger
       @update:open="handleConfirmationOpenChange"
+      @after:leave="restoreMenuFocus()"
       @confirm="confirmAction"
     />
     <UserBlacklistDialog
@@ -353,12 +398,13 @@ function toggleLock() {
       :username="post.authorUsername"
       :author-blocked="post.authorBlocked"
       :set-user-blocked="setUserBlocked"
-      @close="blacklistOpen = false"
+      @close="closeBlacklist"
     />
     <UserModerationDialog
       v-if="userModerationAction"
       open
       :action="userModerationAction"
+      :content="{ onCloseAutoFocus: restoreMenuFocus }"
       :user-id="post.authorId"
       :username="post.authorUsername"
       :evidence="moderationEvidence"

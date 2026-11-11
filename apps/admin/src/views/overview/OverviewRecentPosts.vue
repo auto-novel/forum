@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { XSkeleton } from '@novelia/web-kit';
-import { XButton } from '@novelia/web-kit';
-
 import type { PostSummary } from '@/api';
 
 defineProps<{
@@ -32,14 +29,14 @@ function formatDate(value: string) {
         <h2 class="font-semibold">最近活跃</h2>
         <span class="text-xs text-muted">按最后活跃时间排序</span>
       </div>
-      <XButton
+      <UButton
         variant="ghost"
-        size="sm"
+        size="lg"
         class="shrink-0"
         @click="emit('viewAll')"
       >
         查看全部
-      </XButton>
+      </UButton>
     </header>
 
     <div v-if="loading" class="grid gap-[22px]">
@@ -49,8 +46,8 @@ function formatDate(value: string) {
         aria-hidden="true"
         class="grid gap-2"
       >
-        <XSkeleton class="h-3.5" />
-        <XSkeleton class="h-3.5 w-3/5" />
+        <USkeleton class="h-3.5" />
+        <USkeleton class="h-3.5 w-3/5" />
       </div>
     </div>
     <ul v-else-if="posts.length">

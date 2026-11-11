@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { XConfirmDialog } from '@novelia/web-kit';
+import { watch } from 'vue';
 
 import { useForumApi, type Comment } from '@/api';
 
@@ -9,6 +10,19 @@ const emit = defineEmits<{
   success: [message: string];
   error: [message: string];
 }>();
+
+let returnFocus: HTMLElement | null = null;
+watch(
+  () => props.target,
+  (target) => {
+    if (target)
+      returnFocus = document.getElementById(`comment-actions-${target.id}`);
+  },
+  { flush: 'sync' },
+);
+function restoreFocus() {
+  if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
+}
 
 const api = useForumApi();
 const saving = defineModel<boolean>('saving', { default: false });
@@ -38,6 +52,7 @@ async function confirm() {
 <template>
   <XConfirmDialog
     :open="target !== null"
+    @after:leave="restoreFocus"
     title="确认删除该作者全部评论"
     :description="`将把 ${target?.authorUsername ?? ''}（ID: ${target?.authorId ?? '-'}）的全部评论（含回复）标记为删除，公开页面会显示占位；管理员仍可查看原文并逐条恢复。`"
     confirm-label="确认删除"

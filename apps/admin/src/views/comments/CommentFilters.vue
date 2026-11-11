@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { XInput } from '@novelia/web-kit';
+import { useTemplateRef } from 'vue';
+
 import FilterRow from '@/components/FilterRow.vue';
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import type { CommentStatusFilter, CommentSubjectFilter } from '@/api';
 
 const emit = defineEmits<{ search: [] }>();
+const queryInput = useTemplateRef<{ inputRef: HTMLInputElement | null }>(
+  'queryInput',
+);
+const authorNameInput = useTemplateRef<{ inputRef: HTMLInputElement | null }>(
+  'authorNameInput',
+);
+const subjectKeyInput = useTemplateRef<{ inputRef: HTMLInputElement | null }>(
+  'subjectKeyInput',
+);
 const query = defineModel<string>('query', { required: true });
 const authorName = defineModel<string>('authorName', { required: true });
 const subjectType = defineModel<CommentSubjectFilter>('subjectType', {
@@ -39,26 +49,62 @@ function changeSubjectType(value: string) {
 <template>
   <div class="filters">
     <FilterRow label="搜索">
-      <XInput
+      <UInput
+        ref="queryInput"
         v-model="query"
+        aria-label="搜索评论内容"
         class="field-input"
-        clearable
         placeholder="搜索评论内容"
         @change="emit('search')"
-        @clear="emit('search')"
         @keyup.enter="emit('search')"
-      />
+      >
+        <template #trailing>
+          <UButton
+            v-if="query"
+            color="neutral"
+            variant="link"
+            size="xs"
+            square
+            icon="i-lucide-x"
+            aria-label="清除搜索"
+            @mousedown.prevent
+            @click="
+              query = '';
+              queryInput?.inputRef?.focus();
+              emit('search');
+            "
+          />
+        </template>
+      </UInput>
     </FilterRow>
     <FilterRow label="作者">
-      <XInput
+      <UInput
+        ref="authorNameInput"
         v-model="authorName"
+        aria-label="搜索作者名字"
         class="field-input"
-        clearable
         placeholder="搜索作者名字"
         @change="emit('search')"
-        @clear="emit('search')"
         @keyup.enter="emit('search')"
-      />
+      >
+        <template #trailing>
+          <UButton
+            v-if="authorName"
+            color="neutral"
+            variant="link"
+            size="xs"
+            square
+            icon="i-lucide-x"
+            aria-label="清除作者"
+            @mousedown.prevent
+            @click="
+              authorName = '';
+              authorNameInput?.inputRef?.focus();
+              emit('search');
+            "
+          />
+        </template>
+      </UInput>
     </FilterRow>
     <FilterRow label="Subject">
       <FilterChoiceGroup
@@ -68,15 +114,33 @@ function changeSubjectType(value: string) {
       />
     </FilterRow>
     <FilterRow label="资源标识">
-      <XInput
+      <UInput
+        ref="subjectKeyInput"
         v-model="subjectKey"
+        aria-label="资源标识"
         class="field-input"
-        clearable
         placeholder="精确匹配 subject key（帖子 ID / 小说标识）"
         @change="emit('search')"
-        @clear="emit('search')"
         @keyup.enter="emit('search')"
-      />
+      >
+        <template #trailing>
+          <UButton
+            v-if="subjectKey"
+            color="neutral"
+            variant="link"
+            size="xs"
+            square
+            icon="i-lucide-x"
+            aria-label="清除资源标识"
+            @mousedown.prevent
+            @click="
+              subjectKey = '';
+              subjectKeyInput?.inputRef?.focus();
+              emit('search');
+            "
+          />
+        </template>
+      </UInput>
     </FilterRow>
     <FilterRow label="状态">
       <FilterChoiceGroup

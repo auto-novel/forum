@@ -83,9 +83,11 @@ const mocks = {
       error(message) { f.notices.push(['error', message]); },
     };
     export const getApiErrorMessage = (_, fallback) => fallback;
-    export const XButton = {}, XDropdownMenu = {}, XDropdownMenuItem = {}, XDropdownMenuSeparator = {}, XConfirmDialog = {};
+    export const XConfirmDialog = {};
     export const UserBlacklistDialog = {}, UserModerationDialog = {};
   `,
+  '@nuxt/ui/components/Button.vue': 'export default {};',
+  '@nuxt/ui/components/DropdownMenu.vue': 'export default {};',
   '@vicons/material':
     'export const ChatBubbleOutlineOutlined = {}, EditOutlined = {}, ShareOutlined = {}, MoreVertOutlined = {};',
   './PostFavoriteButton.vue': 'export default {};',
@@ -198,10 +200,15 @@ test('copy original is available to guests and preserves raw Markdown', async (t
     const { descriptor: sfc } = parse(
       readFileSync(new URL(actionsUrl), 'utf8'),
     );
-    assert.match(sfc.template.content, /<XDropdownMenu\b[^>]*>/);
-    assert.match(sfc.template.content, /<template #trigger>/);
-    assert.match(sfc.template.content, /@select="copyPost"/);
-    await actions.copyPost();
+    assert.match(
+      sfc.template.content,
+      /<UDropdownMenu\b[^>]*:items="menuItems"/,
+    );
+    const copyItem = actions.menuItems.value
+      .flat()
+      .find((item) => item.label === '复制原文');
+    assert.ok(copyItem, 'guests can find copy in the action menu');
+    await copyItem.onSelect();
     assert.equal(writeText.mock.calls[0].arguments[0], content);
     assert.deepEqual(fixture.notices, [['success', '帖子原文已复制']]);
     assert.equal(actions.copying.value, false);
@@ -361,7 +368,15 @@ test('management starts API only after acquiring shared management lock', async 
   try {
     const request = deferred();
     fixture.requests.push(request);
-    actions.togglePin();
+    actions.menuItems.value
+      .flat()
+      .find((item) => item.label === '置顶帖子')
+      .onSelect();
+    assert.equal(
+      actions.menuItems.value.flat().find((item) => item.label === '锁定评论')
+        .disabled,
+      true,
+    );
     actions.toggleLock();
     assert.deepEqual(fixture.calls, [['pinPost', 10, 0]]);
     await settle(request);

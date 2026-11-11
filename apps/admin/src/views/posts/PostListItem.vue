@@ -1,17 +1,13 @@
 <script setup lang="ts">
+import type UButton from '@nuxt/ui/components/Button.vue';
 import {
   CommentOutlined,
   LockOutlined,
   PushPinOutlined,
   VisibilityOutlined,
 } from '@vicons/material';
-import {
-  XButton,
-  XConfirmDialog,
-  XDialog,
-  XNumberInput,
-} from '@novelia/web-kit';
-import { ref, watch } from 'vue';
+import { XConfirmDialog } from '@novelia/web-kit';
+import { ref, watch, useTemplateRef } from 'vue';
 
 import AdminSpinner from '@/components/AdminSpinner.vue';
 import type { PostStatus, PostSummary } from '@/api';
@@ -30,6 +26,22 @@ const emit = defineEmits<{
   reviewComments: [post: PostSummary];
 }>();
 
+const pinTrigger = useTemplateRef<InstanceType<typeof UButton>>('pinTrigger');
+const deleteTrigger =
+  useTemplateRef<InstanceType<typeof UButton>>('deleteTrigger');
+function restoreFocus(event: Event, element?: HTMLElement) {
+  if (!element?.isConnected) return;
+  event.preventDefault();
+  element.focus({ preventScroll: true });
+}
+const pinContent = {
+  onCloseAutoFocus: (event: Event) =>
+    restoreFocus(event, pinTrigger.value?.$el),
+};
+function restoreDeleteFocus() {
+  const element = deleteTrigger.value?.$el as HTMLElement | undefined;
+  if (element?.isConnected) element.focus({ preventScroll: true });
+}
 const deleteConfirmationOpen = ref(false);
 const pinDialogOpen = ref(false);
 const pinOrderInput = ref<number | null>(props.post.pinOrder ?? null);
@@ -123,128 +135,132 @@ function formatDate(value: string) {
               <CommentOutlined class="size-4" aria-hidden="true" />
               {{ post.commentsCount }}
             </span>
-            <XButton
+            <UButton
               variant="ghost"
               color="primary"
-              size="sm"
+              size="lg"
               @click="emit('reviewComments', post)"
             >
               审核评论
-            </XButton>
+            </UButton>
           </div>
         </div>
       </div>
       <div class="post-actions">
         <div class="action-group">
-          <XButton
+          <UButton
             color="neutral"
             variant="ghost"
-            size="sm"
+            size="lg"
             :disabled="actionsDisabled"
             @click="emit('setCommentsLocked', post, !post.commentsLocked)"
           >
             {{ post.commentsLocked ? '解锁' : '锁定' }}
-          </XButton>
-          <XButton
+          </UButton>
+          <UButton
             color="neutral"
             variant="ghost"
-            size="sm"
+            size="lg"
             :disabled="actionsDisabled"
+            ref="pinTrigger"
             @click="openPinSettings"
           >
             {{ post.pinOrder == null ? '置顶' : '置顶设置' }}
-          </XButton>
-          <XDialog
+          </UButton>
+          <UModal
             v-model:open="pinDialogOpen"
+            :content="pinContent"
             title="置顶设置"
-            class="w-11/12 max-w-sm"
+            :ui="{ content: 'w-11/12 max-w-sm' }"
           >
-            <div class="grid gap-2">
-              <label :for="`pin-order-${post.id}`" class="text-sm">
-                置顶顺序
-              </label>
-              <XNumberInput
-                v-model="pinOrderInput"
-                :id="`pin-order-${post.id}`"
-                :min="-2147483648"
-                :max="2147483647"
-                :disabled="actionsDisabled"
-                placeholder="输入顺序"
-              />
-              <p class="text-xs text-muted">数值越小越靠前。</p>
-            </div>
-            <template #footer>
-              <div class="flex justify-end gap-2">
-                <XButton
-                  color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  @click="pinDialogOpen = false"
-                >
-                  取消
-                </XButton>
-                <XButton
-                  v-if="post.pinOrder != null"
-                  color="neutral"
-                  variant="outline"
-                  size="sm"
+            <template #body>
+              <div class="grid gap-2">
+                <label :for="`pin-order-${post.id}`" class="text-sm">
+                  置顶顺序
+                </label>
+                <UInputNumber
+                  v-model="pinOrderInput"
+                  :id="`pin-order-${post.id}`"
+                  :min="-2147483648"
+                  :max="2147483647"
                   :disabled="actionsDisabled"
-                  @click="clearPinOrder"
-                >
-                  取消置顶
-                </XButton>
-                <XButton
-                  color="primary"
-                  variant="soft"
-                  size="sm"
-                  :disabled="
-                    actionsDisabled ||
-                    pinOrderInput == null ||
-                    pinOrderInput === (post.pinOrder ?? null)
-                  "
-                  @click="savePinOrder"
-                >
-                  保存
-                </XButton>
+                  placeholder="输入顺序"
+                />
+                <p class="text-xs text-muted">数值越小越靠前。</p>
               </div>
             </template>
-          </XDialog>
+            <template #footer>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="lg"
+                @click="pinDialogOpen = false"
+              >
+                取消
+              </UButton>
+              <UButton
+                v-if="post.pinOrder != null"
+                color="neutral"
+                variant="outline"
+                size="lg"
+                :disabled="actionsDisabled"
+                @click="clearPinOrder"
+              >
+                取消置顶
+              </UButton>
+              <UButton
+                color="primary"
+                variant="soft"
+                size="lg"
+                :disabled="
+                  actionsDisabled ||
+                  pinOrderInput == null ||
+                  pinOrderInput === (post.pinOrder ?? null)
+                "
+                @click="savePinOrder"
+              >
+                保存
+              </UButton>
+            </template>
+          </UModal>
         </div>
         <div class="action-group status-actions">
           <AdminSpinner v-if="saving" size="sm" label="正在保存" />
-          <XButton
+          <UButton
             v-if="post.status !== 0"
             color="neutral"
             variant="ghost"
-            size="sm"
+            size="lg"
             :disabled="actionsDisabled"
             @click="emit('setStatus', post, 0)"
           >
             恢复
-          </XButton>
-          <XButton
+          </UButton>
+          <UButton
             v-if="post.status !== 1"
             color="neutral"
             variant="ghost"
-            size="sm"
+            size="lg"
             :disabled="actionsDisabled"
             @click="emit('setStatus', post, 1)"
           >
             隐藏
-          </XButton>
-          <XButton
+          </UButton>
+          <UButton
             v-if="post.status !== 2"
-            color="danger"
+            color="error"
             variant="ghost"
-            size="sm"
+            size="lg"
             :disabled="actionsDisabled"
+            ref="deleteTrigger"
             @click="deleteConfirmationOpen = true"
           >
             删除
-          </XButton>
+          </UButton>
           <XConfirmDialog
             v-if="post.status !== 2"
             v-model:open="deleteConfirmationOpen"
+            @after:leave="restoreDeleteFocus"
             title="确认删除帖子"
             :description="`确定将帖子「${post.title}」标记为已删除？`"
             confirm-label="确认删除"

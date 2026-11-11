@@ -4,15 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useForumApi } from '@/api';
 import { usePostStore } from '@/stores/post';
-import {
-  Toast,
-  XError,
-  XButton,
-  XPage,
-  XPageHeader,
-  getApiErrorMessage,
-  useWebKit,
-} from '@novelia/web-kit';
+import { Toast, XPage, getApiErrorMessage, useWebKit } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { usePostDraftStore } from '@/stores/draft';
 import PostPublishingNotice from './PostPublishingNotice.vue';
@@ -122,7 +114,7 @@ async function submitPost() {
 
 <template>
   <XPage>
-    <XPageHeader title="发表帖子" />
+    <UPageHeader title="发表帖子" />
     <section>
       <div v-if="!whoami.isSignedIn" class="py-4 text-sm text-muted">
         登录后才能发表帖子，请使用页面右上角的登录入口。
@@ -135,13 +127,23 @@ async function submitPost() {
       >
         正在加载分类…
       </p>
-      <XError
+      <UError
+        :ui="{
+          root: 'min-h-0 py-8',
+          statusMessage: 'text-lg font-medium sm:text-xl',
+          message: 'mt-2 text-sm',
+          links: 'mt-5 flex-wrap gap-3',
+        }"
         v-else-if="!categoriesReady && categoryStore.error"
-        title="分类加载失败"
-        :description="categoryStore.error"
+        :error="{ statusMessage: '分类加载失败', message: categoryStore.error }"
+        :clear="false"
+        :as="{ root: 'div', statusMessage: 'h2' }"
+        role="alert"
       >
-        <XButton @click="categoryStore.refresh">再试一次</XButton>
-      </XError>
+        <template #links>
+          <UButton size="lg" @click="categoryStore.refresh">再试一次</UButton>
+        </template>
+      </UError>
       <template v-else>
         <PostForm
           v-model:title="title"

@@ -2,15 +2,7 @@
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { PostSummary } from '@/api';
-import {
-  restoreScrollPosition,
-  XButton,
-  XError,
-  XEmpty,
-  XSkeleton,
-  XPagination,
-  XSeparator,
-} from '@novelia/web-kit';
+import { restoreScrollPosition, XPagination } from '@novelia/web-kit';
 
 import PostListItem from './PostListItem.vue';
 
@@ -75,7 +67,7 @@ const emit = defineEmits<{
       @update:page="emit('changePage', $event)"
     />
 
-    <XSeparator
+    <USeparator
       v-if="loading || (!error && posts.length > 0)"
       :style="{
         margin: !error && paginationTotalPages > 1 ? '12px 0 0' : '24px 0 0',
@@ -85,14 +77,29 @@ const emit = defineEmits<{
     <div v-if="loading" class="divide-y divide-divider" role="status">
       <span class="sr-only">正在加载帖子…</span>
       <div v-for="index in 5" :key="index" class="py-2.5">
-        <XSkeleton class="h-5 w-3/4 bg-border" />
-        <XSkeleton class="mt-1.5 h-5 w-1/3" />
+        <USkeleton class="h-5 w-3/4" />
+        <USkeleton class="mt-1.5 h-5 w-1/3" />
       </div>
     </div>
-    <XError v-else-if="error" title="帖子列表加载失败" :description="error">
-      <XButton @click="emit('retry')">再试一次</XButton>
-    </XError>
-    <XEmpty
+    <UError
+      :ui="{
+        root: 'min-h-0 py-8',
+        statusMessage: 'text-lg font-medium sm:text-xl',
+        message: 'mt-2 text-sm',
+        links: 'mt-5 flex-wrap gap-3',
+      }"
+      v-else-if="error"
+      :error="{ statusMessage: '帖子列表加载失败', message: error }"
+      :clear="false"
+      :as="{ root: 'div', statusMessage: 'h2' }"
+      role="alert"
+    >
+      <template #links>
+        <UButton size="lg" @click="emit('retry')">再试一次</UButton>
+      </template>
+    </UError>
+    <UEmpty
+      variant="naked"
       v-else-if="!posts.length"
       :title="emptyTitle ?? '暂无帖子'"
       :description="emptyDescription ?? '这个分类暂时没有帖子。'"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui';
 import { MoreVertOutlined } from '@vicons/material';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 
 import type { PostComment } from '@/api';
 import { useForumApi } from '@/api';
@@ -8,10 +9,6 @@ import {
   Toast,
   UserBlacklistDialog,
   UserModerationDialog,
-  XDropdownMenu,
-  XDropdownMenuItem,
-  XDropdownMenuSeparator,
-  XButton,
   XConfirmDialog,
   copyToClipboard,
   getApiErrorMessage,
@@ -37,6 +34,7 @@ const emit = defineEmits<{
 const { whoami } = useWebKit();
 const forumApi = useForumApi();
 const blacklistOpen = ref(false);
+const menuTrigger = ref<{ $el: HTMLElement }>();
 const canBlockAuthor = computed(
   () => whoami.value.isSignedIn && !isOwner.value,
 );
@@ -180,93 +178,129 @@ function handleConfirmationOpenChange(open: boolean) {
 function handleUserModerationOpenChange(open: boolean) {
   if (!open) userModerationAction.value = undefined;
 }
+
+// 菜单项并不是受控弹窗的 DialogTrigger，显式保留关闭后的回焦目标。
+function restoreMenuFocus(event?: Event) {
+  if (!menuTrigger.value?.$el.isConnected) return;
+  event?.preventDefault();
+  menuTrigger.value.$el.focus({ preventScroll: true });
+}
+
+function handleMenuCloseAutoFocus(event: Event) {
+  if (
+    confirmationAction.value ||
+    blacklistOpen.value ||
+    userModerationAction.value
+  )
+    event.preventDefault();
+}
+
+function closeBlacklist() {
+  blacklistOpen.value = false;
+  void nextTick(() => restoreMenuFocus());
+}
+
+const menuItems = computed<DropdownMenuItem[][]>(() => {
+  const management: DropdownMenuItem[] = [];
+  if (asAdmin.value && isPublished.value)
+    management.push({
+      label: '隐藏评论',
+      disabled: submitting.value,
+      onSelect: () => {
+        confirmationAction.value = 'hide';
+      },
+    });
+  if (asAdmin.value && props.comment.status === 1)
+    management.push({
+      label: '取消隐藏',
+      disabled: submitting.value,
+      onSelect: unhideComment,
+    });
+
+  if (canDelete.value)
+    management.push({
+      label: '删除评论',
+      color: 'error',
+      disabled: submitting.value,
+      onSelect: () => {
+        confirmationAction.value = 'delete';
+      },
+    });
+  const author: DropdownMenuItem[] = [];
+  if (canBlockAuthor.value)
+    author.push({
+      label: props.comment.authorBlocked ? '取消屏蔽' : '屏蔽用户',
+      color: props.comment.authorBlocked ? undefined : 'error',
+      disabled: submitting.value,
+      onSelect: () => {
+        blacklistOpen.value = true;
+      },
+    });
+  if (canModerateAuthor.value)
+    author.push(
+      {
+        label: '处罚用户',
+        color: 'error',
+        disabled: submitting.value,
+        onSelect: () => {
+          userModerationAction.value = 'strike';
+        },
+      },
+      {
+        label: '封禁用户',
+        color: 'error',
+        disabled: submitting.value,
+        onSelect: () => {
+          userModerationAction.value = 'ban';
+        },
+      },
+    );
+  return [
+    [{ label: '复制原文', disabled: copying.value, onSelect: copyComment }],
+    ...(management.length ? [management] : []),
+    ...(author.length ? [author] : []),
+  ];
+});
 </script>
 
 <template>
   <div class="ml-auto flex items-center gap-1">
-    <XButton
+    <UButton
       v-if="canReply"
       color="neutral"
       variant="ghost"
-      size="xs"
+      size="sm"
       :aria-expanded="replying"
       @click="emit('reply')"
     >
       回复
-    </XButton>
-    <XButton
+    </UButton>
+    <UButton
       v-if="canEdit"
       color="neutral"
       variant="ghost"
-      size="xs"
+      size="sm"
       @click="emit('edit')"
     >
       编辑
-    </XButton>
-    <XDropdownMenu align="end" class="min-w-32 w-32">
-      <template #trigger>
-        <XButton
-          color="neutral"
-          variant="ghost"
-          size="icon-xs"
-          aria-label="更多操作"
-          title="更多操作"
-        >
-          <MoreVertOutlined class="size-4" aria-hidden="true" />
-        </XButton>
-      </template>
-      <XDropdownMenuItem :disabled="copying" @select="copyComment">
-        复制原文
-      </XDropdownMenuItem>
-      <XDropdownMenuSeparator v-if="asAdmin || canDelete" />
-      <XDropdownMenuItem
-        v-if="asAdmin && isPublished"
-        :disabled="submitting"
-        @select="confirmationAction = 'hide'"
+    </UButton>
+    <UDropdownMenu
+      :items="menuItems"
+      :content="{ align: 'end', onCloseAutoFocus: handleMenuCloseAutoFocus }"
+      :ui="{ content: 'min-w-32 w-32' }"
+    >
+      <UButton
+        ref="menuTrigger"
+        color="neutral"
+        variant="ghost"
+        square
+        size="xs"
+        aria-label="更多操作"
+        title="更多操作"
       >
-        隐藏评论
-      </XDropdownMenuItem>
-      <XDropdownMenuItem
-        v-if="asAdmin && comment.status === 1"
-        :disabled="submitting"
-        @select="unhideComment"
-      >
-        取消隐藏
-      </XDropdownMenuItem>
-      <XDropdownMenuItem
-        v-if="canDelete"
-        destructive
-        :disabled="submitting"
-        @select="confirmationAction = 'delete'"
-      >
-        删除评论
-      </XDropdownMenuItem>
-      <XDropdownMenuSeparator v-if="canBlockAuthor || canModerateAuthor" />
-      <XDropdownMenuItem
-        v-if="canBlockAuthor"
-        :destructive="!comment.authorBlocked"
-        :disabled="submitting"
-        @select="blacklistOpen = true"
-      >
-        {{ comment.authorBlocked ? '取消屏蔽' : '屏蔽用户' }}
-      </XDropdownMenuItem>
-      <template v-if="canModerateAuthor">
-        <XDropdownMenuItem
-          destructive
-          :disabled="submitting"
-          @select="userModerationAction = 'strike'"
-        >
-          处罚用户
-        </XDropdownMenuItem>
-        <XDropdownMenuItem
-          destructive
-          :disabled="submitting"
-          @select="userModerationAction = 'ban'"
-        >
-          封禁用户
-        </XDropdownMenuItem>
-      </template>
-    </XDropdownMenu>
+        <MoreVertOutlined class="size-4" aria-hidden="true" />
+      </UButton>
+    </UDropdownMenu>
 
     <XConfirmDialog
       :open="confirmationAction != null"
@@ -276,6 +310,7 @@ function handleUserModerationOpenChange(open: boolean) {
       :loading="submitting"
       danger
       @update:open="handleConfirmationOpenChange"
+      @after:leave="restoreMenuFocus()"
       @confirm="confirmAction"
     />
     <UserBlacklistDialog
@@ -284,12 +319,13 @@ function handleUserModerationOpenChange(open: boolean) {
       :username="comment.authorUsername"
       :author-blocked="comment.authorBlocked"
       :set-user-blocked="setUserBlocked"
-      @close="blacklistOpen = false"
+      @close="closeBlacklist"
     />
     <UserModerationDialog
       v-if="userModerationAction"
       open
       :action="userModerationAction"
+      :content="{ onCloseAutoFocus: restoreMenuFocus }"
       :user-id="comment.authorId"
       :username="comment.authorUsername"
       :evidence="moderationEvidence"

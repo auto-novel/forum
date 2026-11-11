@@ -1,4 +1,5 @@
 import { createWebKit } from '@novelia/web-kit';
+import ui from '@nuxt/ui/vue-plugin';
 import { PiniaColada } from '@pinia/colada';
 import { createApp } from 'vue';
 
@@ -33,6 +34,7 @@ const app = createApp(App);
 app
   .provide(forumApiKey, forumApi)
   .use(webKit)
+  .use(ui)
   .use(pinia)
   .use(PiniaColada, {
     queryOptions: {

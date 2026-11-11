@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { XSkeleton } from '@novelia/web-kit';
-import { XButton, XPagination } from '@novelia/web-kit';
+import { XPagination } from '@novelia/web-kit';
 import { computed, useTemplateRef } from 'vue';
 
 import AdminSpinner from '@/components/AdminSpinner.vue';
@@ -65,9 +64,9 @@ const rangeEnd = computed(() =>
       >
         <div v-for="index in 5" :key="index" class="py-4.5">
           <div aria-hidden="true" class="grid gap-2">
-            <XSkeleton class="h-3.5" />
-            <XSkeleton class="h-3.5" />
-            <XSkeleton class="h-3.5 w-3/5" />
+            <USkeleton class="h-3.5" />
+            <USkeleton class="h-3.5" />
+            <USkeleton class="h-3.5 w-3/5" />
           </div>
         </div>
       </div>
@@ -111,15 +110,15 @@ const rangeEnd = computed(() =>
           class="flex flex-col items-center gap-4 px-4 py-16 text-muted"
         >
           <p>{{ hasFilters ? '没有符合条件的帖子' : '暂无帖子' }}</p>
-          <XButton
+          <UButton
             v-if="hasFilters"
             color="neutral"
             variant="outline"
-            size="sm"
+            size="lg"
             @click="emit('resetFilters')"
           >
             清除筛选
-          </XButton>
+          </UButton>
         </div>
       </div>
     </section>

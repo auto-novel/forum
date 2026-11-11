@@ -1,24 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 
-import {
-  Toast,
-  XButton,
-  XDialog,
-  XInput,
-  copyToClipboard,
-  getApiErrorMessage,
-} from '@novelia/web-kit';
+import { Toast, copyToClipboard, getApiErrorMessage } from '@novelia/web-kit';
 import { postShareMarkdown, postShareUrl } from '@/utils/postShare';
 
 const props = defineProps<{
   open: boolean;
   post: { id: number; title: string };
+  returnFocus?: HTMLElement;
 }>();
 
 const emit = defineEmits<{ 'update:open': [open: boolean] }>();
 
-const linkInput = ref<InstanceType<typeof XInput>>();
+const linkInput = ref<{ inputRef: HTMLInputElement | undefined }>();
 const copying = ref(false);
 
 const link = computed(() => postShareUrl(props.post));
@@ -37,12 +31,18 @@ watch(
 
 function focusLink(event: Event) {
   event.preventDefault();
-  linkInput.value?.focus();
+  linkInput.value?.inputRef?.focus();
   selectLink();
 }
 
 function selectLink() {
-  linkInput.value?.select();
+  linkInput.value?.inputRef?.select();
+}
+
+function restoreFocus(event: Event) {
+  if (!props.returnFocus?.isConnected) return;
+  event.preventDefault();
+  props.returnFocus.focus({ preventScroll: true });
 }
 
 async function copy(content: string, successMessage: string) {
@@ -68,36 +68,40 @@ function copyMarkdown() {
 </script>
 
 <template>
-  <XDialog
+  <UModal
     :open="open"
     title="分享帖子"
     description="复制链接发送给好友，或复制 Markdown 引用到其他平台。"
-    class="w-md"
+    :ui="{ content: 'w-md', footer: 'flex-wrap' }"
+    :content="{ onOpenAutoFocus: focusLink, onCloseAutoFocus: restoreFocus }"
     @update:open="emit('update:open', $event)"
-    @open-auto-focus="focusLink"
   >
-    <label class="block text-xs font-medium text-muted" for="post-share-link">
-      帖子链接
-    </label>
-    <XInput
-      id="post-share-link"
-      ref="linkInput"
-      :model-value="link"
-      readonly
-      class="mt-2"
-      @focus="selectLink"
-    />
-
-    <div class="mt-5 flex flex-wrap justify-end gap-3">
-      <XButton
+    <template #body>
+      <label class="block text-xs font-medium text-muted" for="post-share-link">
+        帖子链接
+      </label>
+      <UInput
+        id="post-share-link"
+        ref="linkInput"
+        :model-value="link"
+        readonly
+        class="mt-2 w-full"
+        @focus="selectLink"
+      />
+    </template>
+    <template #footer>
+      <UButton
+        size="lg"
         color="neutral"
         variant="outline"
         :disabled="copying"
         @click="copyMarkdown"
       >
         复制 Markdown
-      </XButton>
-      <XButton :disabled="copying" @click="copyLink">复制链接</XButton>
-    </div>
-  </XDialog>
+      </UButton>
+      <UButton size="lg" :disabled="copying" @click="copyLink">
+        复制链接
+      </UButton>
+    </template>
+  </UModal>
 </template>

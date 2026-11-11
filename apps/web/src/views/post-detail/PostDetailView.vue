@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { type Post, type PostComment } from '@/api';
 import { usePostFavorite } from './usePostFavorite';
-import { XButton, XError, XPage, XSkeleton } from '@novelia/web-kit';
+import { XPage } from '@novelia/web-kit';
 import PostTagList from '@/components/PostTagList.vue';
 import { useCategoryStore } from '@/stores/category';
 import { useCommentPageQuery, useCommentStore } from '@/stores/comment';
@@ -241,7 +241,7 @@ function returnToList() {
 <template>
   <XPage>
     <div class="mb-3 flex flex-wrap items-center gap-1.5">
-      <XButton
+      <UButton
         color="neutral"
         variant="ghost"
         size="xs"
@@ -252,7 +252,7 @@ function returnToList() {
       >
         <ArrowBackOutlined class="size-4" aria-hidden="true" />
         {{ post && !postError ? (category?.title ?? '未分类') : '返回列表' }}
-      </XButton>
+      </UButton>
       <PostTagList
         v-if="post && !postLoading && !postError"
         class="min-w-0"
@@ -260,25 +260,35 @@ function returnToList() {
         :pinned="post.pinOrder != null"
         :locked="post.commentsLocked"
       />
-      <XSkeleton v-else-if="postLoading" class="h-3 w-24" />
+      <USkeleton v-else-if="postLoading" class="h-3 w-24" />
     </div>
     <div v-if="postLoading" class="pb-6" role="status">
       <span class="sr-only">正在加载帖子…</span>
-      <XSkeleton class="h-8 w-4/5 bg-border" />
-      <XSkeleton class="mt-5 h-4 w-56" />
+      <USkeleton class="h-8 w-4/5" />
+      <USkeleton class="mt-5 h-4 w-56" />
       <div class="my-6 h-px bg-divider" />
-      <XSkeleton class="h-4 w-full" />
-      <XSkeleton class="mt-3 h-4 w-full" />
-      <XSkeleton class="mt-3 h-4 w-2/3" />
+      <USkeleton class="h-4 w-full" />
+      <USkeleton class="mt-3 h-4 w-full" />
+      <USkeleton class="mt-3 h-4 w-2/3" />
     </div>
-    <XError
+    <UError
+      :ui="{
+        root: 'min-h-0 py-8',
+        statusMessage: 'text-lg font-medium sm:text-xl',
+        message: 'mt-2 text-sm',
+        links: 'mt-5 flex-wrap gap-3',
+      }"
       v-else-if="postError"
       class="min-h-96"
-      title="帖子加载失败"
-      :description="postError"
+      :error="{ statusMessage: '帖子加载失败', message: postError }"
+      :clear="false"
+      :as="{ root: 'div', statusMessage: 'h2' }"
+      role="alert"
     >
-      <XButton @click="loadPost">再试一次</XButton>
-    </XError>
+      <template #links>
+        <UButton size="lg" @click="loadPost">再试一次</UButton>
+      </template>
+    </UError>
     <template v-else-if="post">
       <PostContent :post="post">
         <template #actions>

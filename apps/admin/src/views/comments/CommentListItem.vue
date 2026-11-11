@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { MoreHorizOutlined } from '@vicons/material';
-import {
-  XButton,
-  XDropdownMenu,
-  XDropdownMenuItem,
-  XDropdownMenuSeparator,
-} from '@novelia/web-kit';
+import type { DropdownMenuItem } from '@nuxt/ui';
+import { computed } from 'vue';
 
 import type { Comment, CommentStatusName } from '@/api';
 
@@ -30,6 +26,42 @@ function selectAction(
   }
   emit('moderate', props.comment, key);
 }
+
+const actionItems = computed<DropdownMenuItem[][]>(() => {
+  const items: DropdownMenuItem[] = [
+    { label: '仅看此资源', onSelect: () => selectAction('filter-subject') },
+  ];
+  if (props.comment.status !== 0)
+    items.push({
+      label: '恢复',
+      disabled: props.actionsDisabled,
+      onSelect: () => selectAction('published'),
+    });
+  if (props.comment.status !== 1)
+    items.push({
+      label: '隐藏',
+      disabled: props.actionsDisabled,
+      onSelect: () => selectAction('hidden'),
+    });
+  if (props.comment.status !== 2)
+    items.push({
+      label: '删除',
+      color: 'error',
+      disabled: props.actionsDisabled,
+      onSelect: () => selectAction('deleted'),
+    });
+  return [
+    items,
+    [
+      {
+        label: '删除作者全部评论',
+        color: 'error',
+        disabled: props.actionsDisabled,
+        onSelect: () => selectAction('delete-author'),
+      },
+    ],
+  ];
+});
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -78,51 +110,18 @@ function formatCommentId(comment: Comment) {
         >
           {{ ['正常发布', '隐藏', '删除'][comment.status] }}
         </span>
-        <XDropdownMenu>
-          <template #trigger>
-            <XButton
-              color="neutral"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="评论操作"
-            >
-              <MoreHorizOutlined class="size-5" aria-hidden="true" />
-            </XButton>
-          </template>
-          <XDropdownMenuItem @select="selectAction('filter-subject')">
-            仅看此资源
-          </XDropdownMenuItem>
-          <XDropdownMenuItem
-            v-if="comment.status !== 0"
-            :disabled="actionsDisabled"
-            @select="selectAction('published')"
+        <UDropdownMenu :items="actionItems">
+          <UButton
+            :id="`comment-actions-${comment.id}`"
+            color="neutral"
+            variant="ghost"
+            square
+            size="sm"
+            aria-label="评论操作"
           >
-            恢复
-          </XDropdownMenuItem>
-          <XDropdownMenuItem
-            v-if="comment.status !== 1"
-            :disabled="actionsDisabled"
-            @select="selectAction('hidden')"
-          >
-            隐藏
-          </XDropdownMenuItem>
-          <XDropdownMenuItem
-            v-if="comment.status !== 2"
-            :disabled="actionsDisabled"
-            destructive
-            @select="selectAction('deleted')"
-          >
-            删除
-          </XDropdownMenuItem>
-          <XDropdownMenuSeparator />
-          <XDropdownMenuItem
-            :disabled="actionsDisabled"
-            destructive
-            @select="selectAction('delete-author')"
-          >
-            删除作者全部评论
-          </XDropdownMenuItem>
-        </XDropdownMenu>
+            <MoreHorizOutlined class="size-5" aria-hidden="true" />
+          </UButton>
+        </UDropdownMenu>
       </div>
     </div>
     <p

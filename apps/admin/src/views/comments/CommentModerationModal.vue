@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { XConfirmDialog } from '@novelia/web-kit';
+import { watch } from 'vue';
 
 import { useForumApi, type Comment, type CommentStatusName } from '@/api';
 
@@ -14,6 +15,21 @@ const emit = defineEmits<{
   success: [message: string];
   error: [message: string];
 }>();
+
+let returnFocus: HTMLElement | null = null;
+watch(
+  () => props.target,
+  (target) => {
+    if (target)
+      returnFocus = document.getElementById(
+        `comment-actions-${target.comment.id}`,
+      );
+  },
+  { flush: 'sync' },
+);
+function restoreFocus() {
+  if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
+}
 
 const api = useForumApi();
 const saving = defineModel<boolean>('saving', { default: false });
@@ -54,6 +70,7 @@ async function confirm() {
 <template>
   <XConfirmDialog
     :open="target !== null"
+    @after:leave="restoreFocus"
     :title="
       target?.status === 'published'
         ? '确认恢复评论'

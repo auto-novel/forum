@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { XButton } from '@novelia/web-kit';
 import { VerticalAlignTopOutlined } from '@vicons/material';
 import { onMounted, onScopeDispose, ref } from 'vue';
 
@@ -28,14 +27,14 @@ onScopeDispose(() => {
 </script>
 
 <template>
-  <XButton
+  <UButton
     v-if="visible"
     variant="soft"
-    class="fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 size-11 rounded-full shadow-lg md:right-8 md:bottom-8"
+    class="fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-30 size-11 justify-center rounded-full shadow-lg md:right-8 md:bottom-8"
     title="回到顶部"
     aria-label="回到顶部"
     @click="backToTop"
   >
     <VerticalAlignTopOutlined class="size-5 shrink-0" aria-hidden="true" />
-  </XButton>
+  </UButton>
 </template>

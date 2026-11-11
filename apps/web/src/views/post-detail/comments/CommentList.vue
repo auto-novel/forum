@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { ChatBubbleOutlineOutlined } from '@vicons/material';
 
-import {
-  XButton,
-  XEmpty,
-  XError,
-  XPagination,
-  XSkeleton,
-} from '@novelia/web-kit';
+import { XPagination } from '@novelia/web-kit';
 
 import type { PostComment } from '@/api';
 import { formatCount } from '@/utils/formatCount';
@@ -62,15 +56,15 @@ const emit = defineEmits<{
         评论
         <span class="text-muted">{{ formatCount(commentsCount) }}</span>
       </h2>
-      <XButton
-        size="sm"
+      <UButton
+        size="lg"
         aria-controls="comment-composer"
         :aria-expanded="composing"
         @click="emit('comment')"
       >
         <ChatBubbleOutlineOutlined class="size-4" aria-hidden="true" />
         {{ composing ? '取消评论' : '发表评论' }}
-      </XButton>
+      </UButton>
     </header>
 
     <slot name="composer" />
@@ -78,29 +72,45 @@ const emit = defineEmits<{
     <div v-if="loading" class="divide-y divide-divider" role="status">
       <span class="sr-only">正在加载评论…</span>
       <div v-for="index in 3" :key="index" class="py-4">
-        <XSkeleton class="h-3 w-28 bg-border" />
-        <XSkeleton class="mt-3 h-4 w-full" />
-        <XSkeleton class="mt-2 h-4 w-2/3" />
+        <USkeleton class="h-3 w-28" />
+        <USkeleton class="mt-3 h-4 w-full" />
+        <USkeleton class="mt-2 h-4 w-2/3" />
       </div>
     </div>
-    <XError
+    <UError
+      :ui="{
+        root: 'min-h-0 py-8',
+        statusMessage: 'text-lg font-medium sm:text-xl',
+        message: 'mt-2 text-sm',
+        links: 'mt-5 flex-wrap gap-3',
+      }"
       v-else-if="error"
-      title=""
-      :description="error"
+      :error="{ statusMessage: '', message: error }"
       class="min-h-52 p-6"
-      :ui="{ icon: 'hidden', description: 'mt-0' }"
+      :clear="false"
+      :as="{ root: 'div', statusMessage: 'h2' }"
+      role="alert"
     >
-      <XButton @click="emit('retry')">重新加载评论</XButton>
-    </XError>
-    <XEmpty
+      <template #links>
+        <UButton size="lg" @click="emit('retry')">重新加载评论</UButton>
+      </template>
+    </UError>
+    <UEmpty
+      variant="naked"
       v-else-if="!comments.length"
-      size="compact"
+      size="sm"
       title="还没有评论"
       description="这里暂时安安静静的。"
-      :ui="{ icon: 'size-11' }"
     >
-      <template #icon><ChatBubbleOutlineOutlined class="size-5" /></template>
-    </XEmpty>
+      <template #leading>
+        <span
+          class="grid size-11 place-items-center rounded-full bg-primary-soft text-primary"
+          aria-hidden="true"
+        >
+          <ChatBubbleOutlineOutlined class="size-5" />
+        </span>
+      </template>
+    </UEmpty>
     <div v-else class="divide-y divide-divider">
       <CommentThread
         v-for="comment in comments"

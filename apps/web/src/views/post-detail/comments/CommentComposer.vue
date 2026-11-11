@@ -5,7 +5,6 @@ import type { PostComment } from '@/api';
 import {
   CommentRulesNotice,
   Toast,
-  XButton,
   XMarkdownHelpDialog,
   getApiErrorMessage,
   useMarkdownDraft,
@@ -122,18 +121,19 @@ async function submitComment() {
       <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
         <XMarkdownHelpDialog mode="comment" />
         <div class="flex items-center gap-2">
-          <XButton
+          <UButton
             v-if="replyTo"
+            size="lg"
             color="neutral"
             variant="outline"
             :disabled="submitting"
             @click="emit('cancelReply')"
           >
             取消
-          </XButton>
-          <XButton type="submit" :disabled="!canSubmit">
+          </UButton>
+          <UButton type="submit" size="lg" :disabled="!canSubmit">
             {{ submitting ? '发表中…' : '发表' }}
-          </XButton>
+          </UButton>
         </div>
       </div>
     </form>

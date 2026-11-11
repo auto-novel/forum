@@ -15,7 +15,7 @@ const template = source.slice(
 const render = compile(template);
 const passthrough = {
   setup(_, { slots }) {
-    return () => h('div', [slots.default?.(), slots.actions?.()]);
+    return () => h('div', [slots.default?.(), slots.links?.()]);
   },
 };
 const pageHeader = {
@@ -23,13 +23,13 @@ const pageHeader = {
   setup:
     (props, { slots }) =>
     () =>
-      h('header', [h('h1', slots.title?.() ?? props.title), slots.actions?.()]),
+      h('header', [h('h1', slots.title?.() ?? props.title), slots.links?.()]),
 };
 const dropdownMenu = {
   setup:
     (_, { slots }) =>
     () =>
-      h('div', [slots.trigger?.(), slots.default?.()]),
+      h('div', slots.default?.()),
 };
 
 for (const mode of ['mobile', 'tablet', 'desktop']) {
@@ -41,6 +41,7 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
         isMobile: mode === 'mobile',
         selectedCategory: 'novel',
         selectedCategoryItem: { id: 1, title: '小说' },
+        categoryMenuItems: [{ label: '小说' }],
         categoryStore: {
           categories: [{ slug: 'novel', title: '小说' }],
           canPublish: () => true,
@@ -61,12 +62,11 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
         changePage() {},
       }),
     });
-    for (const name of ['RouterLink', 'PostFilters', 'XButton', 'XPage']) {
+    for (const name of ['RouterLink', 'PostFilters', 'UButton', 'XPage']) {
       app.component(name, passthrough);
     }
-    app.component('XPageHeader', pageHeader);
-    app.component('XDropdownMenu', dropdownMenu);
-    app.component('XDropdownMenuItem', passthrough);
+    app.component('UPageHeader', pageHeader);
+    app.component('UDropdownMenu', dropdownMenu);
     for (const name of [
       'AddOutlined',
       'CheckOutlined',

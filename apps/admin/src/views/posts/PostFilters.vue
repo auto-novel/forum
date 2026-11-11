@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { SearchOutlined } from '@vicons/material';
-import { XButton, XInput } from '@novelia/web-kit';
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 
 import FilterChoiceGroup from '@/components/FilterChoiceGroup.vue';
 import FilterRow from '@/components/FilterRow.vue';
@@ -10,6 +8,12 @@ import { categoryOrder, categoryTitle } from '@/category';
 
 const props = defineProps<{ categories: CategoryListItem[] }>();
 const emit = defineEmits<{ search: [] }>();
+const queryInput = useTemplateRef<{ inputRef: HTMLInputElement | null }>(
+  'queryInput',
+);
+const authorNameInput = useTemplateRef<{ inputRef: HTMLInputElement | null }>(
+  'authorNameInput',
+);
 
 const query = defineModel<string>('query', { required: true });
 const category = defineModel<string>('category', { required: true });
@@ -103,29 +107,62 @@ function changeSort(value: string) {
 <template>
   <div class="filters">
     <FilterRow label="搜索">
-      <XInput
+      <UInput
+        ref="queryInput"
         v-model="query"
+        aria-label="搜索标题或正文"
         class="query-input"
-        clearable
+        icon="i-lucide-search"
         placeholder="搜索标题或正文"
         @change="emit('search')"
-        @clear="emit('search')"
       >
-        <template #suffix>
-          <SearchOutlined class="size-5" aria-hidden="true" />
+        <template #trailing>
+          <UButton
+            v-if="query"
+            color="neutral"
+            variant="link"
+            size="xs"
+            square
+            icon="i-lucide-x"
+            aria-label="清除搜索"
+            @mousedown.prevent
+            @click="
+              query = '';
+              queryInput?.inputRef?.focus();
+              emit('search');
+            "
+          />
         </template>
-      </XInput>
+      </UInput>
     </FilterRow>
 
     <FilterRow label="作者">
-      <XInput
+      <UInput
+        ref="authorNameInput"
         v-model="authorName"
+        aria-label="搜索作者名字"
         class="query-input"
-        clearable
         placeholder="搜索作者名字"
         @change="emit('search')"
-        @clear="emit('search')"
-      />
+      >
+        <template #trailing>
+          <UButton
+            v-if="authorName"
+            color="neutral"
+            variant="link"
+            size="xs"
+            square
+            icon="i-lucide-x"
+            aria-label="清除作者"
+            @mousedown.prevent
+            @click="
+              authorName = '';
+              authorNameInput?.inputRef?.focus();
+              emit('search');
+            "
+          />
+        </template>
+      </UInput>
     </FilterRow>
 
     <FilterRow label="标签">
@@ -135,16 +172,16 @@ function changeSort(value: string) {
           :options="tagOptions"
           @update:value="changeTag"
         />
-        <XButton
+        <UButton
           v-if="hasMoreTags"
           color="neutral"
           variant="ghost"
-          size="sm"
+          size="lg"
           :aria-expanded="showAllTags"
           @click="showAllTags = !showAllTags"
         >
           {{ showAllTags ? '收起' : '更多标签' }}
-        </XButton>
+        </UButton>
       </div>
     </FilterRow>
     <FilterRow label="分类">

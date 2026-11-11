@@ -1,21 +1,11 @@
 <script setup lang="ts">
-import {
-  AddOutlined,
-  CheckOutlined,
-  ExpandMoreOutlined,
-} from '@vicons/material';
+import type { DropdownMenuItem } from '@nuxt/ui';
+import { AddOutlined, ExpandMoreOutlined } from '@vicons/material';
 import { computed } from 'vue';
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { type PostSort } from '@/api';
-import {
-  XButton,
-  XDropdownMenu,
-  XDropdownMenuItem,
-  XPage,
-  XPageHeader,
-  useWebKitViewport,
-} from '@novelia/web-kit';
+import { XPage, useWebKitViewport } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
 import { usePostListQuery } from '@/stores/post';
 import PostFilters from './PostFilters.vue';
@@ -135,52 +125,46 @@ function changePage(nextPage: number) {
   });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+const categoryMenuItems = computed<DropdownMenuItem[]>(() =>
+  categoryStore.categories.map((category) => ({
+    label: category.title,
+    type: 'checkbox',
+    checked: selectedCategory.value === category.slug,
+    'aria-current':
+      selectedCategory.value === category.slug ? 'page' : undefined,
+    onSelect: () => changeCategory(category.slug),
+  })),
+);
 </script>
 
 <template>
   <XPage>
     <div class="min-w-0 space-y-4">
-      <XPageHeader
+      <UPageHeader
         :title="selectedCategoryItem.title"
-        class="flex-nowrap items-center"
+        :ui="{ wrapper: 'min-w-0 flex-nowrap' }"
       >
         <template v-if="isMobile" #title>
-          <XDropdownMenu align="start" class="min-w-40">
-            <template #trigger>
-              <button
-                type="button"
-                class="inline-flex min-h-11 max-w-full items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                aria-label="切换帖子板块"
-              >
-                <span class="truncate">{{ selectedCategoryItem.title }}</span>
-                <ExpandMoreOutlined
-                  class="size-6 shrink-0"
-                  aria-hidden="true"
-                />
-              </button>
-            </template>
-            <XDropdownMenuItem
-              v-for="category in categoryStore.categories"
-              :key="category.slug"
-              :aria-current="
-                selectedCategory === category.slug ? 'page' : undefined
-              "
-              @select="changeCategory(category.slug)"
+          <UDropdownMenu
+            :items="categoryMenuItems"
+            :content="{ align: 'start' }"
+            :ui="{ content: 'min-w-40' }"
+          >
+            <button
+              type="button"
+              class="inline-flex min-h-11 max-w-full items-center gap-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              aria-label="切换帖子板块"
             >
-              <span class="flex-1">{{ category.title }}</span>
-              <CheckOutlined
-                v-if="selectedCategory === category.slug"
-                class="size-4 shrink-0"
-                aria-hidden="true"
-              />
-            </XDropdownMenuItem>
-          </XDropdownMenu>
+              <span class="truncate">{{ selectedCategoryItem.title }}</span>
+              <ExpandMoreOutlined class="size-6 shrink-0" aria-hidden="true" />
+            </button>
+          </UDropdownMenu>
         </template>
-        <template #actions>
-          <XButton
+        <template #links>
+          <UButton
             v-if="categoryStore.canPublish(selectedCategory)"
+            size="lg"
             class="shrink-0 whitespace-nowrap"
-            :as="RouterLink"
             :to="{
               name: 'post-create',
               query: { category: selectedCategory },
@@ -189,9 +173,9 @@ function changePage(nextPage: number) {
           >
             <AddOutlined class="size-4" aria-hidden="true" />
             <span>发帖</span>
-          </XButton>
+          </UButton>
         </template>
-      </XPageHeader>
+      </UPageHeader>
 
       <aside
         v-if="selectedCategory === 'feedback'"

@@ -1,5 +1,7 @@
 import { htmlBootstrapPlugin } from '@novelia/web-kit/vite';
-import tailwindcss from '@tailwindcss/vite';
+// 使用相对路径让默认配置加载器转译 web-kit 的 TypeScript 预设。
+import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/nuxt-ui/index.ts';
+import ui from '@nuxt/ui/vite';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
@@ -22,7 +24,14 @@ export default defineConfig(({ command, mode }) => {
       ),
       __COMMIT_SHA__: JSON.stringify(env.VITE_COMMIT_SHA || 'unknown'),
     },
-    plugins: [htmlBootstrapPlugin(), vue(), tailwindcss()],
+    plugins: [
+      htmlBootstrapPlugin(),
+      vue(),
+      ui({
+        ...webKitNuxtUiOptions,
+        components: { dts: 'src/components.d.ts', dirs: [] },
+      }),
+    ],
     build: {
       cssCodeSplit: false,
       rolldownOptions: {

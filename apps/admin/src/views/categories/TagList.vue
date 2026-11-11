@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { XSkeleton } from '@novelia/web-kit';
-import { XButton } from '@novelia/web-kit';
 import { AddOutlined, LocalOfferOutlined } from '@vicons/material';
 
 import type { Tag } from '@/api';
@@ -32,8 +30,8 @@ const emit = defineEmits<{
           {{ tags.length }} 个标签
         </span>
       </div>
-      <XButton
-        size="sm"
+      <UButton
+        size="lg"
         variant="outline"
         class="shrink-0"
         :disabled="loading"
@@ -41,7 +39,7 @@ const emit = defineEmits<{
       >
         <AddOutlined class="size-4" aria-hidden="true" />
         新建标签
-      </XButton>
+      </UButton>
     </header>
 
     <div v-if="loading">
@@ -55,9 +53,9 @@ const emit = defineEmits<{
           :key="index"
           class="flex items-center gap-6 px-3 py-4"
         >
-          <XSkeleton class="h-4 w-1/3" />
-          <XSkeleton class="h-4 w-12" />
-          <XSkeleton class="ml-auto h-6 w-24" />
+          <USkeleton class="h-4 w-1/3" />
+          <USkeleton class="h-4 w-12" />
+          <USkeleton class="ml-auto h-6 w-24" />
         </div>
       </div>
     </div>
@@ -118,17 +116,17 @@ const emit = defineEmits<{
           <div
             class="col-span-6 flex items-center justify-end gap-1 sm:col-span-3"
           >
-            <XButton
-              size="sm"
+            <UButton
+              size="lg"
               color="neutral"
               variant="ghost"
               :aria-label="`编辑标签「${tag.name}」`"
               @click="emit('edit', tag)"
             >
               编辑
-            </XButton>
-            <XButton
-              size="sm"
+            </UButton>
+            <UButton
+              size="lg"
               :color="tag.isActive ? 'warning' : 'primary'"
               variant="ghost"
               :aria-label="`${tag.isActive ? '停用' : '启用'}标签「${tag.name}」`"
@@ -136,7 +134,7 @@ const emit = defineEmits<{
               @click="emit('toggleActive', tag)"
             >
               {{ tag.isActive ? '停用' : '启用' }}
-            </XButton>
+            </UButton>
           </div>
         </li>
       </ul>

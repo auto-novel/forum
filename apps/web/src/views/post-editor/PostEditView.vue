@@ -1,18 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { useForumApi, type Post } from '@/api';
-import {
-  Toast,
-  XError,
-  XSkeleton,
-  XButton,
-  XPage,
-  XPageHeader,
-  getApiErrorMessage,
-  useWebKit,
-} from '@novelia/web-kit';
+import { Toast, XPage, getApiErrorMessage, useWebKit } from '@novelia/web-kit';
 import { useUnsavedChangesGuard } from '@/composables/useUnsavedChangesGuard';
 import { useCategoryStore } from '@/stores/category';
 import { usePostQuery, usePostStore } from '@/stores/post';
@@ -162,21 +153,31 @@ void categoryStore.initialize().then(() => {
 
 <template>
   <XPage>
-    <XPageHeader title="编辑帖子" />
+    <UPageHeader title="编辑帖子" />
     <div v-if="loading" class="py-6" role="status">
       <span class="sr-only">正在加载帖子…</span>
-      <XSkeleton class="h-10 w-full" />
-      <XSkeleton class="mt-5 h-10 w-full" />
-      <XSkeleton class="mt-5 h-80 w-full" />
+      <USkeleton class="h-10 w-full" />
+      <USkeleton class="mt-5 h-10 w-full" />
+      <USkeleton class="mt-5 h-80 w-full" />
     </div>
-    <XError
+    <UError
+      :ui="{
+        root: 'min-h-0 py-8',
+        statusMessage: 'text-lg font-medium sm:text-xl',
+        message: 'mt-2 text-sm',
+        links: 'mt-5 flex-wrap gap-3',
+      }"
       v-else-if="error"
       class="min-h-96"
-      title="帖子加载失败"
-      :description="error"
+      :error="{ statusMessage: '帖子加载失败', message: error }"
+      :clear="false"
+      :as="{ root: 'div', statusMessage: 'h2' }"
+      role="alert"
     >
-      <XButton @click="loadPost">再试一次</XButton>
-    </XError>
+      <template #links>
+        <UButton size="lg" @click="loadPost">再试一次</UButton>
+      </template>
+    </UError>
     <template v-else>
       <section v-if="post && canEdit">
         <PostForm
@@ -207,15 +208,15 @@ void categoryStore.initialize().then(() => {
               : '登录后才能编辑帖子，请使用页面右上角的登录入口。'
           }}
         </p>
-        <XButton
-          :as="RouterLink"
+        <UButton
+          size="lg"
           :to="detailRoute"
           color="neutral"
           variant="outline"
           class="mt-5"
         >
           返回帖子详情
-        </XButton>
+        </UButton>
       </section>
     </template>
   </XPage>

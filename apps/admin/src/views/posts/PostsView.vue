@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XButton, XPage, XPageHeader } from '@novelia/web-kit';
+import { XPage } from '@novelia/web-kit';
 import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -175,7 +175,7 @@ onMounted(initialize);
 
 <template>
   <XPage>
-    <XPageHeader title="帖子管理" />
+    <UPageHeader title="帖子管理" />
     <div class="flex flex-col gap-4">
       <PostFilters
         v-model:query="queryInput"
@@ -199,14 +199,14 @@ onMounted(initialize);
       <AdminAlert v-if="errorMessage" type="error" title="帖子列表加载失败">
         <div class="flex flex-col items-start gap-2">
           <p>{{ errorMessage }}</p>
-          <XButton
+          <UButton
             color="neutral"
             variant="outline"
-            size="sm"
+            size="lg"
             @click="loadPosts"
           >
             重新加载
-          </XButton>
+          </UButton>
         </div>
       </AdminAlert>
       <AdminAlert

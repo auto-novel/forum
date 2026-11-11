@@ -3,7 +3,7 @@ import { SearchOutlined } from '@vicons/material';
 import { computed, ref, watch } from 'vue';
 
 import { type PostSort } from '@/api';
-import { XButton, XInput, XSelect } from '@novelia/web-kit';
+
 import { useCategoryStore } from '@/stores/category';
 
 const props = defineProps<{
@@ -61,7 +61,7 @@ function selectTag(value: string) {
   tagInput.value = value;
   apply();
 }
-const sortOptions = [
+const sortOptions: { label: string; value: PostSort }[] = [
   { label: '最近活跃', value: 'active' },
   { label: '最新更新', value: 'updated' },
   { label: '浏览最多', value: 'views' },
@@ -97,25 +97,27 @@ watch(
 <template>
   <form class="min-w-0 space-y-3" role="search" @submit.prevent="apply">
     <div class="flex min-w-0 flex-wrap gap-2 sm:flex-nowrap">
-      <XInput
+      <UInput
         v-model="queryInput"
         type="search"
         enterkeyhint="search"
         aria-label="搜索帖子"
-        :leading-icon="SearchOutlined"
         class="w-full min-w-0 sm:flex-1"
-        :ui="{ suffix: 'hidden sm:inline-flex' }"
+        :ui="{ trailing: 'hidden sm:inline-flex' }"
         placeholder="搜索标题或正文"
       >
-        <template #suffix>
+        <template #leading>
+          <SearchOutlined class="size-5" aria-hidden="true" />
+        </template>
+        <template #trailing>
           <span class="text-sm text-muted/70" aria-hidden="true">↵</span>
         </template>
-      </XInput>
+      </UInput>
 
       <div class="flex w-full min-w-0 items-center gap-2 sm:w-auto">
-        <XSelect
+        <USelect
           v-model="sortInput"
-          :options="sortOptions"
+          :items="sortOptions"
           aria-label="帖子排序"
           class="min-w-0 flex-1 sm:w-32 sm:flex-none"
           @update:model-value="apply"
@@ -131,7 +133,7 @@ watch(
       class="flex items-start gap-4"
     >
       <div class="flex min-w-0 flex-wrap gap-2">
-        <XButton
+        <UButton
           v-for="option in tagOptions"
           :key="option.value"
           color="neutral"
@@ -147,8 +149,8 @@ watch(
           @click="selectTag(option.value)"
         >
           {{ option.label }}
-        </XButton>
-        <XButton
+        </UButton>
+        <UButton
           v-if="tags.length > TAG_PREVIEW_LIMIT"
           color="neutral"
           variant="ghost"
@@ -158,7 +160,7 @@ watch(
           @click="showAllTags = !showAllTags"
         >
           {{ showAllTags ? '收起' : '更多标签' }}
-        </XButton>
+        </UButton>
       </div>
     </div>
   </form>

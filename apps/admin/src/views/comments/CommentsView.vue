@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { XButton, XPage, XPageHeader } from '@novelia/web-kit';
+import { XPage } from '@novelia/web-kit';
 import AdminAlert from '@/components/AdminAlert.vue';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -184,7 +184,7 @@ watch(
 
 <template>
   <XPage>
-    <XPageHeader title="评论管理" />
+    <UPageHeader title="评论管理" />
     <div class="flex flex-col gap-4">
       <CommentFilters
         v-model:subject-type="subjectTypeInput"
@@ -206,14 +206,14 @@ watch(
       <AdminAlert v-if="errorMessage" type="error" title="评论加载失败">
         <div class="flex flex-col items-start gap-2">
           <p>{{ errorMessage }}</p>
-          <XButton
-            size="sm"
+          <UButton
+            size="lg"
             color="neutral"
             variant="outline"
             @click="loadComments"
           >
             重新加载
-          </XButton>
+          </UButton>
         </div>
       </AdminAlert>
 
