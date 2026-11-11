@@ -14,7 +14,7 @@ import {
   useWebKit,
 } from '@novelia/web-kit';
 import { useCategoryStore } from '@/stores/category';
-import { useDraftStore } from '@/stores/draft';
+import { usePostDraftStore } from '@/stores/draft';
 import PostPublishingNotice from './PostPublishingNotice.vue';
 
 import PostForm from './PostForm.vue';
@@ -25,7 +25,7 @@ const postStore = usePostStore();
 const route = useRoute();
 const router = useRouter();
 const categoryStore = useCategoryStore();
-const draftStore = useDraftStore();
+const draftStore = usePostDraftStore();
 const initialCategory =
   categoryStore.writableCategories.find(
     (category) => category.slug === route.query.category,
@@ -54,7 +54,7 @@ watch(
     selectedTagIds.value = [];
     content.value = '';
     if (!userId || !ready) return;
-    const draft = draftStore.getPostDraft(userId);
+    const draft = draftStore.get(userId);
     if (!draft) return;
     const categoryItem =
       categoryStore.writableCategories.find(
@@ -73,7 +73,7 @@ watch(
   [title, categorySlug, selectedTagIds, content],
   () => {
     if (!draftUserId.value || !categoriesReady.value) return;
-    draftStore.savePostDraft(draftUserId.value, {
+    draftStore.save(draftUserId.value, {
       title: title.value,
       category: categorySlug.value,
       tagIds: selectedTagIds.value,
@@ -105,7 +105,7 @@ async function submitPost() {
   )
     .then((post) => {
       postStore.setPost(post);
-      draftStore.clearPostDraft(draftUserId.value);
+      draftStore.clear(draftUserId.value);
       title.value = '';
       content.value = '';
       selectedTagIds.value = [];

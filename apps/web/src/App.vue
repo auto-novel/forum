@@ -20,20 +20,20 @@ import { computed, watch, type Component } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 
 import { useCategoryStore } from '@/stores/category';
-import { useDraftStore } from '@/stores/draft';
+import { usePostDraftStore } from '@/stores/draft';
 import { usePostStore } from '@/stores/post';
 
 const { whoami } = useWebKit();
 const route = useRoute();
 const categoryStore = useCategoryStore();
 const postStore = usePostStore();
-const draftStore = useDraftStore();
+const draftStore = usePostDraftStore();
 
 watch(
   () => whoami.value.user?.id,
   (userId, previousUserId) => {
     if (previousUserId && userId !== previousUserId) {
-      draftStore.clearAllDrafts();
+      draftStore.clearAll();
     }
   },
   { flush: 'sync' },

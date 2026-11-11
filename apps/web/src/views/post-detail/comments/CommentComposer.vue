@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId, watch } from 'vue';
+import { ref, useId } from 'vue';
 
 import type { PostComment } from '@/api';
 import {
@@ -8,11 +8,11 @@ import {
   XButton,
   XMarkdownHelpDialog,
   getApiErrorMessage,
+  useMarkdownDraft,
   useWebKit,
 } from '@novelia/web-kit';
 import MarkdownEditor from '@/components/markdown/MarkdownEditor.vue';
 import { useCommentStore } from '@/stores/comment';
-import { useDraftStore } from '@/stores/draft';
 import { useCommentValidation } from './useCommentValidation';
 
 const props = defineProps<{
@@ -28,8 +28,20 @@ const emit = defineEmits<{
 
 const { whoami } = useWebKit();
 const commentStore = useCommentStore();
-const draftStore = useDraftStore();
-const content = ref('');
+const { text: content, prepareSubmission } = useMarkdownDraft({
+  key: () => {
+    const user = whoami.value.user;
+    return user
+      ? `forum:comment:${props.postId}:${user.id}:${props.replyTo ? `reply:${props.replyTo.id}` : 'root'}`
+      : undefined;
+  },
+  initialValue: () => {
+    const replyTo = props.replyTo;
+    return replyTo?.rootId != null && replyTo.authorId !== whoami.value.user?.id
+      ? `@${replyTo.authorUsername} `
+      : '';
+  },
+});
 const submitting = ref(false);
 const commentHintId = useId();
 const commentPlaceholders = [
@@ -43,34 +55,10 @@ const {
   hint: commentHint,
   canSubmit,
 } = useCommentValidation(content, submitting);
-const draftKey = computed(() => {
-  const user = whoami.value.user;
-  return user
-    ? `${props.postId}:${user.id}:${props.replyTo ? `reply:${props.replyTo.id}` : 'root'}`
-    : '';
-});
-
-watch(
-  draftKey,
-  (key) => {
-    const draft = key ? draftStore.getCommentDraft(key) : '';
-    const replyTo = props.replyTo;
-    const mention =
-      replyTo?.rootId != null && replyTo.authorId !== whoami.value.user?.id
-        ? `@${replyTo.authorUsername} `
-        : '';
-    content.value = draft || mention;
-  },
-  { immediate: true },
-);
-
-watch(content, (value) => {
-  if (draftKey.value) draftStore.saveCommentDraft(draftKey.value, value);
-});
-
 async function submitComment() {
   const value = content.value.trim();
   if (!canSubmit.value || props.locked) return;
+  const completeSubmission = prepareSubmission();
   submitting.value = true;
   await Toast.promise(
     commentStore.createComment(props.postId, {
@@ -83,8 +71,7 @@ async function submitComment() {
     },
   )
     .then((comment) => {
-      content.value = '';
-      draftStore.clearCommentDraft(draftKey.value);
+      completeSubmission();
       emit('created', comment);
     })
     .catch(() => {});
