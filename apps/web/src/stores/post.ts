@@ -130,19 +130,19 @@ type CategoryParams = Parameters<ForumApi['getPosts']>[0];
 type ListKind = 'category' | 'mine' | 'favorites';
 
 export function usePostListQuery(
-  kind: ListKind,
+  kind: MaybeRefOrGetter<ListKind>,
   params: MaybeRefOrGetter<CategoryParams>,
 ) {
   const forumApi = useForumApi();
   usePostStore();
   const query = useQuery({
-    key: () => [...listKey(), kind, toValue(params)],
-    enabled: () => kind === 'category' || whoami.value.isSignedIn,
+    key: () => [...listKey(), toValue(kind), toValue(params)],
+    enabled: () => toValue(kind) === 'category' || whoami.value.isSignedIn,
     query: ({ signal }) => {
       const value = toValue(params);
-      return kind === 'category'
+      return toValue(kind) === 'category'
         ? forumApi.getPosts(value, signal)
-        : kind === 'mine'
+        : toValue(kind) === 'mine'
           ? forumApi.getMyPosts(value, signal)
           : forumApi.getFavoritePosts(value, signal);
     },

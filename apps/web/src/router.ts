@@ -7,8 +7,7 @@ import {
 import { useCategoryStore } from '@/stores/category';
 import { setPostListReturn } from '@/utils/postNavigation';
 import CommunityRulesView from '@/views/community-rules/CommunityRulesView.vue';
-import FavoritePostListView from '@/views/post-list/FavoritePostListView.vue';
-import MyPostListView from '@/views/post-list/MyPostListView.vue';
+import PersonalPostListView from '@/views/post-list/PersonalPostListView.vue';
 import PostDetailView from '@/views/post-detail/PostDetailView.vue';
 import PostCreateView from '@/views/post-editor/PostCreateView.vue';
 import PostEditView from '@/views/post-editor/PostEditView.vue';
@@ -73,13 +72,15 @@ const router = createRouter({
         {
           path: 'posts',
           name: 'my-posts',
-          component: MyPostListView,
+          component: PersonalPostListView,
+          props: { kind: 'mine' },
           meta: { title: '我的帖子 - 个人主页' },
         },
         {
           path: 'favorites',
           name: 'favorites',
-          component: FavoritePostListView,
+          component: PersonalPostListView,
+          props: { kind: 'favorites' },
           meta: { title: '我的收藏 - 个人主页' },
         },
       ],
