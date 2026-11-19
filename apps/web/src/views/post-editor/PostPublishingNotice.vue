@@ -5,7 +5,7 @@ import { RouterLink } from 'vue-router';
 
 <template>
   <div
-    class="flex items-start gap-2 rounded-md border border-primary/15 bg-primary-soft px-3 py-2 text-sm text-ink"
+    class="flex items-start gap-2 rounded-md border border-primary/15 bg-primary/10 px-3 py-2 text-sm text-default"
   >
     <InfoOutlined
       class="mt-0.5 size-4 shrink-0 text-primary"
@@ -16,7 +16,7 @@ import { RouterLink } from 'vue-router';
         提问前先阅读
         <RouterLink
           :to="{ name: 'posts', params: { slug: 'announcements' } }"
-          class="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+          class="font-semibold text-primary underline underline-offset-2 hover:text-primary/75"
         >
           站务公告
         </RouterLink>
@@ -25,7 +25,7 @@ import { RouterLink } from 'vue-router';
         ，再搜索
         <RouterLink
           :to="{ name: 'posts', params: { slug: 'feedback' } }"
-          class="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+          class="font-semibold text-primary underline underline-offset-2 hover:text-primary/75"
         >
           意见反馈
         </RouterLink>
@@ -40,7 +40,7 @@ import { RouterLink } from 'vue-router';
             params: { slug: 'novel' },
             query: { q: '求书集中贴' },
           }"
-          class="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+          class="font-semibold text-primary underline underline-offset-2 hover:text-primary/75"
         >
           求书集中贴
         </RouterLink>
@@ -54,7 +54,7 @@ import { RouterLink } from 'vue-router';
         发言请遵守
         <RouterLink
           :to="{ name: 'community-rules' }"
-          class="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+          class="font-semibold text-primary underline underline-offset-2 hover:text-primary/75"
         >
           社区守则
         </RouterLink>

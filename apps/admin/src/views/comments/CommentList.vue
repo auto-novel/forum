@@ -62,12 +62,12 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
       </span>
     </div>
 
-    <section class="rounded border-y border-border bg-surface">
+    <section class="rounded border-y border-default bg-surface">
       <div v-if="loading && !comments.length" class="px-2.5 md:px-4">
         <div
           v-for="index in 5"
           :key="index"
-          class="border-t border-border py-[18px] first:border-t-0"
+          class="border-t border-default py-[18px] first:border-t-0"
         >
           <div aria-hidden="true" class="grid gap-2">
             <USkeleton class="h-3.5" />
@@ -89,7 +89,7 @@ function forwardModeration(comment: Comment, status: CommentStatusName) {
         />
         <ul
           v-if="comments.length"
-          class="m-0 list-none divide-y divide-border p-0"
+          class="m-0 list-none divide-y divide-default p-0"
         >
           <li
             v-for="comment in comments"

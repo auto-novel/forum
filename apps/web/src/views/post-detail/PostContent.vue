@@ -20,7 +20,7 @@ const hasBeenUpdated = computed(
 <template>
   <article class="pb-3">
     <h1
-      class="text-2xl leading-snug font-bold tracking-tight text-ink wrap-anywhere"
+      class="text-2xl leading-snug font-bold tracking-tight text-default wrap-anywhere"
     >
       {{ post.title }}
     </h1>
@@ -28,7 +28,7 @@ const hasBeenUpdated = computed(
     <div
       class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted"
     >
-      <span class="text-sm font-bold text-ink">
+      <span class="text-sm font-bold text-default">
         {{ post.authorUsername }}
       </span>
       <span v-if="hasBeenUpdated">
@@ -45,7 +45,7 @@ const hasBeenUpdated = computed(
     <div v-if="$slots.actions" class="mt-4">
       <slot name="actions" />
     </div>
-    <div class="my-4 h-px bg-divider" />
+    <div class="my-4 border-t border-default" />
     <MarkdownContent mode="article" :source="post.content" />
   </article>
 </template>

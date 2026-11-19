@@ -245,7 +245,7 @@ function returnToList() {
         color="neutral"
         variant="ghost"
         size="xs"
-        class="min-h-9 rounded-sm px-0 text-xs font-medium text-primary hover:bg-transparent hover:text-primary-hover"
+        class="min-h-9 rounded-sm px-0 text-xs font-medium text-primary hover:bg-transparent hover:text-primary/75"
         title="返回列表"
         aria-label="返回列表"
         @click="returnToList"
@@ -266,7 +266,7 @@ function returnToList() {
       <span class="sr-only">正在加载帖子…</span>
       <USkeleton class="h-8 w-4/5" />
       <USkeleton class="mt-5 h-4 w-56" />
-      <div class="my-6 h-px bg-divider" />
+      <div class="my-6 border-t border-default" />
       <USkeleton class="h-4 w-full" />
       <USkeleton class="mt-3 h-4 w-full" />
       <USkeleton class="mt-3 h-4 w-2/3" />

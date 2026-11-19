@@ -1,7 +1,7 @@
 import { htmlBootstrapPlugin } from '@novelia/web-kit/vite';
-// 使用相对路径让默认配置加载器转译 web-kit 的 TypeScript 预设。
-import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/nuxt-ui/index.ts';
 import ui from '@nuxt/ui/vite';
+// 使用相对路径让 Vite 打包预设，而不是交给 Node 加载依赖中的 TypeScript。
+import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/src/ui/nuxt-ui.ts';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';

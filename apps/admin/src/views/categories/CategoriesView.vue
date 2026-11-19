@@ -163,13 +163,13 @@ onMounted(loadCategories);
 
       <div v-if="loading" role="status">
         <span class="sr-only">正在加载分类</span>
-        <div aria-hidden="true" class="divide-y divide-divider">
+        <div aria-hidden="true" class="divide-y divide-default">
           <div v-for="index in 3" :key="index" class="py-6">
             <div class="mb-4 flex items-center justify-between">
               <USkeleton class="h-5 w-24" />
               <USkeleton class="h-8 w-24" />
             </div>
-            <div class="grid gap-4 border-y border-divider px-3 py-4">
+            <div class="grid gap-4 border-y border-default px-3 py-4">
               <USkeleton class="h-4 w-2/3" />
               <USkeleton class="h-4 w-1/2" />
               <USkeleton class="h-4 w-3/5" />
@@ -183,7 +183,7 @@ onMounted(loadCategories);
       >
         暂无分类
       </p>
-      <div v-else class="divide-y divide-divider">
+      <div v-else class="divide-y divide-default">
         <TagList
           v-for="category in displayedCategories"
           :key="category.id"

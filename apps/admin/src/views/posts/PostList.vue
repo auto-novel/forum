@@ -57,10 +57,10 @@ const rangeEnd = computed(() =>
       <template v-else>共 0 篇帖子</template>
     </p>
 
-    <section class="border-y border-border bg-surface text-ink">
+    <section class="border-y border-default bg-surface text-default">
       <div
         v-if="loading && !posts.length"
-        class="divide-y divide-border px-2.5 md:px-4"
+        class="divide-y divide-default px-2.5 md:px-4"
       >
         <div v-for="index in 5" :key="index" class="py-4.5">
           <div aria-hidden="true" class="grid gap-2">
@@ -81,7 +81,7 @@ const rangeEnd = computed(() =>
           label="正在加载帖子"
           class="absolute top-4 right-4 z-20"
         />
-        <ul v-if="posts.length" class="divide-y divide-divider">
+        <ul v-if="posts.length" class="divide-y divide-default">
           <li
             v-for="post in posts"
             :key="post.id"

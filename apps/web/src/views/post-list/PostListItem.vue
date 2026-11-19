@@ -25,7 +25,7 @@ defineProps<{
       <h2 class="text-base leading-snug font-medium wrap-anywhere">
         <span
           v-if="post.pinOrder != null"
-          class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-warning-soft align-text-bottom text-warning"
+          class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-warning/10 align-text-bottom text-warning"
           title="已置顶"
           aria-label="已置顶"
         >
@@ -33,7 +33,7 @@ defineProps<{
         </span>
         <span
           v-if="post.commentsLocked"
-          class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-warning-soft align-text-bottom text-warning"
+          class="mr-1.5 inline-flex size-5 items-center justify-center rounded-sm bg-warning/10 align-text-bottom text-warning"
           title="评论区已锁定"
           aria-label="评论区已锁定"
         >
@@ -52,7 +52,7 @@ defineProps<{
       >
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
           <PostTagList :tags="post.tags" />
-          <span class="font-medium text-ink/80">{{ post.authorUsername }}</span>
+          <span class="font-medium text-default/80">{{ post.authorUsername }}</span>
           <span>
             {{
               post.updatedAt && post.updatedAt !== post.createdAt
@@ -86,7 +86,7 @@ defineProps<{
       <dt class="sr-only">查看</dt>
       <dd
         class="text-lg leading-tight font-medium tabular-nums break-all"
-        :class="post.viewsCount > 1000 ? 'text-warning' : 'text-ink/80'"
+        :class="post.viewsCount > 1000 ? 'text-warning' : 'text-default/80'"
       >
         {{ formatCount(post.viewsCount) }}
       </dd>
@@ -95,7 +95,7 @@ defineProps<{
       <dt class="sr-only">评论</dt>
       <dd
         class="text-lg leading-tight font-medium tabular-nums break-all"
-        :class="post.commentsCount > 1000 ? 'text-warning' : 'text-ink/80'"
+        :class="post.commentsCount > 1000 ? 'text-warning' : 'text-default/80'"
       >
         {{ formatCount(post.commentsCount) }}
       </dd>

@@ -81,7 +81,7 @@ function formatCommentId(comment: Comment) {
   <div class="flex flex-col gap-3.5">
     <div class="flex items-start justify-between gap-3">
       <div class="flex min-w-0 flex-col gap-[3px]">
-        <strong class="text-ink">{{ comment.authorUsername }}</strong>
+        <strong class="text-default">{{ comment.authorUsername }}</strong>
         <div class="flex flex-wrap items-center gap-x-1 text-xs text-muted">
           <span>{{ formatCommentId(comment) }} ·</span>
           <a
@@ -102,10 +102,10 @@ function formatCommentId(comment: Comment) {
           class="rounded px-2 py-0.5 text-xs"
           :class="
             comment.status === 0
-              ? 'bg-success-soft text-success-text'
+              ? 'bg-success/10 text-success'
               : comment.status === 1
-                ? 'bg-warning-soft text-warning-text'
-                : 'bg-error-soft text-error-text'
+                ? 'bg-warning/10 text-warning'
+                : 'bg-error/10 text-error'
           "
         >
           {{ ['正常发布', '隐藏', '删除'][comment.status] }}
@@ -125,7 +125,7 @@ function formatCommentId(comment: Comment) {
       </div>
     </div>
     <p
-      class="whitespace-pre-wrap leading-[1.72] text-ink [overflow-wrap:anywhere]"
+      class="whitespace-pre-wrap leading-[1.72] text-default [overflow-wrap:anywhere]"
     >
       {{ comment.content }}
     </p>

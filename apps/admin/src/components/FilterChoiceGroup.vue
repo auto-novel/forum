@@ -44,7 +44,7 @@ function selectFocused(event: KeyboardEvent) {
   >
     <template #label="{ item }">
       <span
-        :class="value === item.value ? 'font-medium text-primary' : 'text-ink'"
+        :class="value === item.value ? 'font-medium text-primary' : 'text-default'"
       >
         {{ item.label }}
       </span>

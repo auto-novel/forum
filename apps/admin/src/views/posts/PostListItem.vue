@@ -94,33 +94,33 @@ function formatDate(value: string) {
         </span>
         <span
           v-if="post.status === 1"
-          class="rounded-sm bg-warning-soft px-2 py-0.5 text-warning-text"
+          class="rounded-sm bg-warning/10 px-2 py-0.5 text-warning"
         >
           隐藏
         </span>
         <span
           v-if="post.status === 2"
-          class="rounded-sm bg-error-soft px-2 py-0.5 text-error-text"
+          class="rounded-sm bg-error/10 px-2 py-0.5 text-error"
         >
           已删除
         </span>
         <span
           v-if="post.pinOrder != null"
-          class="inline-flex items-center gap-1 rounded-sm bg-warning-soft px-2 py-0.5 text-warning-text"
+          class="inline-flex items-center gap-1 rounded-sm bg-warning/10 px-2 py-0.5 text-warning"
         >
           <PushPinOutlined class="size-3.5" aria-hidden="true" />
           置顶 {{ post.pinOrder }}
         </span>
         <span
           v-if="post.commentsLocked"
-          class="inline-flex items-center gap-1 rounded-sm bg-error-soft px-2 py-0.5 text-error-text"
+          class="inline-flex items-center gap-1 rounded-sm bg-error/10 px-2 py-0.5 text-error"
         >
           <LockOutlined class="size-3.5" aria-hidden="true" />
           已锁评
         </span>
       </div>
       <div class="flex flex-col gap-1">
-        <p class="post-title font-medium text-ink">{{ post.title }}</p>
+        <p class="post-title font-medium text-default">{{ post.title }}</p>
         <div class="post-footer">
           <span class="text-muted">
             {{ post.authorUsername }} (ID {{ post.authorId }}) ·
@@ -336,7 +336,7 @@ function formatDate(value: string) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--color-muted);
+  color: var(--ui-text-muted);
   font-size: 12px;
 }
 

@@ -20,7 +20,7 @@ const sections = [
     <header class="mb-6">
       <div class="flex items-center gap-4">
         <div
-          class="grid size-14 shrink-0 place-items-center rounded-full bg-primary-soft text-xl font-semibold text-primary"
+          class="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10 text-xl font-semibold text-primary"
           aria-hidden="true"
         >
           <template v-if="whoami.user">
@@ -29,7 +29,7 @@ const sections = [
           <PersonOutlineOutlined v-else class="size-7" />
         </div>
         <div class="min-w-0">
-          <p class="break-words text-lg font-semibold text-ink">
+          <p class="break-words text-lg font-semibold text-default">
             {{ whoami.user?.username ?? '尚未登录' }}
           </p>
           <p v-if="whoami.user" class="mt-1 text-sm text-muted">
@@ -40,7 +40,7 @@ const sections = [
     </header>
 
     <nav
-      class="mb-5 border-b border-divider"
+      class="mb-5 border-b border-default"
       aria-label="个人主页栏目"
     >
       <div class="relative inline-grid grid-cols-2 gap-6 align-bottom">
@@ -53,7 +53,7 @@ const sections = [
           :class="
             route.name === section.name
               ? 'text-primary'
-              : 'text-muted hover:text-ink'
+              : 'text-muted hover:text-default'
           "
         >
           <component :is="section.icon" class="size-5" aria-hidden="true" />

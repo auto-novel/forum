@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.153",
-    "@novelia/web-kit": "github:auto-novel/web-kit#b3addb63061a006bda6776b83fa011bbbc9c1759",
+    "@novelia/web-kit": "github:auto-novel/web-kit#a6aff40bbe68399db9c42890314250a2e033e4c4",
     "@nuxt/ui": "^4.12.0",
     "@pinia/colada": "^1.4.4",
     "@vicons/material": "^0.13.0",

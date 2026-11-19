@@ -65,7 +65,7 @@ const menuOptions: WebKitMenuOption[] = [
       <XPage v-else>
         <section v-if="whoami.isSignedIn" class="py-12 text-center">
           <p class="text-4xl font-semibold text-muted">403</p>
-          <h1 class="mt-4 text-xl font-medium text-ink">需要管理员权限</h1>
+          <h1 class="mt-4 text-xl font-medium text-default">需要管理员权限</h1>
           <p class="mt-2 text-muted">当前账号没有访问管理后台的权限。</p>
         </section>
         <p v-else class="py-12 text-center text-muted">

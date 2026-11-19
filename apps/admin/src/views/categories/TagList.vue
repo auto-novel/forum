@@ -25,7 +25,7 @@ const emit = defineEmits<{
   >
     <header class="mb-4 flex items-center justify-between gap-4">
       <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h2 class="text-base font-semibold text-ink">{{ categoryName }}</h2>
+        <h2 class="text-base font-semibold text-default">{{ categoryName }}</h2>
         <span v-if="!loading" class="text-xs tabular-nums text-muted">
           {{ tags.length }} 个标签
         </span>
@@ -46,7 +46,7 @@ const emit = defineEmits<{
       <p role="status" class="sr-only">正在加载{{ categoryName }}的标签</p>
       <div
         aria-hidden="true"
-        class="divide-y divide-divider border-y border-divider"
+        class="divide-y divide-default border-y border-default"
       >
         <div
           v-for="index in 3"
@@ -61,10 +61,10 @@ const emit = defineEmits<{
     </div>
     <div
       v-else-if="!tags.length"
-      class="flex flex-col items-center border-y border-dashed border-divider px-4 py-8 text-center"
+      class="flex flex-col items-center border-y border-dashed border-default px-4 py-8 text-center"
     >
       <LocalOfferOutlined class="mb-3 size-6 text-muted" aria-hidden="true" />
-      <p class="text-sm text-ink">暂无标签</p>
+      <p class="text-sm text-default">暂无标签</p>
       <p class="mt-1 text-xs text-muted">
         点击「新建标签」，为此分类添加标签。
       </p>
@@ -72,31 +72,31 @@ const emit = defineEmits<{
     <div v-else>
       <div
         aria-hidden="true"
-        class="hidden grid-cols-12 gap-4 border-b border-divider px-3 pb-2 text-xs text-muted sm:grid"
+        class="hidden grid-cols-12 gap-4 border-b border-default px-3 pb-2 text-xs text-muted sm:grid"
       >
         <span class="col-span-4">标签名称</span>
         <span class="col-span-2">状态</span>
         <span class="col-span-3">属性</span>
         <span class="col-span-3 text-right">操作</span>
       </div>
-      <ul class="divide-y divide-divider border-b border-divider">
+      <ul class="divide-y divide-default border-b border-default">
         <li
           v-for="tag in tags"
           :key="tag.id"
           class="grid grid-cols-12 items-center gap-x-4 gap-y-2 px-3 py-3 transition-colors hover:bg-hover focus-within:bg-hover"
         >
           <span
-            class="col-span-8 min-w-0 break-words text-sm font-medium text-ink sm:col-span-4"
+            class="col-span-8 min-w-0 break-words text-sm font-medium text-default sm:col-span-4"
           >
             {{ tag.name }}
           </span>
           <span
             class="col-span-4 inline-flex items-center justify-end gap-1.5 text-xs sm:col-span-2 sm:justify-start"
-            :class="tag.isActive ? 'text-success-text' : 'text-muted'"
+            :class="tag.isActive ? 'text-success' : 'text-muted'"
           >
             <span
               class="size-1.5 shrink-0 rounded-full"
-              :class="tag.isActive ? 'bg-success' : 'bg-muted'"
+              :class="tag.isActive ? 'bg-success' : 'bg-(--ui-text-muted)'"
               aria-hidden="true"
             ></span>
             {{ tag.isActive ? '启用' : '停用' }}
@@ -106,11 +106,11 @@ const emit = defineEmits<{
           >
             <span>
               色号
-              <span class="text-ink">{{ tag.color }}</span>
+              <span class="text-default">{{ tag.color }}</span>
             </span>
             <span>
               排序
-              <span class="text-ink">{{ tag.sortOrder }}</span>
+              <span class="text-default">{{ tag.sortOrder }}</span>
             </span>
           </div>
           <div

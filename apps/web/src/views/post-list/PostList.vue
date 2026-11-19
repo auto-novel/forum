@@ -74,7 +74,7 @@ const emit = defineEmits<{
       }"
     />
 
-    <div v-if="loading" class="divide-y divide-divider" role="status">
+    <div v-if="loading" class="divide-y divide-default" role="status">
       <span class="sr-only">正在加载帖子…</span>
       <div v-for="index in 5" :key="index" class="py-2.5">
         <USkeleton class="h-5 w-3/4" />
@@ -106,14 +106,14 @@ const emit = defineEmits<{
     />
     <template v-else>
       <div
-        class="hidden grid-cols-[minmax(0,1fr)_6rem_6rem] items-center gap-x-4 border-b border-divider py-2 text-xs font-bold text-ink sm:grid"
+        class="hidden grid-cols-[minmax(0,1fr)_6rem_6rem] items-center gap-x-4 border-b border-default py-2 text-xs font-bold text-default sm:grid"
         aria-hidden="true"
       >
         <span>帖子</span>
         <span class="text-center">查看</span>
         <span class="text-center">评论</span>
       </div>
-      <div class="divide-y divide-divider">
+      <div class="divide-y divide-default">
         <PostListItem v-for="post in posts" :key="post.id" :post="post" />
       </div>
     </template>

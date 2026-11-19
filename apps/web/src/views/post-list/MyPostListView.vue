@@ -43,12 +43,12 @@ function changePage(nextPage: number) {
   <section aria-label="我的帖子">
     <section v-if="!whoami.isSignedIn" class="py-8 text-center">
       <div
-        class="mx-auto grid size-12 place-items-center rounded-full bg-primary-soft text-primary"
+        class="mx-auto grid size-12 place-items-center rounded-full bg-primary/10 text-primary"
         aria-hidden="true"
       >
         <ArticleOutlined class="size-6" />
       </div>
-      <h2 class="mt-4 text-lg font-semibold text-ink">登录后查看帖子</h2>
+      <h2 class="mt-4 text-lg font-semibold text-default">登录后查看帖子</h2>
       <p class="mt-2 text-sm text-muted">
         请使用页面右上角的登录入口登录账号。
       </p>

@@ -24,12 +24,12 @@ const {
 
     <div v-if="!whoami.isSignedIn" class="py-8 text-center">
       <div
-        class="mx-auto grid size-12 place-items-center rounded-full bg-primary-soft text-primary"
+        class="mx-auto grid size-12 place-items-center rounded-full bg-primary/10 text-primary"
         aria-hidden="true"
       >
         <BlockOutlined class="size-6" />
       </div>
-      <h2 class="mt-4 text-lg font-semibold text-ink">登录后管理黑名单</h2>
+      <h2 class="mt-4 text-lg font-semibold text-default">登录后管理黑名单</h2>
       <p class="mt-2 text-sm text-muted">
         请使用页面右上角的登录入口登录账号。
       </p>
@@ -41,7 +41,7 @@ const {
         <div aria-hidden="true">
           <USkeleton class="mb-3 h-5 w-32" />
           <div
-            class="divide-y divide-divider rounded-md border border-divider px-4"
+            class="divide-y divide-default rounded-md border border-default px-4"
           >
             <div
               v-for="index in 3"
@@ -85,7 +85,7 @@ const {
           已拉黑 {{ entries.length }} 位用户
         </p>
         <ul
-          class="divide-y divide-divider rounded-md border border-divider px-4"
+          class="divide-y divide-default rounded-md border border-default px-4"
         >
           <li
             v-for="entry in entries"
@@ -93,7 +93,7 @@ const {
             class="flex items-center justify-between gap-4 py-4"
           >
             <div class="min-w-0">
-              <p class="break-words font-medium text-ink">
+              <p class="break-words font-medium text-default">
                 用户 ID：{{ entry.userId }}
               </p>
               <p class="mt-1 text-xs text-muted">

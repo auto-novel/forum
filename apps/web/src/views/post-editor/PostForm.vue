@@ -72,7 +72,7 @@ function submit() {
     <slot name="notice" />
 
     <div>
-      <label for="post-title" class="mb-2 block text-sm font-semibold text-ink">
+      <label for="post-title" class="mb-2 block text-sm font-semibold text-default">
         标题
       </label>
       <UInput
@@ -109,7 +109,7 @@ function submit() {
     <div>
       <label
         for="post-category"
-        class="mb-2 block text-sm font-semibold text-ink"
+        class="mb-2 block text-sm font-semibold text-default"
       >
         分类
       </label>
@@ -125,7 +125,7 @@ function submit() {
     </div>
 
     <fieldset :disabled="submitting">
-      <legend class="mb-2 text-sm font-semibold text-ink">
+      <legend class="mb-2 text-sm font-semibold text-default">
         标签（最多 3 个）
       </legend>
       <div v-if="tags.length" class="flex flex-wrap gap-2">
@@ -135,10 +135,10 @@ function submit() {
           class="cursor-pointer rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors"
           :class="
             tagIds.includes(tag.id)
-              ? 'border-primary bg-primary-soft text-primary'
+              ? 'border-primary bg-primary/10 text-primary'
               : tagIds.length >= maxTags
-                ? 'cursor-not-allowed border-border text-muted opacity-50'
-                : 'border-border text-muted hover:border-primary hover:text-primary'
+                ? 'cursor-not-allowed border-default text-muted opacity-50'
+                : 'border-default text-muted hover:border-primary hover:text-primary'
           "
         >
           <input
@@ -156,7 +156,7 @@ function submit() {
 
     <div>
       <div class="mb-2 flex items-center justify-between gap-3">
-        <label class="text-sm font-semibold text-ink">正文</label>
+        <label class="text-sm font-semibold text-default">正文</label>
         <XMarkdownHelpDialog mode="article" />
       </div>
       <MarkdownEditor

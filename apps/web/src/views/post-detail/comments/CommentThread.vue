@@ -90,7 +90,7 @@ async function handleCreated(comment: PostComment) {
           class="py-4"
         >
           <USkeleton class="h-5 w-28" />
-          <div class="mt-0.5 rounded-floating bg-embedded px-4 py-3">
+          <div class="mt-0.5 rounded-[3px] bg-embedded px-4 py-3">
             <USkeleton class="h-4 w-full" />
             <USkeleton class="mt-2 h-4 w-2/3" />
           </div>

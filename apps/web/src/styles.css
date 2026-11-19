@@ -1,19 +1,15 @@
 @import 'tailwindcss';
 @import '@novelia/web-kit/styles.css';
 
-/* 剧透遮罩语义色，web-kit 尚未暴露，沿用 @theme + [data-theme='dark']
- * 写法补充，避免使用固定的 dark: 变体。 */
-@theme {
-  --color-spoiler: #1f2225;
-  --color-spoiler-ink: #ffffff;
-}
-
+/* 剧透遮罩使用论坛专用配色，随 web-kit 的根元素主题类切换。 */
 @layer base {
-  :root[data-theme='dark'] {
-    /*
-     * 剧透遮罩不能沿用正文色：深色主题的 --color-ink 是近白色，直接当底色
-     * 会变成刺眼的白方块。改用半透明白，既能在深色背景上可辨识，又不会过亮。
-     */
+  :root {
+    --color-spoiler: #1f2225;
+    --color-spoiler-ink: #ffffff;
+  }
+
+  :root.dark {
+    /* 深色主题使用半透明白，避免近白的正文色使遮罩过亮。 */
     --color-spoiler: rgb(255 255 255 / 20%);
     --color-spoiler-ink: #f2f2f5;
   }

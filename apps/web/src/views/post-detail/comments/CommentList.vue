@@ -39,18 +39,18 @@ const emit = defineEmits<{
   <section
     tabindex="0"
     aria-label="评论列表"
-    class="mt-5 border-t border-divider"
+    class="mt-5 border-t border-default"
     aria-live="polite"
   >
     <header
       :class="[
         'flex items-center justify-between gap-4 py-4',
-        { 'border-b border-divider': !composing },
+        { 'border-b border-default': !composing },
       ]"
     >
       <h2
         :key="highlightVersion"
-        class="comments-title text-lg font-semibold text-ink"
+        class="comments-title text-lg font-semibold text-default"
         :class="{ 'comments-title-highlighted': highlighted }"
       >
         评论
@@ -69,7 +69,7 @@ const emit = defineEmits<{
 
     <slot name="composer" />
 
-    <div v-if="loading" class="divide-y divide-divider" role="status">
+    <div v-if="loading" class="divide-y divide-default" role="status">
       <span class="sr-only">正在加载评论…</span>
       <div v-for="index in 3" :key="index" class="py-4">
         <USkeleton class="h-3 w-28" />
@@ -104,14 +104,14 @@ const emit = defineEmits<{
     >
       <template #leading>
         <span
-          class="grid size-11 place-items-center rounded-full bg-primary-soft text-primary"
+          class="grid size-11 place-items-center rounded-full bg-primary/10 text-primary"
           aria-hidden="true"
         >
           <ChatBubbleOutlineOutlined class="size-5" />
         </span>
       </template>
     </UEmpty>
-    <div v-else class="divide-y divide-divider">
+    <div v-else class="divide-y divide-default">
       <CommentThread
         v-for="comment in comments"
         :key="comment.id"
@@ -144,12 +144,12 @@ const emit = defineEmits<{
 }
 
 .comments-title-highlighted {
-  color: var(--color-warning);
+  color: var(--ui-warning);
   animation: comments-title-blink 600ms ease-in-out 2;
 }
 
 .comments-title-highlighted span {
-  color: var(--color-warning);
+  color: var(--ui-warning);
 }
 
 @keyframes comments-title-blink {

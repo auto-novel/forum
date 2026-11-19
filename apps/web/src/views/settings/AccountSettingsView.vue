@@ -18,10 +18,10 @@ const route = useRoute();
           <RouterLink
             :to="{ name: 'blacklist' }"
             :aria-current="route.name === 'blacklist' ? 'page' : undefined"
-            class="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            class="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm text-default transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             :class="
               route.name === 'blacklist'
-                ? 'bg-primary-soft font-semibold'
+                ? 'bg-primary/10 font-semibold'
                 : 'hover:bg-embedded'
             "
           >

@@ -83,7 +83,7 @@ onMounted(loadOverview);
 <template>
   <XPage>
     <UPageHeader title="概览" />
-    <div class="flex flex-col gap-5 text-ink">
+    <div class="flex flex-col gap-5 text-default">
       <AdminAlert v-if="errorMessage" type="error" title="概览加载失败">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <span class="min-w-0 break-words">{{ errorMessage }}</span>

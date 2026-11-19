@@ -180,7 +180,7 @@ const categoryMenuItems = computed<DropdownMenuItem[]>(() =>
       <aside
         v-if="selectedCategory === 'feedback'"
         aria-label="意见反馈告示"
-        class="space-y-2 text-sm leading-relaxed text-ink"
+        class="space-y-2 text-sm leading-relaxed text-default"
       >
         <p class="text-warning">
           FishHawk陷入加班地狱，网站开发速度大幅下降已成常态，论坛反馈目前没有精力维护，有问题加群@吧，群链接看小说站首页。

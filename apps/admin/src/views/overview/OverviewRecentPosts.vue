@@ -20,7 +20,7 @@ function formatDate(value: string) {
 
 <template>
   <section
-    class="rounded-lg bg-surface p-6 text-ink shadow-sm"
+    class="rounded-lg bg-surface p-6 text-default shadow-sm"
     aria-label="最近活跃"
     :aria-busy="loading"
   >
@@ -64,7 +64,7 @@ function formatDate(value: string) {
           >
             <span
               v-if="post.pinOrder != null"
-              class="rounded border border-warning/30 bg-warning-soft px-1.5 py-0.5 text-xs text-warning-text"
+              class="rounded border border-warning/30 bg-warning/10 px-1.5 py-0.5 text-xs text-warning"
             >
               置顶 {{ post.pinOrder }}
             </span>

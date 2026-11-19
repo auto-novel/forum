@@ -118,7 +118,7 @@ test('reduced motion keeps feedback but disables smooth scrolling and CSS animat
   );
   assert.match(
     list,
-    /\.comments-title-highlighted span\s*\{\s*color: var\(--color-warning\)/,
+    /\.comments-title-highlighted span\s*\{\s*color: var\(--ui-warning\)/,
   );
   assert.match(
     list,

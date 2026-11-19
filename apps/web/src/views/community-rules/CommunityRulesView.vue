@@ -30,7 +30,7 @@ const permissions = [
         <span>。处罚原因、依据和分值可在「</span>
         <RouterLink
           :to="{ name: 'strikes' }"
-          class="font-medium text-primary underline underline-offset-2 hover:text-primary-hover focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="font-medium text-primary underline underline-offset-2 hover:text-primary/75 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           处罚记录
         </RouterLink>
@@ -130,7 +130,7 @@ const permissions = [
                   />
                   <CloseOutlined
                     v-else
-                    class="size-5 text-error-text"
+                    class="size-5 text-error"
                     aria-hidden="true"
                   />
                 </span>

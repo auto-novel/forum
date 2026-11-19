@@ -14,10 +14,10 @@ defineProps<{
 }>();
 
 const tones: Record<string, string> = {
-  info: 'bg-info-soft text-info',
-  success: 'bg-success-soft text-success',
-  warning: 'bg-warning-soft text-warning',
-  primary: 'bg-primary-soft text-primary',
+  info: 'bg-info/10 text-info',
+  success: 'bg-success/10 text-success',
+  warning: 'bg-warning/10 text-warning',
+  primary: 'bg-primary/10 text-primary',
 };
 </script>
 
@@ -30,7 +30,7 @@ const tones: Record<string, string> = {
     <div
       v-for="metric in metrics"
       :key="metric.label"
-      class="min-h-[108px] rounded-lg border border-border bg-surface p-[18px] text-ink"
+      class="min-h-[108px] rounded-lg border border-default bg-surface p-[18px] text-default"
     >
       <div v-if="loading" aria-hidden="true" class="grid gap-2">
         <USkeleton class="h-3.5" />

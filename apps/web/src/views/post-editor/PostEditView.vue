@@ -200,7 +200,7 @@ void categoryStore.initialize().then(() => {
       </section>
 
       <section v-else-if="post" class="py-8 text-center">
-        <h1 class="text-2xl font-bold text-ink">无法编辑帖子</h1>
+        <h1 class="text-2xl font-bold text-default">无法编辑帖子</h1>
         <p class="mt-2 text-sm text-muted">
           {{
             whoami.isSignedIn

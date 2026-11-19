@@ -79,7 +79,7 @@ async function submitComment() {
 </script>
 
 <template>
-  <section :class="replyTo ? 'mt-3' : 'border-b border-divider py-4'">
+  <section :class="replyTo ? 'mt-3' : 'border-b border-default py-4'">
     <div
       v-if="locked"
       :class="['py-2 text-sm text-warning', { 'mt-4': replyTo }]"

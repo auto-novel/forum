@@ -144,7 +144,7 @@ watch(
           :class="
             tagInput === option.value
               ? 'border-primary/25 bg-primary/10 font-medium text-primary'
-              : 'border-transparent bg-ink/5 text-muted hover:bg-ink/10 hover:text-ink'
+              : 'border-transparent bg-(--ui-text)/5 text-muted hover:bg-(--ui-text)/10 hover:text-default'
           "
           @click="selectTag(option.value)"
         >

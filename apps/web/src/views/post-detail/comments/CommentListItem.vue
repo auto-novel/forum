@@ -96,7 +96,7 @@ async function saveEdit() {
     :class="comment.rootId != null ? 'ml-8' : ''"
   >
     <header class="flex items-center gap-2 text-xs text-muted">
-      <span class="text-sm font-bold text-ink">
+      <span class="text-sm font-bold text-default">
         {{ comment.authorUsername }}
       </span>
       <XTime :time="comment.createdAt" preset="relative" />
@@ -114,7 +114,7 @@ async function saveEdit() {
     </header>
     <div
       v-if="!isPublished"
-      class="mt-0.5 rounded-floating bg-embedded px-4 py-3"
+      class="mt-0.5 rounded-[3px] bg-embedded px-4 py-3"
     >
       <UButton
         v-if="asAdmin"
@@ -176,7 +176,7 @@ async function saveEdit() {
         </div>
       </div>
     </form>
-    <div v-else class="mt-0.5 rounded-floating bg-embedded px-4 py-3">
+    <div v-else class="mt-0.5 rounded-[3px] bg-embedded px-4 py-3">
       <MarkdownContent mode="comment" :source="comment.content" />
     </div>
 
