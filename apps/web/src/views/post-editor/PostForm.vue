@@ -72,7 +72,10 @@ function submit() {
     <slot name="notice" />
 
     <div>
-      <label for="post-title" class="mb-2 block text-sm font-semibold text-default">
+      <label
+        for="post-title"
+        class="mb-2 block text-sm font-semibold text-default"
+      >
         标题
       </label>
       <UInput

@@ -1,15 +1,24 @@
+.git/
+.github/
 .vscode/
+.idea/
 
 # Deploy
 /data/
+/db/
 .env
+.env.*
+*.log*
 
 # Api
 /apps/api/forum
 
-# Admin
+# Web / Admin
+node_modules/
+**/node_modules/
 dist/
-**/node_modules
+**/dist/
+**/build/
 auto-imports.d.ts
 components.d.ts
 vite.config.ts.timestamp*

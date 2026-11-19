@@ -112,10 +112,7 @@ async function saveEdit() {
         @author-comments-deleted="emit('authorCommentsDeleted')"
       />
     </header>
-    <div
-      v-if="!isPublished"
-      class="mt-0.5 rounded-[3px] bg-embedded px-4 py-3"
-    >
+    <div v-if="!isPublished" class="mt-0.5 rounded-[3px] bg-embedded px-4 py-3">
       <UButton
         v-if="asAdmin"
         color="neutral"

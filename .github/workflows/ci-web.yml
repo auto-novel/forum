@@ -11,6 +11,7 @@ on:
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
+      - vite.config.ts
       - apps/web/**
       - apps/admin/**
 
@@ -28,24 +29,29 @@ jobs:
     timeout-minutes: 30
 
     env:
-      HUSKY: '0'
+      VP_GIT_HOOKS: '0'
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint workspace
+        run: pnpm exec vp lint
+
       - name: Type-check and build
-        run: pnpm --stream --filter 'forum-web...' --filter 'forum-admin...' run build
+        run: pnpm build
+
+      - name: Type-check applications
+        run: pnpm typecheck
 
       - name: Test
-        run: |
-          pnpm --stream --filter 'forum-web...' --filter 'forum-admin...' --if-present run test
+        run: pnpm test

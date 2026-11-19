@@ -1,7 +1,8 @@
 services:
   api:
     ports:
-      - 5001:5001
+      - 8001:8001
+
   postgresql:
     ports:
-      - 5002:5432
+      - 8002:5432

@@ -1,10 +1,10 @@
 import { htmlBootstrapPlugin } from '@novelia/web-kit/vite';
 import ui from '@nuxt/ui/vite';
-// 使用相对路径让 Vite 打包预设，而不是交给 Node 加载依赖中的 TypeScript。
-import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/src/ui/nuxt-ui.ts';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
+import { loadEnv } from 'vite';
+import { defineConfig } from 'vite-plus';
+import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/src/ui/nuxt-ui';
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(
@@ -12,7 +12,7 @@ export default defineConfig(({ command, mode }) => {
     fileURLToPath(new URL('.', import.meta.url)),
     'VITE_',
   );
-  const isLocalApi = env.VITE_LOCAL_API === 'true';
+  const isLocalApi = mode === 'local-api';
 
   return {
     define: {
@@ -55,7 +55,6 @@ export default defineConfig(({ command, mode }) => {
       exclude: ['@novelia/web-kit'],
     },
     server: {
-      port: 5173,
       proxy: {
         '/auth-proxy/': {
           target: 'https://auth.novelia.cc',
@@ -64,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
         },
         '/api': {
           target: isLocalApi
-            ? 'http://localhost:5001'
+            ? 'http://localhost:8001'
             : 'https://forum.novelia.cc',
           changeOrigin: true,
           rewrite: isLocalApi

@@ -1,20 +1,26 @@
 {
   "name": "forum",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
-  "packageManager": "pnpm@11.28.5",
-  "engines": {
-    "node": ">=22.18.0"
-  },
   "scripts": {
-    "dev": "pnpm dev:web",
-    "dev:web": "pnpm --filter forum-web dev",
-    "dev:admin": "pnpm --filter forum-admin dev",
-    "build": "pnpm --stream -r run build",
-    "test": "pnpm --stream -r --if-present run test"
+    "dev": "vp run dev:web",
+    "dev:web": "vp run --filter forum-web dev",
+    "dev:admin": "vp run --filter forum-admin dev",
+    "build": "vp run -r build",
+    "typecheck": "vp run -r typecheck",
+    "test": "vp run -r test",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "format": "vp fmt",
+    "prepare": "vp config"
   },
   "devDependencies": {
-    "prettier": "^3.9.6"
-  }
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": "^22.22.1 || ^24.11.0 || >=26.0.0"
+  },
+  "packageManager": "pnpm@11.28.5"
 }

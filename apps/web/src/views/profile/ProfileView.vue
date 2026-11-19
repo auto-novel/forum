@@ -39,10 +39,7 @@ const sections = [
       </div>
     </header>
 
-    <nav
-      class="mb-5 border-b border-default"
-      aria-label="个人主页栏目"
-    >
+    <nav class="mb-5 border-b border-default" aria-label="个人主页栏目">
       <div class="relative inline-grid grid-cols-2 gap-6 align-bottom">
         <RouterLink
           v-for="section in sections"

@@ -163,11 +163,13 @@ router.afterEach((to, from, failure) => {
       path: from.fullPath,
       scrollTop: window.scrollY,
     });
-  } else if (!(
-    ['post-detail', 'post-edit'].includes(String(to.name)) &&
-    ['post-detail', 'post-edit'].includes(String(from.name)) &&
-    to.params.id === from.params.id
-  )) {
+  } else if (
+    !(
+      ['post-detail', 'post-edit'].includes(String(to.name)) &&
+      ['post-detail', 'post-edit'].includes(String(from.name)) &&
+      to.params.id === from.params.id
+    )
+  ) {
     setPostListReturn();
   }
   document.title = `${pageTitle(to)} | Novelia Forum`;

@@ -52,7 +52,9 @@ defineProps<{
       >
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
           <PostTagList :tags="post.tags" />
-          <span class="font-medium text-default/80">{{ post.authorUsername }}</span>
+          <span class="font-medium text-default/80">{{
+            post.authorUsername
+          }}</span>
           <span>
             {{
               post.updatedAt && post.updatedAt !== post.createdAt

@@ -1,10 +1,9 @@
 import { htmlBootstrapPlugin } from '@novelia/web-kit/vite';
 import ui from '@nuxt/ui/vite';
-// 使用相对路径让 Vite 打包预设，而不是交给 Node 加载依赖中的 TypeScript。
-import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/src/ui/nuxt-ui.ts';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv } from 'vite-plus';
+import { webKitNuxtUiOptions } from './node_modules/@novelia/web-kit/src/ui/nuxt-ui';
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(
@@ -12,7 +11,7 @@ export default defineConfig(({ command, mode }) => {
     fileURLToPath(new URL('.', import.meta.url)),
     'VITE_',
   );
-  const isLocalApi = env.VITE_LOCAL_API === 'true';
+  const isLocalApi = mode === 'local-api';
 
   return {
     base: '/admin/',
@@ -35,28 +34,11 @@ export default defineConfig(({ command, mode }) => {
     ],
     build: {
       cssCodeSplit: false,
-      rolldownOptions: {
-        output: {
-          // 按更新频率分离应用代码、web-kit 和第三方依赖，减少更新时的缓存失效范围；
-          // 第三方依赖集中为 vendor，兼顾高带宽、高 RTT 环境下的请求数量与缓存复用。
-          manualChunks: (id) => {
-            const normalizedId = id.replaceAll('\\', '/');
-            if (normalizedId.includes('/node_modules/@novelia/web-kit/')) {
-              return 'web-kit';
-            }
-            if (normalizedId.includes('/node_modules/')) {
-              return 'vendor';
-            }
-            return undefined;
-          },
-        },
-      },
     },
     optimizeDeps: {
       exclude: ['@novelia/web-kit'],
     },
     server: {
-      port: 5174,
       proxy: {
         '/auth-proxy/': {
           target: 'https://auth.novelia.cc',
@@ -65,7 +47,7 @@ export default defineConfig(({ command, mode }) => {
         },
         '/api': {
           target: isLocalApi
-            ? 'http://localhost:5001'
+            ? 'http://localhost:8001'
             : 'https://forum.novelia.cc',
           changeOrigin: true,
           rewrite: isLocalApi
@@ -75,7 +57,6 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     resolve: {
-      dedupe: ['vue', 'vue-router'],
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
