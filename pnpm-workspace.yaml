@@ -15,3 +15,5 @@ catalog:
 
 overrides:
   'vite@*': 'catalog:'
+  # Keep Vitest's optional DOM peer on the workspace-compatible Node range.
+  'jsdom@*': ^27.4.0

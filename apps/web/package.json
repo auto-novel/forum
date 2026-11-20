@@ -8,7 +8,7 @@
     "dev:local": "vp dev --mode local-api",
     "build": "vp build && vue-tsc -b --noEmit",
     "preview": "vp preview",
-    "test": "node --test tests/*.test.mjs",
+    "test": "vp test",
     "typecheck": "vue-tsc -b --noEmit"
   },
   "dependencies": {
@@ -25,7 +25,9 @@
     "@iconify-json/lucide": "^1.2.153",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "~2.4.11",
     "@vue/tsconfig": "^0.9.1",
+    "jsdom": "^27.4.0",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",
     "vite": "catalog:",

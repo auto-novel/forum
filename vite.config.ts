@@ -17,4 +17,7 @@ export default defineConfig({
       'typescript/consistent-type-imports': 'error',
     },
   },
+  run: {
+    cache: true,
+  },
 });
